@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 
 namespace WowheadModelLoader
@@ -86,22 +87,26 @@ namespace WowheadModelLoader
             //var program = ZamModelViewer.Wow.ShaderTool.GetWowProgram(self.shaderId, self.opcount, self.renderFlag);
             //WH.debug(self.shaderId, program);
             //self.program = program;
-            //for (var i = 0; i < self.opcount; i++) {
-            //    if (self.materialIndex > -1 && self.materialIndex < model.materialLookup.length) {
-            //        var matIdx = model.materialLookup[self.materialIndex + i];
-            //        if (matIdx > -1 && matIdx < model.materials.length) {
-            //            self.material.splice(i, 0, model.materials[matIdx])
-            //        }
-            //    }
-            //    if (self.textureAnimIndex > -1 && self.textureAnimIndex < model.textureAnimLookup.length) {
-            //        var animIdx = model.textureAnimLookup[self.textureAnimIndex + i];
-            //        if (animIdx > -1 && model.textureAnims && animIdx < model.textureAnims.length) {
-            //            self.textureAnim.splice(i, 0, model.textureAnims[animIdx])
-            //        } else {
-            //            self.textureAnim.splice(i, 0, null)
-            //        }
-            //    }
-            //}
+
+            for (int i = 0; i < Opcount; i++)
+            {
+                if (MaterialIndex > -1 && MaterialIndex < model.MaterialLookup.Length)
+                {
+                    var matIdx = model.MaterialLookup[MaterialIndex + i];
+                    if (matIdx > -1 && matIdx < model.Materials.Length)
+                        Material.Insert(i, model.Materials[matIdx]);
+                }
+
+                //    if (self.textureAnimIndex > -1 && self.textureAnimIndex < model.textureAnimLookup.length) {
+                //        var animIdx = model.textureAnimLookup[self.textureAnimIndex + i];
+                //        if (animIdx > -1 && model.textureAnims && animIdx < model.textureAnims.length) {
+                //            self.textureAnim.splice(i, 0, model.textureAnims[animIdx])
+                //        } else {
+                //            self.textureAnim.splice(i, 0, null)
+                //        }
+                //    }
+            }
+
             //if (self.flip) {
             //    self.material = self.material.reverse();
             //    self.textureAnim = self.textureAnim.reverse()
@@ -115,6 +120,104 @@ namespace WowheadModelLoader
             //        self.alpha = model.alphas[alphaIdx]
             //    }
             //}
+        }
+
+        public Dictionary<string, TextureInfo> GetTextures()
+        {
+            int count = 0;
+            object texture1 = null;
+            object texture2 = null;
+            object texture3 = null;
+            object texture4 = null;
+
+            for (int i = 0; i < Material.Count; i++) {
+                object texture = null;
+
+                if (Material[i] != null)
+                {
+                    if (Material[i].Type == 1)
+                    {
+                        if (Model.NpcTexture != null)
+                            texture = Model.NpcTexture;
+                        else if (Model.CompositeTexture != null)
+                            texture = Model.CompositeTexture;
+                    }
+                    else if (Material[i].Texture != null)
+                        texture = Material[i].Texture;
+                    else if (
+                        (
+                            ((int)Model.Model.Type < 8 || (int)Model.Model.Type > 32)
+                            && Material[i].Type == 2 || Material[i].Type >= 11
+                        )
+                        && Model.TextureOverrides.ContainsKey(Material[i].Index)
+                    )
+                    {
+                        texture = Model.TextureOverrides[Material[i].Index];
+                    }
+                    else if (Material[i].Type != -1 && Model.TextureOverrides.ContainsKey(Material[i].Type))
+                        texture = Model.TextureOverrides[Material[i].Type];
+                    else if (Material[i].Type != -1 && Model.SpecialTextures.ContainsKey(Material[i].Type))
+                        texture = Model.SpecialTextures[Material[i].Type];
+                    else if (Material[i].Filename == 0)
+                    {
+                        var mat = Model.Materials[MaterialIndex + count];
+                        if (mat != null && mat.Texture != null)
+                            texture = mat.Texture;
+                    }
+                }
+
+                if (i == 0)
+                    texture1 = texture;
+                if (i == 1)
+                    texture2 = texture;
+                if (i == 2)
+                    texture3 = texture;
+                if (i == 3)
+                    texture4 = texture;
+
+                count++;
+            }
+
+            var textures = new Dictionary<string, TextureInfo>() {
+                { "Texture1", new TextureInfo {
+                    Texture = texture1 as WhTexture,
+                    Img = texture1 as Bitmap,
+                    Location = 0
+                } },
+                { "Texture2", new TextureInfo {
+                    Texture = texture2 as WhTexture,
+                    Img = texture2 as Bitmap,
+                    Location = 1
+                }},
+                { "Texture3", new TextureInfo {
+                    Texture = texture3 as WhTexture,
+                    Img = texture3 as Bitmap,
+                    Location= 2
+                }},
+                { "Texture4", new TextureInfo {
+                    Texture = texture4 as WhTexture,
+                    Img = texture4 as Bitmap,
+                    Location= 3
+                }}
+            };
+
+            foreach (var tex in textures)
+            {
+                var td = tex.Value;
+                td.Uniform = "u" + tex.Key;
+                td.Unit = "TEXTURE" + td.Location;
+            }
+
+            return textures;
+        }
+
+        public class TextureInfo
+        {
+            public WhTexture Texture { get; set; }
+            public Bitmap Img { get; set; }
+            public int Location { get; set; }
+            public string Uniform { get; set; }
+            public string Unit { get; set; }
         }
     }
 }

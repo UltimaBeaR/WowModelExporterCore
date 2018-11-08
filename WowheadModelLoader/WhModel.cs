@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using WowheadModelLoader.Json;
@@ -123,11 +124,12 @@ namespace WowheadModelLoader
             Vertices = null;
             Indices = null;
 
-            //self.animations = null;
-            //self.animLookup = null;
+            Animations = null;
+
+            AnimLookup = null;
             //self.bones = null;
-            //self.boneLookup = null;
-            //self.keyBoneLookup = null;
+            BoneLookup = null;
+            KeyBoneLookup = null;
 
             Meshes = null;
 
@@ -140,13 +142,13 @@ namespace WowheadModelLoader
             MaterialLookup = null;
 
             //self.textureAnims = null;
-            //self.textureAnimLookup = null;
-            //self.textureReplacements = null;
+            TextureAnimLookup = null;
+            TextureReplacements = null;
             //self.attachments = null;
-            //self.attachmentLookup = null;
+            AttachmentLookup = null;
             //self.colors = null;
             //self.alphas = null;
-            //self.alphaLookup = null;
+            AlphaLookup = null;
             //self.particleEmitters = null;
             //self.ribbonEmitters = null;
             //self.tmpMat = mat4.create();
@@ -190,7 +192,7 @@ namespace WowheadModelLoader
 
         public Dictionary<int, WhTexture> TextureOverrides { get; set; }
 
-        public WhTexture CompositeTexture { get; set; }
+        public Bitmap CompositeTexture { get; set; }
 
         public WhTexture NpcTexture { get; set; }
         public Dictionary<int, WhTexture> SpecialTextures { get; set; }
@@ -205,6 +207,12 @@ namespace WowheadModelLoader
         public WhVertex[] Vertices { get; set; }
         public ushort[] Indices { get; set; }
 
+        public WhAnimation[] Animations { get; set; }
+
+        public short[] AnimLookup { get; set; }
+        public short[] BoneLookup { get; set; }
+        public short[] KeyBoneLookup { get; set; }
+
         public WhMesh[] Meshes { get; set; }
 
         public WhTexUnit[] TexUnits { get; set; }
@@ -212,6 +220,11 @@ namespace WowheadModelLoader
 
         public WhMaterial[] Materials { get; set; }
         public short[] MaterialLookup { get; set; }
+
+        public short[] TextureAnimLookup { get; set; }
+        public short[] TextureReplacements { get; set; }
+        public short[] AttachmentLookup { get; set; }
+        public short[] AlphaLookup { get; set; }
 
         public void Load()
         {
@@ -326,37 +339,41 @@ namespace WowheadModelLoader
                 if (Opts.Items != null)
                     LoadItems(Opts.Items);
 
-                /*if (self.model.type != Type.CHARACTER && self.meta.Race > 0) {
-                    self.skinIndex = parseInt(self.meta.Creature.SkinColor);
-                    self.hairIndex = parseInt(self.meta.Creature.HairStyle);
-                    self.hairColorIndex = parseInt(self.meta.Creature.HairColor);
-                    self.faceIndex = parseInt(self.meta.Creature.FaceType);
-                    self.featuresIndex = parseInt(self.meta.Creature.FacialHair);
-                    self.faceColorIndex = self.hairColorIndex;
-                    self.HornsIndex = 0;
-                    self.EyePatchIndex = 0;
-                    self.TattoosIndex = 0
-                } else {
-                    if (self.opts.sk)
-                        self.skinIndex = parseInt(self.opts.sk);
-                    if (self.opts.ha)
-                        self.hairIndex = parseInt(self.opts.ha);
-                    if (self.opts.hc)
-                        self.hairColorIndex = parseInt(self.opts.hc);
-                    if (self.opts.fa)
-                        self.faceIndex = parseInt(self.opts.fa);
-                    if (self.opts.fh)
-                        self.featuresIndex = parseInt(self.opts.fh);
-                    if (self.opts.fc)
-                        self.faceColorIndex = parseInt(self.opts.fc);
-                    if (self.opts.ho)
-                        self.HornsIndex = parseInt(self.opts.ho);
-                    if (self.opts.ep)
-                        self.EyePatchIndex = parseInt(self.opts.ep);
-                    if (self.opts.ta)
-                        self.TattoosIndex = parseInt(self.opts.ta)
+                if (Model.Type != WhType.CHARACTER && (int)Meta.Race > 0) {
+                    SkinIndex = Meta.Creature.SkinColor;
+                    HairIndex = Meta.Creature.HairStyle;
+                    HairColorIndex = Meta.Creature.HairColor;
+                    FaceIndex = Meta.Creature.FaceType;
+                    FeaturesIndex = Meta.Creature.FacialHair;
+
+                    // Хз зачем это, он все равно нигде не исползуется
+                    //FaceColorIndex = HairColorIndex;
+
+                    //self.HornsIndex = 0;
+                    //self.EyePatchIndex = 0;
+                    //self.TattoosIndex = 0
                 }
-                 */
+                else
+                {
+                    //if (self.opts.sk)
+                    //    self.skinIndex = parseInt(self.opts.sk);
+                    //if (self.opts.ha)
+                    //    self.hairIndex = parseInt(self.opts.ha);
+                    //if (self.opts.hc)
+                    //    self.hairColorIndex = parseInt(self.opts.hc);
+                    //if (self.opts.fa)
+                    //    self.faceIndex = parseInt(self.opts.fa);
+                    //if (self.opts.fh)
+                    //    self.featuresIndex = parseInt(self.opts.fh);
+                    //if (self.opts.fc)
+                    //    self.faceColorIndex = parseInt(self.opts.fc);
+                    //if (self.opts.ho)
+                    //    self.HornsIndex = parseInt(self.opts.ho);
+                    //if (self.opts.ep)
+                    //    self.EyePatchIndex = parseInt(self.opts.ep);
+                    //if (self.opts.ta)
+                    //    self.TattoosIndex = parseInt(self.opts.ta);
+                }
             }
             else if (type == WhType.HELM)
             {
@@ -385,23 +402,94 @@ namespace WowheadModelLoader
             }
             else if (type == WhType.SHOULDER)
             {
-                // ToDo реализовать все остальное
-                throw new NotImplementedException();
+                var model1 = meta.ComponentModels["0"];
+                var model2 = meta.ComponentModels["1"];
+
+                if (Model.Shoulder == 1 || !Model.Shoulder.HasValue && model1 != 0)
+                {
+                    if (model1 != 0) {
+                        _Load(WhType.PATH, meta.ModelFiles[model1][0].FileDataId.ToString());
+                    }
+
+                    if (meta.Textures != null)
+                    {
+                        foreach (var texture in meta.Textures)
+                            TextureOverrides[texture.Key] = new WhTexture(this, texture.Key, texture.Value);
+                    }
+                }
+                else if (Model.Shoulder == 2 || !Model.Shoulder.HasValue && model2 != 0) {
+                    if (model2 != 0) {
+                        _Load(WhType.PATH, (meta.ModelFiles[model2].Length > 1 ? meta.ModelFiles[model2][1].FileDataId : meta.ModelFiles[model2][0].FileDataId).ToString());
+                    }
+                    if (meta.Textures2 != null)
+                    {
+                        foreach (var texture in meta.Textures2)
+                            TextureOverrides[texture.Key] = new WhTexture(this, texture.Key, texture.Value);
+                    }
+                }
             }
             else if (type == WhType.ITEMVISUAL)
             {
-                // ToDo реализовать все остальное
-                throw new NotImplementedException();
+                //_Load(WhType.PATH, meta.Equipment[ModelIndex]);
+                throw new NotImplementedException("посмотреть чему равен meta.Equipment - массиву или слварю");
             }
             else if (type == WhType.COLLECTION)
             {
-                // ToDo реализовать все остальное
-                throw new NotImplementedException();
+                //if (meta.ComponentModels[componentIndex]) {
+                //    var race = 1;
+                //    var gender = 0;
+                //    var cls = 1;
+                //    if (self.parent) {
+                //        race = self.parent.race;
+                //        gender = self.parent.gender;
+                //        cls = self.parent.class
+                //    }
+                //    var model = meta.ComponentModels[componentIndex];
+                //    if (model && meta.ModelFiles[model]) {
+                //        self._load(Type.PATH, self.selectBestModel(model, gender, cls, race))
+                //    }
+                //    if (meta.Textures) {
+                //        for (i in meta.Textures) {
+                //            self.textureOverrides[i] = new self.Texture(self,parseInt(i),meta.Textures[i])
+                //        }
+                //    }
+                //} else {
+                //    console.log("Attempt to load collection without valid model")
+                //}
             }
             else
             {
-                // ToDo реализовать все остальное
-                throw new NotImplementedException();
+                //if (meta.Creature && meta.Creature.CreatureGeosetData != 0) {
+                //    self.CreatureGeosetData = meta.Creature.CreatureGeosetData
+                //}
+                //if (meta.Textures) {
+                //    for (i in meta.Textures) {
+                //        if (meta.Textures[i] != 0) {
+                //            self.textureOverrides[i] = new self.Texture(self,parseInt(i),meta.Textures[i])
+                //        }
+                //    }
+                //} else if (meta.ComponentTextures && self.parent) {
+                //    var g = self.parent.gender;
+                //    for (i in meta.ComponentTextures) {
+                //        var textures = meta.TextureFiles[meta.ComponentTextures[i]];
+                //        for (var j = 0; j < textures.length; j++) {
+                //            var texture = textures[j];
+                //            if (texture.Gender == g || texture.Gender == 3) {
+                //                self.textureOverrides[i] = new self.Texture(self,parseInt(i),texture.FileDataId)
+                //            }
+                //        }
+                //    }
+                //}
+                //if (self.opts.hd && meta.HDModel) {
+                //    self._load(Type.PATH, meta.HDModel)
+                //} else if (meta.Model) {
+                //    self._load(Type.PATH, meta.Model)
+                //} else if (meta.Race > 0) {
+                //    model = ZamModelViewer.Wow.Races[meta.Race] + ZamModelViewer.Wow.Genders[meta.Gender];
+                //    self.race = meta.Race;
+                //    self.gender = meta.Gender;
+                //    self._load(Type.CHARACTER, model)
+                //}
             }
         }
 
@@ -539,22 +627,25 @@ namespace WowheadModelLoader
                         Indices[i] = r.ReadUInt16();
                 }
 
-                //r.position = ofsAnimations;
-                //var numAnims = r.getInt32();
-                //if (numAnims > 0) {
-                //    self.animations = new Array(numAnims);
-                //    for (i = 0; i < numAnims; ++i) {
-                //        self.animations[i] = new Wow.Animation(r)
-                //    }
-                //}
-                //r.position = ofsAnimLookup;
-                //var numAnimLookup = r.getInt32();
-                //if (numAnimLookup > 0) {
-                //    self.animLookup = new Array(numAnimLookup);
-                //    for (i = 0; i < numAnimLookup; ++i) {
-                //        self.animLookup[i] = r.getInt16()
-                //    }
-                //}
+                r.BaseStream.Seek(ofsAnimations, SeekOrigin.Begin);
+                var numAnims = r.ReadInt32();
+                if (numAnims > 0)
+                {
+                    Animations = new WhAnimation[numAnims];
+
+                    for (int i = 0; i < numAnims; i++)
+                        Animations[i] = new WhAnimation(r);
+                }
+
+                r.BaseStream.Seek(ofsAnimLookup, SeekOrigin.Begin);
+                var numAnimLookup = r.ReadInt32();
+                if (numAnimLookup > 0)
+                {
+                    AnimLookup = new short[numAnimLookup];
+
+                    for (int i = 0; i < numAnimLookup; i++)
+                        AnimLookup[i] = r.ReadInt16();
+                }
 
                 //r.position = ofsBones;
                 //var numBones = r.getInt32();
@@ -564,22 +655,26 @@ namespace WowheadModelLoader
                 //        self.bones[i] = new Wow.Bone(self,i,r)
                 //    }
                 //}
-                //r.position = ofsBoneLookup;
-                //var numBoneLookup = r.getInt32();
-                //if (numBoneLookup > 0) {
-                //    self.boneLookup = new Array(numBoneLookup);
-                //    for (i = 0; i < numBoneLookup; ++i) {
-                //        self.boneLookup[i] = r.getInt16()
-                //    }
-                //}
-                //r.position = ofsKeyBoneLookup;
-                //var numKeyBoneLookup = r.getInt32();
-                //if (numKeyBoneLookup > 0) {
-                //    self.keyBoneLookup = new Array(numKeyBoneLookup);
-                //    for (i = 0; i < numKeyBoneLookup; ++i) {
-                //        self.keyBoneLookup[i] = r.getInt16()
-                //    }
-                //}
+
+                r.BaseStream.Seek(ofsBoneLookup, SeekOrigin.Begin);
+                var numBoneLookup = r.ReadInt32();
+                if (numBoneLookup > 0)
+                {
+                    BoneLookup = new short[numBoneLookup];
+
+                    for (int i = 0; i < numBoneLookup; i++)
+                        BoneLookup[i] = r.ReadInt16();
+                }
+
+                r.BaseStream.Seek(ofsKeyBoneLookup, SeekOrigin.Begin);
+                var numKeyBoneLookup = r.ReadInt32();
+                if (numKeyBoneLookup > 0)
+                {
+                    KeyBoneLookup = new short[numKeyBoneLookup];
+
+                    for (int i = 0; i < numKeyBoneLookup; i++)
+                        KeyBoneLookup[i] = r.ReadInt16();
+                }
 
                 r.BaseStream.Seek(ofsMeshes, SeekOrigin.Begin);
                 var numMeshes = r.ReadInt32();
@@ -648,23 +743,26 @@ namespace WowheadModelLoader
                 //        self.textureAnims[i] = new Wow.TextureAnimation(r)
                 //    }
                 //}
-                //r.position = ofsTexAnimLookup;
-                //var numTexAnimLookup = r.getInt32();
-                //if (numTexAnimLookup > 0) {
-                //    self.textureAnimLookup = new Array(numTexAnimLookup);
-                //    for (i = 0; i < numTexAnimLookup; ++i) {
-                //        self.textureAnimLookup[i] = r.getInt16()
-                //    }
-                //}
 
-                //r.position = ofsTexReplacements;
-                //var numTexReplacements = r.getInt32();
-                //if (numTexReplacements > 0) {
-                //    self.textureReplacements = new Array(numTexReplacements);
-                //    for (i = 0; i < numTexReplacements; ++i) {
-                //        self.textureReplacements[i] = r.getInt16()
-                //    }
-                //}
+                r.BaseStream.Seek(ofsTexAnimLookup, SeekOrigin.Begin);
+                var numTexAnimLookup = r.ReadInt32();
+                if (numTexAnimLookup > 0)
+                {
+                    TextureAnimLookup = new short[numTexAnimLookup];
+
+                    for (int i = 0; i < numTexAnimLookup; i++)
+                        TextureAnimLookup[i] = r.ReadInt16();
+                }
+
+                r.BaseStream.Seek(ofsTexReplacements, SeekOrigin.Begin);
+                var numTexReplacements = r.ReadInt32();
+                if (numTexReplacements > 0)
+                {
+                    TextureReplacements = new short[numTexReplacements];
+
+                    for (int i = 0; i < numTexReplacements; i++)
+                        TextureReplacements[i] = r.ReadInt16();
+                }
 
                 //r.position = ofsAttachments;
                 //var numAttachments = r.getInt32();
@@ -674,14 +772,16 @@ namespace WowheadModelLoader
                 //        self.attachments[i] = new Wow.Attachment(r)
                 //    }
                 //}
-                //r.position = ofsAttachmentLookup;
-                //var numAttachmentLookup = r.getInt32();
-                //if (numAttachmentLookup > 0) {
-                //    self.attachmentLookup = new Array(numAttachmentLookup);
-                //    for (i = 0; i < numAttachmentLookup; ++i) {
-                //        self.attachmentLookup[i] = r.getInt16()
-                //    }
-                //}
+
+                r.BaseStream.Seek(ofsAttachmentLookup, SeekOrigin.Begin);
+                var numAttachmentLookup = r.ReadInt32();
+                if (numAttachmentLookup > 0)
+                {
+                    AttachmentLookup = new short[numAttachmentLookup];
+
+                    for (int i = 0; i < numAttachmentLookup; i++)
+                        AttachmentLookup[i] = r.ReadInt16();
+                }
 
                 //r.position = ofsColors;
                 //var numColors = r.getInt32();
@@ -700,14 +800,16 @@ namespace WowheadModelLoader
                 //        self.alphas[i] = new Wow.Alpha(r)
                 //    }
                 //}
-                //r.position = ofsAlphaLookup;
-                //var numAlphaLookup = r.getInt32();
-                //if (numAlphaLookup > 0) {
-                //    self.alphaLookup = new Array(numAlphaLookup);
-                //    for (i = 0; i < numAlphaLookup; ++i) {
-                //        self.alphaLookup[i] = r.getInt16()
-                //    }
-                //}
+
+                r.BaseStream.Seek(ofsAlphaLookup, SeekOrigin.Begin);
+                var numAlphaLookup = r.ReadInt32();
+                if (numAlphaLookup > 0)
+                {
+                    AlphaLookup = new short[numAlphaLookup];
+
+                    for (int i = 0; i < numAlphaLookup; i++)
+                        AlphaLookup[i] = r.ReadInt16();
+                }
 
                 //r.position = ofsParticleEmitters;
                 //var numParticleEmitters = r.getInt32();
@@ -1259,7 +1361,7 @@ namespace WowheadModelLoader
         private void CompositeTextures()
         {
             // Временно так, потом реализовать все что закоменчего, вместо этого
-            CompositeTexture = SpecialTextures[1];
+            CompositeTexture = SpecialTextures[1].Img;
 
 
 

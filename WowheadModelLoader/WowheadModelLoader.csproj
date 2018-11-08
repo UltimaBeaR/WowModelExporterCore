@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryReaderExtensions.cs" />
     <Compile Include="DataLoaderBase.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="JavaScriptDigger.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="Vec3.cs" />
     <Compile Include="ByteVec4.cs" />
     <Compile Include="Vec4.cs" />
+    <Compile Include="WhAnimation.cs" />
     <Compile Include="WhCharVariationType.cs" />
     <Compile Include="WhClass.cs" />
     <Compile Include="WhCustomFeatures.cs" />

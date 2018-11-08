@@ -15,8 +15,7 @@ namespace WowheadModelLoader.Json
         public int HDModel { get; set; }
 
         public Dictionary<int, uint> Textures { get; set; }
-
-        public object Textures2 { get; set; }
+        public Dictionary<int, uint> Textures2 { get; set; }
 
         // ToDo: Ключи возможно что числа, т.к. при исопльзовании там id текстуры какой то юзается в ключе
         // Я не знаю что приходит - по исползьованию похоже что может быть ModelFile, так как есть испльзование FileDataId
@@ -26,13 +25,14 @@ namespace WowheadModelLoader.Json
 
         public ItemStruct Item { get; set; }
 
-        public object Creature { get; set; }
+        public CreatureStruct Creature { get; set; }
 
         public int RaceFlags { get; set; }
 
         public WhRace Race { get; set; }
         public WhGender Gender { get; set; }
 
+        // ToDo: непонятно из использования это массив строк или словарь строк по ключу int
         public object Equipment { get; set; }
 
         // ToDo: смотрел тип из использования, а не json-а. ключ регион (похоже что int так как идет parseint),
@@ -62,6 +62,15 @@ namespace WowheadModelLoader.Json
             public int[] HideGeosetFemale { get; set; }
             public int[] GeosetGroup { get; set; }
             public object ParticleColor { get; set; }
+        }
+
+        public class CreatureStruct
+        {
+            public int SkinColor { get; set; }
+            public int HairStyle { get; set; }
+            public int HairColor { get; set; }
+            public int FaceType { get; set; }
+            public int FacialHair { get; set; }
         }
     }
 }

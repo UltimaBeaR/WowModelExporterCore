@@ -21,8 +21,12 @@ namespace WowModelExporterTester
                 "161600",
 
                 // плечи
-                //"161621"
+                "161621"
             });
+
+
+            var texture = exporter.GetFirstTexture(model);
+
 
             textBox1.Text = model.Vertices.Length.ToString();
         }

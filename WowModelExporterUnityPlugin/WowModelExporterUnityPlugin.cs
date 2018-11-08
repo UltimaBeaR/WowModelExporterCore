@@ -10,9 +10,25 @@ namespace WowModelExporterUnityPlugin
 {
     public class WowModelExporterUnityPlugin
     {
+        // ToDo: основная модель - перс, у него внутренние модели - итемы.
+        // у каждой модели есть несколько texunits (брать только те у которых show = true)
+        // по сути это материалы из юнити, а модели это игровые объекты(либо меши).
+        // То есть можно на каждую модель создать объект с мешем, внутри этого меша сделать сабмеши по используемым в show(видимых) texunits.
+        // то есть создаем материалы на основе [show] texunits (текстуры исопльзуемые в материале получаются через texunit.gettextures()) и из них же вытаскиваем сабмеши.
+        // далее на каждую модель создаем игровой объект с мешем, пихаем в сабмеши полученные сабмеши с материалом. при этом сабмеши видимо могут шарится, там надо будет
+        // перестраивать меш(вертексы и индексы), так чтобы удалить неиспользуемые куски. то есть должны остаться только те вершины и индексы,
+        // которые используются в видимых texunits (они определяют границы исползуемых индексов, которые определяют используемые вершины)
+
+
+
         public WowModelExporterUnityPlugin()
         {
             _exporter = new WowModelExporter();
+        }
+
+        private Texture2D CreateTextureFromModel(WhModel model)
+        {
+            return CreateTextureFromBitmap(_exporter.GetFirstTexture(model));
         }
 
         public void DoStuff()
@@ -22,10 +38,10 @@ namespace WowModelExporterUnityPlugin
                 "161600",
 
                 // плечи
-                //"161621"
+                "161621"
             });
 
-            var texture = CreateTextureFromBitmap(model.CompositeTexture.Img);
+            var texture = CreateTextureFromModel(model);
 
             var mesh = CreateMesh(model);
 
@@ -34,10 +50,9 @@ namespace WowModelExporterUnityPlugin
             foreach (var item in model.Items)
             {
                 var itemModel = item.Value.Models.First().Model;
-                var itemTexture = itemModel.Materials[1].Texture;
                 var itemMesh = CreateMesh(itemModel);
 
-                var unityItemTexture = CreateTextureFromBitmap(itemTexture.Img);
+                var unityItemTexture = CreateTextureFromModel(itemModel);
                 CreateGameObject("item", itemMesh, unityItemTexture);
             }
         }
