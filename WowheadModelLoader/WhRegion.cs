@@ -25,7 +25,7 @@
         public float W { get; set; }
         public float H { get; set; }
 
-        private static readonly WhRegionOldNew[] Old = new WhRegionOldNew[]
+        public static readonly WhRegionOldNew[] Old = new WhRegionOldNew[]
         {
             new WhRegionOldNew
             {
@@ -115,7 +115,7 @@
             }
         };
 
-        private static readonly WhRegionOldNew[] New = new WhRegionOldNew[]
+        public static readonly WhRegionOldNew[] New = new WhRegionOldNew[]
         {
             new WhRegionOldNew
             {

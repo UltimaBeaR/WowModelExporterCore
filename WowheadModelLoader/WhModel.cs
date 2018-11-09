@@ -75,7 +75,23 @@ namespace WowheadModelLoader
             NpcTexture = null;
             SpecialTextures = new Dictionary<int, WhTexture>();
 
-            //self.bakedTextures = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+            BakedTextures = new Dictionary<WhRegion, Dictionary<int, WhTexture>>()
+            {
+                { (WhRegion)0, new Dictionary<int, WhTexture>() },
+                { (WhRegion)1, new Dictionary<int, WhTexture>() },
+                { (WhRegion)2, new Dictionary<int, WhTexture>() },
+                { (WhRegion)3, new Dictionary<int, WhTexture>() },
+                { (WhRegion)4, new Dictionary<int, WhTexture>() },
+                { (WhRegion)5, new Dictionary<int, WhTexture>() },
+                { (WhRegion)6, new Dictionary<int, WhTexture>() },
+                { (WhRegion)7, new Dictionary<int, WhTexture>() },
+                { (WhRegion)8, new Dictionary<int, WhTexture>() },
+                { (WhRegion)9, new Dictionary<int, WhTexture>() },
+                { (WhRegion)10, new Dictionary<int, WhTexture>() },
+                { (WhRegion)11, new Dictionary<int, WhTexture>() },
+                { (WhRegion)12, new Dictionary<int, WhTexture>() },
+                { (WhRegion)13, new Dictionary<int, WhTexture>() }
+            };
 
             IsHD = false;
 
@@ -196,6 +212,7 @@ namespace WowheadModelLoader
 
         public WhTexture NpcTexture { get; set; }
         public Dictionary<int, WhTexture> SpecialTextures { get; set; }
+        public Dictionary<WhRegion, Dictionary<int, WhTexture>> BakedTextures { get; set; }
 
         public bool IsHD { get; set; }
 
@@ -232,6 +249,8 @@ namespace WowheadModelLoader
                 return;
 
             _Load(Model.Type, Model.Id);
+
+            SetupWhenLoaded();
         }
 
         public int[] GetFallbackRaceGender(WhGender gender, WhRace race, bool isTexture)
@@ -872,8 +891,6 @@ namespace WowheadModelLoader
             //if (self.parent && self.parent.loaded) {
             //    self.parent.updateMeshes()
             //}
-
-            SetupWhenLoaded();
         }
 
         public int GetResolutionVariationType(WhCharVariationType variationType)
@@ -933,30 +950,37 @@ namespace WowheadModelLoader
                     SpecialTextures[1] = new WhTexture(this, 1, skinFeature.textures[0]);
                 }
 
-                //if (underwearFeature) {
-                //    if (underwearFeature.textures[0] != 0 && !self.bakedTextures[Region.LegUpper][1])
-                //        self.bakedTextures[Region.LegUpper][1] = new self.Texture(self,Region.LegUpper,underwearFeature.textures[0]);
-                //    if (underwearFeature.textures[1] != 0 && !self.bakedTextures[Region.TorsoUpper][1])
-                //        self.bakedTextures[Region.TorsoUpper][1] = new self.Texture(self,Region.TorsoUpper,underwearFeature.textures[1])
-                //}
+                if (underwearFeature != null)
+                {
+                    if (underwearFeature.textures[0] != 0 && !BakedTextures[WhRegion.LegUpper].ContainsKey(1))
+                        BakedTextures[WhRegion.LegUpper][1] = new WhTexture(this, (int)WhRegion.LegUpper, underwearFeature.textures[0]);
+                    if (underwearFeature.textures[1] != 0 && !BakedTextures[WhRegion.TorsoUpper].ContainsKey(1))
+                        BakedTextures[WhRegion.TorsoUpper][1] = new WhTexture(this, (int)WhRegion.TorsoUpper, underwearFeature.textures[1]);
+                }
+
                 //if (tattooFeature) {
                 //    var tattooRegion = self.getTattooRegion();
                 //    if (tattooRegion && tattooFeature.textures[0] != 0 && !self.bakedTextures[tattooRegion][1]) {
                 //        self.bakedTextures[tattooRegion][1] = new self.Texture(self,tattooRegion,tattooFeature.textures[0])
                 //    }
                 //}
-                //if (faceFeature) {
-                //    if (faceFeature.textures[0] != 0 && !self.bakedTextures[Region.FaceLower][1])
-                //        self.bakedTextures[Region.FaceLower][1] = new self.Texture(self,Region.FaceLower,faceFeature.textures[0]);
-                //    if (faceFeature.textures[1] != 0 && !self.bakedTextures[Region.FaceUpper][1])
-                //        self.bakedTextures[Region.FaceUpper][1] = new self.Texture(self,Region.FaceUpper,faceFeature.textures[1])
-                //}
-                //if (facialHairFeature) {
-                //    if (facialHairFeature.textures[0] != 0 && !self.bakedTextures[Region.FaceLower][2])
-                //        self.bakedTextures[Region.FaceLower][2] = new self.Texture(self,Region.FaceLower,facialHairFeature.textures[0]);
-                //    if (facialHairFeature.textures[1] != 0 && !self.bakedTextures[Region.FaceUpper][2])
-                //        self.bakedTextures[Region.FaceUpper][2] = new self.Texture(self,Region.FaceUpper,facialHairFeature.textures[1])
-                //}
+
+                if (faceFeature != null)
+                {
+                    if (faceFeature.textures[0] != 0 && !BakedTextures[WhRegion.FaceLower].ContainsKey(1))
+                        BakedTextures[WhRegion.FaceLower][1] = new WhTexture(this, (int)WhRegion.FaceLower, faceFeature.textures[0]);
+                    if (faceFeature.textures[1] != 0 && !BakedTextures[WhRegion.FaceUpper].ContainsKey(1))
+                        BakedTextures[WhRegion.FaceUpper][1] = new WhTexture(this, (int)WhRegion.FaceUpper, faceFeature.textures[1]);
+                }
+
+                if (facialHairFeature != null)
+                {
+                    if (facialHairFeature.textures[0] != 0 && !BakedTextures[WhRegion.FaceLower].ContainsKey(2))
+                        BakedTextures[WhRegion.FaceLower][2] = new WhTexture(this, (int)WhRegion.FaceLower, facialHairFeature.textures[0]);
+                    if (facialHairFeature.textures[1] != 0 && !BakedTextures[WhRegion.FaceUpper].ContainsKey(2))
+                        BakedTextures[WhRegion.FaceUpper][2] = new WhTexture(this, (int)WhRegion.FaceUpper, facialHairFeature.textures[1]);
+                }
+
                 //if (self.currentHairGeoset) {
                 //    if (self.currentHairGeoset.showscalp == 1) {
                 //        hairFeature = self.customFeatures.getFeature(self.getResolutionVariationType(CharVariationType.Hair), 1, self.hairColorIndex)
@@ -970,13 +994,10 @@ namespace WowheadModelLoader
             }
 
             if (skinFeature != null && skinFeature.textures[1] != 0 && !SpecialTextures.ContainsKey(8))
-            {
                 SpecialTextures[8] = new WhTexture(this, 8, skinFeature.textures[1]);
-            }
 
-            //if (hairFeature && hairFeature.textures[0] != 0 && !self.specialTextures[6]) {
-            //    self.specialTextures[6] = new self.Texture(self,6,hairFeature.textures[0])
-            //}
+            if (hairFeature != null && hairFeature.textures[0] != 0 && !SpecialTextures.ContainsKey(6))
+                SpecialTextures[6] = new WhTexture(this, 6, hairFeature.textures[0]);
         }
 
         private void SetupWhenLoaded()
@@ -1360,115 +1381,123 @@ namespace WowheadModelLoader
 
         private void CompositeTextures()
         {
-            // Временно так, потом реализовать все что закоменчего, вместо этого
-            CompositeTexture = SpecialTextures[1].Img;
-
-
-
-
-
-
-
             //var self = this, i, j, Region = ZamModelViewer.Wow.Regions, Classes = ZamModelViewer.Wow.Classes, Slots = ZamModelViewer.Wow.Slots, Races = ZamModelViewer.Wow.Races, item, t;
-            //for (i = 0; i < self.bakedTextures.length; ++i) {
-            //    for (j in self.bakedTextures[i]) {
-            //        if (!self.bakedTextures[i][j].ready())
-            //            return
-            //    }
-            //}
-            //for (i in self.items) {
-            //    item = self.items[i];
-            //    if (!item.loaded) {
-            //        return
-            //    } else if (item.textures) {
-            //        for (j = 0; j < item.textures.length; ++j) {
-            //            if (item.textures[j].texture && !item.textures[j].texture.ready())
-            //                return
-            //        }
-            //    }
-            //}
-            //for (var i in self.specialTextures) {
-            //    if (self.specialTextures[i] && !self.specialTextures[i].ready())
-            //        return
-            //}
-            //if (!self.specialTextures[1])
-            //    return;
-            //if (!self.compositeImage) {
-            //    self.compositeImage = document.createElement("canvas");
-            //    self.compositeImage.width = self.specialTextures[1].mergedImg.width;
-            //    self.compositeImage.height = self.specialTextures[1].mergedImg.height
-            //}
-            //var ctx = self.compositeImage.getContext("2d");
-            //ctx.drawImage(self.specialTextures[1].mergedImg, 0, 0, self.compositeImage.width, self.compositeImage.height);
-            //var w = self.compositeImage.width, h = self.compositeImage.height, regions = Region.old, r;
-            //if (w != h)
-            //    regions = Region.new;
-            //for (i = 1; i <= 3; ++i) {
-            //    if (self.bakedTextures[Region.FaceLower][i]) {
-            //        if (!self.bakedTextures[Region.FaceLower][i].ready())
-            //            return;
-            //        r = regions[Region.FaceLower];
-            //        ctx.drawImage(self.bakedTextures[Region.FaceLower][i].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-            //    }
-            //    if (self.bakedTextures[Region.FaceUpper][i]) {
-            //        if (!self.bakedTextures[Region.FaceUpper][i].ready())
-            //            return;
-            //        r = regions[Region.FaceUpper];
-            //        ctx.drawImage(self.bakedTextures[Region.FaceUpper][i].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-            //    }
-            //}
-            //var drawBra = true, drawPanties = true, uniqueSlot;
-            //for (i in self.items) {
-            //    uniqueSlot = self.items[i].uniqueSlot;
-            //    if (uniqueSlot == Slots.SHIRT || uniqueSlot == Slots.CHEST || uniqueSlot == Slots.TABARD)
-            //        drawBra = false;
-            //    if (uniqueSlot == Slots.PANTS)
-            //        drawPanties = false
-            //}
-            //if (drawBra && self.bakedTextures[Region.TorsoUpper][1]) {
-            //    if (!self.bakedTextures[Region.TorsoUpper][1].ready())
-            //        return;
-            //    r = regions[Region.TorsoUpper];
-            //    ctx.drawImage(self.bakedTextures[Region.TorsoUpper][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-            //}
-            //if (drawPanties && self.bakedTextures[Region.LegUpper][1]) {
-            //    if (!self.bakedTextures[Region.LegUpper][1].ready())
-            //        return;
-            //    r = regions[Region.LegUpper];
-            //    ctx.drawImage(self.bakedTextures[Region.LegUpper][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-            //}
-            //if (self.TattoosIndex > 0) {
-            //    var tattooRegion = self.getTattooRegion();
-            //    if (tattooRegion && self.bakedTextures[tattooRegion][1]) {
-            //        if (!self.bakedTextures[tattooRegion][1].ready())
-            //            return;
-            //        r = regions[tattooRegion];
-            //        ctx.drawImage(self.bakedTextures[tattooRegion][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-            //    }
-            //}
-            //var items = [];
-            //for (i in self.items) {
-            //    items.push(self.items[i])
-            //}
-            //items.sort(function(a, b) {
-            //    return a.sortValue - b.sortValue
-            //});
-            //for (i = 0; i < items.length; ++i) {
-            //    item = items[i];
-            //    if (!item.textures)
-            //        continue;
-            //    for (j = 0; j < item.textures.length; ++j) {
-            //        t = item.textures[j];
-            //        if (t.gender != self.gender || !t.texture || !t.texture.ready())
-            //            continue;
-            //        if (t.region != Region.Base) {
-            //            if ((self.meta.RaceFlags & 2) != 0 && t.region == Region.Foot)
-            //                continue;
-            //            r = regions[t.region];
-            //            ctx.drawImage(t.texture.mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-            //        }
-            //    }
-            //}
+
+            for (int i = 0; i < BakedTextures.Count; i++)
+            {
+                foreach (var bakedTexture in BakedTextures[(WhRegion)i].Values)
+                {
+                    if (!bakedTexture.Ready())
+                        return;
+                }
+            }
+
+            foreach (var item in Items.Values)
+            {
+                if (!item.Loaded)
+                    return;
+                else if (item.Textures != null)
+                {
+                    for (int j = 0; j < item.Textures.Count; j++)
+                    {
+                        if (item.Textures[j].Texture != null && !item.Textures[j].Texture.Ready())
+                            return;
+                    }
+                }
+            }
+
+            foreach (var specialTexture in SpecialTextures.Values)
+            {
+                if (specialTexture != null && !specialTexture.Ready())
+                    return;
+            }
+
+            if (SpecialTextures[1] == null)
+                return;
+
+            if (CompositeTexture == null)
+                CompositeTexture = new Bitmap(SpecialTextures[1].Img.Width, SpecialTextures[1].Img.Height);
+
+            using (var graphics = Graphics.FromImage(CompositeTexture))
+            {
+                graphics.DrawImage(SpecialTextures[1].Img, new PointF(0, 0));
+
+                var w = CompositeTexture.Width;
+                var h = CompositeTexture.Height;
+                var regions = WhRegionOldNew.Old;
+
+                if (w != h)
+                    regions = WhRegionOldNew.New;
+
+                //for (i = 1; i <= 3; ++i) {
+                //    if (self.bakedTextures[Region.FaceLower][i]) {
+                //        if (!self.bakedTextures[Region.FaceLower][i].ready())
+                //            return;
+                //        r = regions[Region.FaceLower];
+                //        ctx.drawImage(self.bakedTextures[Region.FaceLower][i].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
+                //    }
+                //    if (self.bakedTextures[Region.FaceUpper][i]) {
+                //        if (!self.bakedTextures[Region.FaceUpper][i].ready())
+                //            return;
+                //        r = regions[Region.FaceUpper];
+                //        ctx.drawImage(self.bakedTextures[Region.FaceUpper][i].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
+                //    }
+                //}
+
+                //var drawBra = true, drawPanties = true, uniqueSlot;
+                //for (i in self.items) {
+                //    uniqueSlot = self.items[i].uniqueSlot;
+                //    if (uniqueSlot == Slots.SHIRT || uniqueSlot == Slots.CHEST || uniqueSlot == Slots.TABARD)
+                //        drawBra = false;
+                //    if (uniqueSlot == Slots.PANTS)
+                //        drawPanties = false
+                //}
+                //if (drawBra && self.bakedTextures[Region.TorsoUpper][1]) {
+                //    if (!self.bakedTextures[Region.TorsoUpper][1].ready())
+                //        return;
+                //    r = regions[Region.TorsoUpper];
+                //    ctx.drawImage(self.bakedTextures[Region.TorsoUpper][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
+                //}
+                //if (drawPanties && self.bakedTextures[Region.LegUpper][1]) {
+                //    if (!self.bakedTextures[Region.LegUpper][1].ready())
+                //        return;
+                //    r = regions[Region.LegUpper];
+                //    ctx.drawImage(self.bakedTextures[Region.LegUpper][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
+                //}
+                //if (self.TattoosIndex > 0) {
+                //    var tattooRegion = self.getTattooRegion();
+                //    if (tattooRegion && self.bakedTextures[tattooRegion][1]) {
+                //        if (!self.bakedTextures[tattooRegion][1].ready())
+                //            return;
+                //        r = regions[tattooRegion];
+                //        ctx.drawImage(self.bakedTextures[tattooRegion][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
+                //    }
+                //}
+                //var items = [];
+                //for (i in self.items) {
+                //    items.push(self.items[i])
+                //}
+                //items.sort(function(a, b) {
+                //    return a.sortValue - b.sortValue
+                //});
+                //for (i = 0; i < items.length; ++i) {
+                //    item = items[i];
+                //    if (!item.textures)
+                //        continue;
+                //    for (j = 0; j < item.textures.length; ++j) {
+                //        t = item.textures[j];
+                //        if (t.gender != self.gender || !t.texture || !t.texture.ready())
+                //            continue;
+                //        if (t.region != Region.Base) {
+                //            if ((self.meta.RaceFlags & 2) != 0 && t.region == Region.Foot)
+                //                continue;
+                //            r = regions[t.region];
+                //            ctx.drawImage(t.texture.mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
+                //        }
+                //    }
+                //}
+            }
+
             //var gl = self.renderer.context;
             //if (self.compositeTexture)
             //    gl.deleteTexture(self.compositeTexture);
