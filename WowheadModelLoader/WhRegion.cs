@@ -1,4 +1,6 @@
-﻿namespace WowheadModelLoader
+﻿using System.Collections.Generic;
+
+namespace WowheadModelLoader
 {
     public enum WhRegion
     {
@@ -25,190 +27,190 @@
         public float W { get; set; }
         public float H { get; set; }
 
-        public static readonly WhRegionOldNew[] Old = new WhRegionOldNew[]
+        public static readonly Dictionary<WhRegion, WhRegionOldNew> Old = new Dictionary<WhRegion, WhRegionOldNew>()
         {
-            new WhRegionOldNew
+            { (WhRegion)0, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0,
                 W= 0.5f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)1, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0.25f,
                 W= 0.5f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)2, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0.5f,
                 W= 0.5f,
                 H= 0.125f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)3, new WhRegionOldNew
             {
                 X= 0.5f,
                 Y= 0,
                 W= 0.5f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)4, new WhRegionOldNew
             {
                 X= 0.5f,
                 Y= 0.25f,
                 W= 0.5f,
                 H= 0.125f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)5, new WhRegionOldNew
             {
                 X= 0.5f,
                 Y= 0.375f,
                 W= 0.5f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)6, new WhRegionOldNew
             {
                 X= 0.5f,
                 Y= 0.625f,
                 W= 0.5f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)7, new WhRegionOldNew
             {
                 X= 0.5f,
                 Y= 0.875f,
                 W= 0.5f,
                 H= 0.125f
-            },
-            new WhRegionOldNew {},
-            new WhRegionOldNew
+            } },
+            { (WhRegion)8, new WhRegionOldNew {} },
+            { (WhRegion)9, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0.625f,
                 W= 0.5f,
                 H= 0.125f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)10, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0.75f,
                 W= 0.5f,
                 H= 0.25f
-            },
-            new WhRegionOldNew {},
-            new WhRegionOldNew
+            } },
+            { (WhRegion)11, new WhRegionOldNew {} },
+            { (WhRegion)12, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0,
                 W= 1,
                 H= 1
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)13, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0,
                 W= 1,
                 H= 1
-            }
+            } }
         };
 
-        public static readonly WhRegionOldNew[] New = new WhRegionOldNew[]
+        public static readonly Dictionary<WhRegion, WhRegionOldNew> New = new Dictionary<WhRegion, WhRegionOldNew>()
         {
-            new WhRegionOldNew
+            { (WhRegion)0, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0,
                 W= 0.25f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)1, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0.25f,
                 W= 0.25f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)2, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0.5f,
                 W= 0.25f,
                 H= 0.125f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)3, new WhRegionOldNew
             {
                 X= 0.25f,
                 Y= 0,
                 W= 0.25f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)4, new WhRegionOldNew
             {
                 X= 0.25f,
                 Y= 0.25f,
                 W= 0.25f,
                 H= 0.125f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)5, new WhRegionOldNew
             {
                 X= 0.25f,
                 Y= 0.375f,
                 W= 0.25f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)6, new WhRegionOldNew
             {
                 X= 0.25f,
                 Y= 0.625f,
                 W= 0.25f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)7, new WhRegionOldNew
             {
                 X= 0.25f,
                 Y= 0.875f,
                 W= 0.25f,
                 H= 0.125f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)8, new WhRegionOldNew
             {
                 X= 0.75f,
                 Y= 0.75f,
                 W= 0.25f,
                 H= 0.25f
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)9, new WhRegionOldNew
             {
                 X= 0.5f,
                 Y= 0,
                 W= 0.5f,
                 H= 1
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)10, new WhRegionOldNew
             {
                 X= 0.5f,
                 Y= 0,
                 W= 0.5f,
                 H= 1
-            },
-            new WhRegionOldNew {},
-            new WhRegionOldNew
+            } },
+            { (WhRegion)11, new WhRegionOldNew {} },
+            { (WhRegion)12, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0,
                 W= 0.5f,
                 H= 1
-            },
-            new WhRegionOldNew
+            } },
+            { (WhRegion)13, new WhRegionOldNew
             {
                 X= 0,
                 Y= 0,
                 W= 1,
                 H= 1
-            }
+            } }
         };
     }
 }

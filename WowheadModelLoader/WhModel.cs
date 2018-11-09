@@ -1381,8 +1381,6 @@ namespace WowheadModelLoader
 
         private void CompositeTextures()
         {
-            //var self = this, i, j, Region = ZamModelViewer.Wow.Regions, Classes = ZamModelViewer.Wow.Classes, Slots = ZamModelViewer.Wow.Slots, Races = ZamModelViewer.Wow.Races, item, t;
-
             for (int i = 0; i < BakedTextures.Count; i++)
             {
                 foreach (var bakedTexture in BakedTextures[(WhRegion)i].Values)
@@ -1429,41 +1427,54 @@ namespace WowheadModelLoader
                 if (w != h)
                     regions = WhRegionOldNew.New;
 
-                //for (i = 1; i <= 3; ++i) {
-                //    if (self.bakedTextures[Region.FaceLower][i]) {
-                //        if (!self.bakedTextures[Region.FaceLower][i].ready())
-                //            return;
-                //        r = regions[Region.FaceLower];
-                //        ctx.drawImage(self.bakedTextures[Region.FaceLower][i].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-                //    }
-                //    if (self.bakedTextures[Region.FaceUpper][i]) {
-                //        if (!self.bakedTextures[Region.FaceUpper][i].ready())
-                //            return;
-                //        r = regions[Region.FaceUpper];
-                //        ctx.drawImage(self.bakedTextures[Region.FaceUpper][i].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-                //    }
-                //}
+                for (int i = 1; i <= 3; ++i)
+                {
+                    if (BakedTextures[WhRegion.FaceLower].ContainsKey(i))
+                    {
+                        if (!BakedTextures[WhRegion.FaceLower][i].Ready())
+                            return;
 
-                //var drawBra = true, drawPanties = true, uniqueSlot;
-                //for (i in self.items) {
-                //    uniqueSlot = self.items[i].uniqueSlot;
-                //    if (uniqueSlot == Slots.SHIRT || uniqueSlot == Slots.CHEST || uniqueSlot == Slots.TABARD)
-                //        drawBra = false;
-                //    if (uniqueSlot == Slots.PANTS)
-                //        drawPanties = false
-                //}
-                //if (drawBra && self.bakedTextures[Region.TorsoUpper][1]) {
-                //    if (!self.bakedTextures[Region.TorsoUpper][1].ready())
-                //        return;
-                //    r = regions[Region.TorsoUpper];
-                //    ctx.drawImage(self.bakedTextures[Region.TorsoUpper][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-                //}
-                //if (drawPanties && self.bakedTextures[Region.LegUpper][1]) {
-                //    if (!self.bakedTextures[Region.LegUpper][1].ready())
-                //        return;
-                //    r = regions[Region.LegUpper];
-                //    ctx.drawImage(self.bakedTextures[Region.LegUpper][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-                //}
+                        DrawImage(graphics, BakedTextures[WhRegion.FaceLower][i].Img, w, h, regions[WhRegion.FaceLower]);
+                    }
+
+                    if (BakedTextures[WhRegion.FaceUpper].ContainsKey(i))
+                    {
+                        if (!BakedTextures[WhRegion.FaceUpper][i].Ready())
+                            return;
+
+                        DrawImage(graphics, BakedTextures[WhRegion.FaceUpper][i].Img, w, h, regions[WhRegion.FaceUpper]);
+                    }
+                }
+
+                var drawBra = true;
+                var drawPanties = true;
+                WhSlot uniqueSlot;
+
+                foreach (var item in Items.Values)
+                {
+                    uniqueSlot = item.UniqueSlot;
+                    if (uniqueSlot == WhSlot.SHIRT || uniqueSlot == WhSlot.CHEST || uniqueSlot == WhSlot.TABARD)
+                        drawBra = false;
+                    if (uniqueSlot == WhSlot.PANTS)
+                        drawPanties = false;
+                }
+
+                if (drawBra && BakedTextures[WhRegion.TorsoUpper].ContainsKey(1))
+                {
+                    if (!BakedTextures[WhRegion.TorsoUpper][1].Ready())
+                        return;
+
+                    DrawImage(graphics, BakedTextures[WhRegion.TorsoUpper][1].Img, w, h, regions[WhRegion.TorsoUpper]);
+                }
+
+                if (drawPanties && BakedTextures[WhRegion.LegUpper].ContainsKey(1))
+                {
+                    if (!BakedTextures[WhRegion.LegUpper][1].Ready())
+                        return;
+
+                    DrawImage(graphics, BakedTextures[WhRegion.LegUpper][1].Img, w, h, regions[WhRegion.LegUpper]);
+                }
+
                 //if (self.TattoosIndex > 0) {
                 //    var tattooRegion = self.getTattooRegion();
                 //    if (tattooRegion && self.bakedTextures[tattooRegion][1]) {
@@ -1473,40 +1484,43 @@ namespace WowheadModelLoader
                 //        ctx.drawImage(self.bakedTextures[tattooRegion][1].mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
                 //    }
                 //}
-                //var items = [];
-                //for (i in self.items) {
-                //    items.push(self.items[i])
-                //}
-                //items.sort(function(a, b) {
-                //    return a.sortValue - b.sortValue
-                //});
-                //for (i = 0; i < items.length; ++i) {
-                //    item = items[i];
-                //    if (!item.textures)
-                //        continue;
-                //    for (j = 0; j < item.textures.length; ++j) {
-                //        t = item.textures[j];
-                //        if (t.gender != self.gender || !t.texture || !t.texture.ready())
-                //            continue;
-                //        if (t.region != Region.Base) {
-                //            if ((self.meta.RaceFlags & 2) != 0 && t.region == Region.Foot)
-                //                continue;
-                //            r = regions[t.region];
-                //            ctx.drawImage(t.texture.mergedImg, w * r.x, h * r.y, w * r.w, h * r.h)
-                //        }
-                //    }
-                //}
+
+                var items = Items.Values.ToList();
+                items.Sort((a, b) => a.SortValue - b.SortValue);
+
+                foreach (var item in items)
+                {
+                    if (item.Textures == null)
+                        continue;
+
+                    foreach (var t in item.Textures)
+                    {
+                        if (t.Gender != Gender || t.Texture == null || !t.Texture.Ready())
+                            continue;
+
+                        if (t.Region != WhRegion.Base)
+                        {
+                            if ((Meta.RaceFlags & 2) != 0 && t.Region == WhRegion.Foot)
+                                continue;
+
+                            DrawImage(graphics, t.Texture.Img, w, h, regions[t.Region]);
+                        }
+                    }
+                }
             }
 
-            //var gl = self.renderer.context;
-            //if (self.compositeTexture)
-            //    gl.deleteTexture(self.compositeTexture);
-            //self.compositeTexture = gl.createTexture();
-            //gl.bindTexture(gl.TEXTURE_2D, self.compositeTexture);
-            //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, self.compositeImage);
-            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-
             NeedsCompositing = false;
+        }
+
+        private static void DrawImage(Graphics graphics, Bitmap image, int sourceWidth, int sourceHeight, WhRegionOldNew region)
+        {
+            graphics.DrawImage(image, new RectangleF()
+            {
+                X = sourceWidth * region.X,
+                Y = sourceHeight * region.Y,
+                Width = sourceWidth * region.W,
+                Height = sourceHeight * region.H
+            });
         }
 
         public void LoadItems(WhViewerOptions.Item[] items)

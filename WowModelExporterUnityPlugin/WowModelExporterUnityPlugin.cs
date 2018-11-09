@@ -38,7 +38,28 @@ namespace WowModelExporterUnityPlugin
                 "161600",
 
                 // плечи
-                "161621"
+                "161621",
+
+                // плащ
+                "163365",
+
+                // чест
+                "161602",
+
+                // брасы
+                "161629",
+
+                // руки
+                "161610",
+
+                // пояс
+                "161624",
+
+                // ноги
+                "161616",
+
+                // ступни
+                "161605"
             });
 
             var texture = CreateTextureFromModel(model);
@@ -49,6 +70,9 @@ namespace WowModelExporterUnityPlugin
 
             foreach (var item in model.Items)
             {
+                if (item.Value.Models == null || !item.Value.Models.Any())
+                    continue;
+
                 var itemModel = item.Value.Models.First().Model;
                 var itemMesh = CreateMesh(itemModel);
 
@@ -76,9 +100,14 @@ namespace WowModelExporterUnityPlugin
 
             foreach (var material in renderer.materials)
             {
+                // Smoothness
+                material.SetFloat("_Glossiness", 0);
+
                 //StandardShaderUtils.ChangeRenderMode(material, StandardShaderUtils.BlendMode.Transparent);
                 //material.color = new UnityEngine.Color(Random.value, Random.value, Random.value, 0.5f);
                 material.SetTexture("_MainTex", mainTexture);
+
+
             }
 
 
