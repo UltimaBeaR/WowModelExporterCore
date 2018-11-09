@@ -15,13 +15,6 @@ namespace WowheadModelLoader
     {
         public WhModel(WhViewerOptions viewerOptions, WhModelInfo model, int index, bool skipLoad = false)
         {
-            // Это я делать не буду, так как оно ставится только тут, нафига мне это если я могу напрямую использовать WhTexture (ZamModelViewer.Wow.Texture)
-            // в js файле (в методах LoadMeta и Setup этого класса) при этом есть использование через new self.Texture, по сути аналогично new ZamModelViewer.Wow.Texture
-            //self.Texture = ZamModelViewer.Wow.Texture;
-
-            //self.renderer = renderer;
-            //self.viewer = viewer;
-
             Model = model;
             ModelIndex = index;
             ModelPath = null;
@@ -55,10 +48,9 @@ namespace WowheadModelLoader
             FaceIndex = 0;
             FeaturesIndex = 0;
             FeaturesColorIndex = 0;
-
-            //self.HornsIndex = 0;
-            //self.EyePatchIndex = 0;
-            //self.TattoosIndex = 0;
+            HornsIndex = 0;
+            EyePatchIndex = 0;
+            TattoosIndex = 0;
 
             Parent = Model.Parent;
 
@@ -95,8 +87,8 @@ namespace WowheadModelLoader
 
             IsHD = false;
 
-            //self.sheathMain = -1;
-            //self.sheathOff = -1;
+            SheathMain = -1;
+            SheathOff = -1;
 
             NumGeosets = 29;
             Geosets = new ushort[NumGeosets];
@@ -196,7 +188,11 @@ namespace WowheadModelLoader
         public int HairColorIndex { get; set; }
         public int FaceIndex { get; set; }
         public int FeaturesIndex { get; set; }
+        public int FaceColorIndex { get; set; }
         public int FeaturesColorIndex { get; set; }
+        public int HornsIndex { get; set; }
+        public int EyePatchIndex { get; set; }
+        public int TattoosIndex { get; set; }
 
         public WhModel Parent { get; set; }
 
@@ -215,6 +211,9 @@ namespace WowheadModelLoader
         public Dictionary<WhRegion, Dictionary<int, WhTexture>> BakedTextures { get; set; }
 
         public bool IsHD { get; set; }
+
+        public int SheathMain { get; set; }
+        public int SheathOff { get; set; }
 
         public int NumGeosets { get; set; }
         public ushort[] Geosets { get; set; }
@@ -242,6 +241,15 @@ namespace WowheadModelLoader
         public short[] TextureReplacements { get; set; }
         public short[] AttachmentLookup { get; set; }
         public short[] AlphaLookup { get; set; }
+
+        public WhHairGeosets HairGeosets { get; set; }
+        public WhJsonHairGeoset CurrentHairGeoset { get; set; }
+
+        public WhFacialHairStyles FacialHairStyles { get; set; }
+
+        public WhModel HornsModel { get; set; }
+
+        public List<WhTexUnit> SortedTexUnits { get; set; }
 
         public void Load()
         {
@@ -333,27 +341,23 @@ namespace WowheadModelLoader
 
                 LoadAndHandle_MetaCharacterCustomization(meta.Race, meta.Gender);
 
-                /*
-                if (self.opts.sheathMain)
-                    self.sheathMain = self.opts.sheathMain;
-                if (self.opts.sheathOff)
-                    self.sheathOff = self.opts.sheathOff;
-                if (self.isHD && self.meta.Creature && self.meta.Creature.HDTexture) {
-                    self.npcTexture = new self.Texture(self,-1,self.meta.Creature.HDTexture)
-                } else if (self.meta.Creature && self.meta.Creature.Texture) {
-                    self.npcTexture = new self.Texture(self,-1,self.meta.Creature.Texture)
-                }
-                */
+                if (Opts.SheathMain != 0)
+                    SheathMain = Opts.SheathMain;
+                if (Opts.SheathOff != 0)
+                    SheathOff = Opts.SheathOff;
+
+                if (IsHD && Meta.Creature != null && Meta.Creature.HDTexture != 0)
+                    NpcTexture = new WhTexture(this, -1, Meta.Creature.HDTexture);
+                else if (Meta.Creature != null && Meta.Creature.Texture != 0)
+                    NpcTexture = new WhTexture(this, -1, Meta.Creature.Texture);
 
                 Race = meta.Race;
                 Gender = meta.Gender;
 
                 _Load(WhType.PATH, model.ToString());
 
-                /*
-                if (self.meta.Equipment) {
-                    self.loadItems(self.meta.Equipment)
-                }*/
+                if (Meta.Equipment != null)
+                    LoadItems(Meta.GetEquipmentAsItemObjects());
 
                 if (Opts.Items != null)
                     LoadItems(Opts.Items);
@@ -364,34 +368,32 @@ namespace WowheadModelLoader
                     HairColorIndex = Meta.Creature.HairColor;
                     FaceIndex = Meta.Creature.FaceType;
                     FeaturesIndex = Meta.Creature.FacialHair;
+                    FaceColorIndex = HairColorIndex;
 
-                    // Хз зачем это, он все равно нигде не исползуется
-                    //FaceColorIndex = HairColorIndex;
-
-                    //self.HornsIndex = 0;
-                    //self.EyePatchIndex = 0;
-                    //self.TattoosIndex = 0
+                    HornsIndex = 0;
+                    EyePatchIndex = 0;
+                    TattoosIndex = 0;
                 }
                 else
                 {
-                    //if (self.opts.sk)
-                    //    self.skinIndex = parseInt(self.opts.sk);
-                    //if (self.opts.ha)
-                    //    self.hairIndex = parseInt(self.opts.ha);
-                    //if (self.opts.hc)
-                    //    self.hairColorIndex = parseInt(self.opts.hc);
-                    //if (self.opts.fa)
-                    //    self.faceIndex = parseInt(self.opts.fa);
-                    //if (self.opts.fh)
-                    //    self.featuresIndex = parseInt(self.opts.fh);
-                    //if (self.opts.fc)
-                    //    self.faceColorIndex = parseInt(self.opts.fc);
-                    //if (self.opts.ho)
-                    //    self.HornsIndex = parseInt(self.opts.ho);
-                    //if (self.opts.ep)
-                    //    self.EyePatchIndex = parseInt(self.opts.ep);
-                    //if (self.opts.ta)
-                    //    self.TattoosIndex = parseInt(self.opts.ta);
+                    if (Opts.sk != 0)
+                        SkinIndex = Opts.sk;
+                    if (Opts.ha != 0)
+                        HairIndex = Opts.ha;
+                    if (Opts.hc != 0)
+                        HairColorIndex = Opts.hc;
+                    if (Opts.fa != 0)
+                        FaceIndex = Opts.fa;
+                    if (Opts.fh != 0)
+                        FeaturesIndex = Opts.fh;
+                    if (Opts.fc != 0)
+                        FaceColorIndex = Opts.fc;
+                    if (Opts.ho != 0)
+                        HornsIndex = Opts.ho;
+                    if (Opts.ep != 0)
+                        EyePatchIndex = Opts.ep;
+                    if (Opts.ta != 0)
+                        TattoosIndex = Opts.ta;
                 }
             }
             else if (type == WhType.HELM)
@@ -448,67 +450,73 @@ namespace WowheadModelLoader
                 }
             }
             else if (type == WhType.ITEMVISUAL)
-            {
-                //_Load(WhType.PATH, meta.Equipment[ModelIndex]);
-                throw new NotImplementedException("посмотреть чему равен meta.Equipment - массиву или слварю");
-            }
+                _Load(WhType.PATH, meta.GetEquipmentAsStringIds()[ModelIndex]);
             else if (type == WhType.COLLECTION)
             {
-                //if (meta.ComponentModels[componentIndex]) {
-                //    var race = 1;
-                //    var gender = 0;
-                //    var cls = 1;
-                //    if (self.parent) {
-                //        race = self.parent.race;
-                //        gender = self.parent.gender;
-                //        cls = self.parent.class
-                //    }
-                //    var model = meta.ComponentModels[componentIndex];
-                //    if (model && meta.ModelFiles[model]) {
-                //        self._load(Type.PATH, self.selectBestModel(model, gender, cls, race))
-                //    }
-                //    if (meta.Textures) {
-                //        for (i in meta.Textures) {
-                //            self.textureOverrides[i] = new self.Texture(self,parseInt(i),meta.Textures[i])
-                //        }
-                //    }
-                //} else {
-                //    console.log("Attempt to load collection without valid model")
-                //}
+                if (meta.ComponentModels.ContainsKey(componentIndex.ToString()))
+                {
+                    var race = WhRace.HUMAN;
+                    var gender = WhGender.MALE;
+                    var cls = WhClass.WARRIOR;
+
+                    if (Parent != null)
+                    {
+                        race = Parent.Race;
+                        gender = Parent.Gender;
+                        cls = Parent.Class;
+                    }
+
+                    model = meta.ComponentModels[componentIndex.ToString()];
+
+                    if (model != 0 && meta.ModelFiles[model] != null)
+                        _Load(WhType.PATH, SelectBestModel(model, gender, cls, race).ToString());
+                    if (meta.Textures != null) {
+                        foreach (var textureInMetaTextures in meta.Textures)
+                            TextureOverrides[textureInMetaTextures.Key] = new WhTexture(this, textureInMetaTextures.Key, textureInMetaTextures.Value);
+                    }
+                } else {
+                    System.Diagnostics.Debug.WriteLine("Attempt to load collection without valid model");
+                }
             }
             else
             {
-                //if (meta.Creature && meta.Creature.CreatureGeosetData != 0) {
-                //    self.CreatureGeosetData = meta.Creature.CreatureGeosetData
-                //}
-                //if (meta.Textures) {
-                //    for (i in meta.Textures) {
-                //        if (meta.Textures[i] != 0) {
-                //            self.textureOverrides[i] = new self.Texture(self,parseInt(i),meta.Textures[i])
-                //        }
-                //    }
-                //} else if (meta.ComponentTextures && self.parent) {
-                //    var g = self.parent.gender;
-                //    for (i in meta.ComponentTextures) {
-                //        var textures = meta.TextureFiles[meta.ComponentTextures[i]];
-                //        for (var j = 0; j < textures.length; j++) {
-                //            var texture = textures[j];
-                //            if (texture.Gender == g || texture.Gender == 3) {
-                //                self.textureOverrides[i] = new self.Texture(self,parseInt(i),texture.FileDataId)
-                //            }
-                //        }
-                //    }
-                //}
-                //if (self.opts.hd && meta.HDModel) {
-                //    self._load(Type.PATH, meta.HDModel)
-                //} else if (meta.Model) {
-                //    self._load(Type.PATH, meta.Model)
-                //} else if (meta.Race > 0) {
-                //    model = ZamModelViewer.Wow.Races[meta.Race] + ZamModelViewer.Wow.Genders[meta.Gender];
-                //    self.race = meta.Race;
-                //    self.gender = meta.Gender;
-                //    self._load(Type.CHARACTER, model)
-                //}
+                if (meta.Creature != null && meta.Creature.CreatureGeosetData != 0)
+                    CreatureGeosetData = meta.Creature.CreatureGeosetData;
+
+                if (meta.Textures != null)
+                {
+                    foreach (var textureInMetaTextures in meta.Textures)
+                    {
+                        if (textureInMetaTextures.Value != 0)
+                            TextureOverrides[textureInMetaTextures.Key] = new WhTexture(this, textureInMetaTextures.Key, textureInMetaTextures.Value);
+                    }
+                }
+                else if (meta.ComponentTextures != null && Parent != null)
+                {
+                    var g = Parent.Gender;
+                    foreach (var componentTexture in meta.ComponentTextures)
+                    {
+                        var textures = meta.TextureFiles[componentTexture.Value];
+                        for (var j = 0; j < textures.Length; j++)
+                        {
+                            var texture = textures[j];
+                            if (texture.Gender == g || texture.Gender == WhGender.Undefined3)
+                                TextureOverrides[(int)componentTexture.Key] = new WhTexture(this, (int)componentTexture.Key, texture.FileDataId);
+                        }
+                    }
+                }
+
+                if (Opts.Hd && meta.HDModel != 0)
+                    _Load(WhType.PATH, meta.HDModel.ToString());
+                else if (meta.Model != 0)
+                    _Load(WhType.PATH, meta.Model.ToString());
+                else if ((int)meta.Race > 0)
+                {
+                    var sModel = meta.Race.GetStringIdentifier() + meta.Gender.GetStringIdentifier();
+                    Race = meta.Race;
+                    Gender = meta.Gender;
+                    _Load(WhType.CHARACTER, sModel);
+                }
             }
         }
 
@@ -854,19 +862,17 @@ namespace WowheadModelLoader
 
         public void OnLoaded()
         {
-            //var self = this, i, Slots = ZamModelViewer.Wow.Slots;
-
             if (TexUnits != null) {
                 for (int i = 0; i < TexUnits.Length; ++i)
                     TexUnits[i].Setup(this);
 
-                //self.sortedTexUnits = self.texUnits.concat();
-                //self.sortedTexUnits.sort(function(a, b) {
-                //    if (a.meshId == b.meshId)
-                //        return a.priorityPlane - b.priorityPlane;
-                //    else
-                //        return a.meshId - b.meshId
-                //})
+                SortedTexUnits = TexUnits.ToList();
+                SortedTexUnits.Sort((a, b) => {
+                    if (a.MeshId == b.MeshId)
+                        return a.PriorityPlane - b.PriorityPlane;
+                    else
+                        return a.MeshId - b.MeshId;
+                });
             }
 
             //if (self.mount) {
@@ -878,6 +884,7 @@ namespace WowheadModelLoader
             //} else {
             //    self.setAnimation("Stand")
             //}
+
             //self.updateBuffers(true);
             //self.updateBounds();
 
@@ -888,9 +895,9 @@ namespace WowheadModelLoader
             //if (self.isMount && self.parent.loaded) {
             //    self.parent.updateBounds()
             //}
-            //if (self.parent && self.parent.loaded) {
-            //    self.parent.updateMeshes()
-            //}
+
+            if (Parent != null && Parent.Loaded)
+                Parent.UpdateMeshes();
         }
 
         public int GetResolutionVariationType(WhCharVariationType variationType)
@@ -902,7 +909,7 @@ namespace WowheadModelLoader
         {
             if (Model.Type != WhType.CHARACTER && Model.Type != WhType.NPC && Model.Type != WhType.HUMANOIDNPC || (int)Race < 1)
             {
-                //self.applyMonsterGeosets();
+                ApplyMonsterGeosets();
                 return;
             }
 
@@ -915,11 +922,11 @@ namespace WowheadModelLoader
 
             if (CustomFeatures != null)
             {
-                skinFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Skin).ToString(), 0, SkinIndex);
-                faceFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Face).ToString(), FaceIndex, SkinIndex);
-                facialHairFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.FacialHair).ToString(), FeaturesIndex, FeaturesColorIndex);
-                hairFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Hair).ToString(), HairIndex, HairColorIndex);
-                underwearFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Underwear).ToString(), 0, SkinIndex);
+                skinFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Skin), 0, SkinIndex);
+                faceFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Face), FaceIndex, SkinIndex);
+                facialHairFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.FacialHair), FeaturesIndex, FeaturesColorIndex);
+                hairFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Hair), HairIndex, HairColorIndex);
+                underwearFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Underwear), 0, SkinIndex);
 
                 //var tattooData = Wow.TattooDataForRace[self.race];
                 //if (tattooData)
@@ -934,13 +941,12 @@ namespace WowheadModelLoader
                 //}
             }
 
-            //if (self.hairGeosets) {
-            //    self.currentHairGeoset = self.hairGeosets.getHairGeosetByVariationId(CharVariationType.Hair, self.hairIndex)
-            //}
+            if (HairGeosets != null)
+            {
+                CurrentHairGeoset = HairGeosets.GetHairGeosetByVariationId(WhCharVariationType.Hair, HairIndex);
+            }
 
             UpdateMeshes();
-
-            //var Region = ZamModelViewer.Wow.Regions;
 
             if (NpcTexture == null) {
                 NeedsCompositing = true;
@@ -981,16 +987,18 @@ namespace WowheadModelLoader
                         BakedTextures[WhRegion.FaceUpper][2] = new WhTexture(this, (int)WhRegion.FaceUpper, facialHairFeature.textures[1]);
                 }
 
-                //if (self.currentHairGeoset) {
-                //    if (self.currentHairGeoset.showscalp == 1) {
-                //        hairFeature = self.customFeatures.getFeature(self.getResolutionVariationType(CharVariationType.Hair), 1, self.hairColorIndex)
-                //    } else if (hairFeature && self.currentHairGeoset.showscalp == 0) {
-                //        if (hairFeature.textures[1] != 0 && !self.bakedTextures[Region.FaceLower][3])
-                //            self.bakedTextures[Region.FaceLower][3] = new self.Texture(self,Region.FaceLower,hairFeature.textures[1]);
-                //        if (hairFeature.textures[2] != 0 && !self.bakedTextures[Region.FaceUpper][3])
-                //            self.bakedTextures[Region.FaceUpper][3] = new self.Texture(self,Region.FaceUpper,hairFeature.textures[2])
-                //    }
-                //}
+                if (CurrentHairGeoset != null)
+                {
+                    if (CurrentHairGeoset.showscalp == 1)
+                        hairFeature = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Hair), 1, HairColorIndex);
+                    else if (hairFeature != null && CurrentHairGeoset.showscalp == 0)
+                    {
+                        if (hairFeature.textures[1] != 0 && !BakedTextures[WhRegion.FaceLower].ContainsKey(3))
+                            BakedTextures[WhRegion.FaceLower][3] = new WhTexture(this, (int)WhRegion.FaceLower, hairFeature.textures[1]);
+                        if (hairFeature.textures[2] != 0 && !BakedTextures[WhRegion.FaceUpper].ContainsKey(3))
+                            BakedTextures[WhRegion.FaceUpper][3] = new WhTexture(this, (int)WhRegion.FaceUpper, hairFeature.textures[2]);
+                    }
+                }
             }
 
             if (skinFeature != null && skinFeature.textures[1] != 0 && !SpecialTextures.ContainsKey(8))
@@ -1018,12 +1026,10 @@ namespace WowheadModelLoader
                 CompositeTextures();
         }
 
-        public void SetGeometryVisibleCustom(object data)
+        public void SetGeometryVisibleCustom(WhJsonHairGeoset data)
         {
-            //if (data)
-            //{
-            //    this.geosets[data.geosetType] = data.geosetType * 100 + data.geosetID
-            //}
+            if (data != null)
+                Geosets[data.geosetType] = (ushort)(data.geosetType * 100 + data.geosetID);
         }
 
         public void SetGeometryVisible(ushort minId, ushort maxId, bool visible)
@@ -1038,6 +1044,26 @@ namespace WowheadModelLoader
             }
         }
 
+        public void ApplyMonsterGeosets()
+        {
+            SetGeometryVisible(0, 0, true);
+
+            if (CreatureGeosetData != 0)
+            {
+                SetGeometryVisible(1, 899, false);
+                for (int i = 0; i < 8; ++i)
+                {
+                    var geoset = CreatureGeosetData >> i * 4 & 15;
+                    if (geoset != 0)
+                    {
+                        ushort meshId = (ushort)(100 * (i + 1));
+                        SetGeometryVisible(meshId, (ushort)(meshId + 99), false);
+                        SetGeometryVisible((ushort)(meshId + geoset), (ushort)(meshId + geoset), true);
+                    }
+                }
+            }
+        }
+
         public void UpdateMeshes()
         {
             //var self = this, i, j, u, Wow = ZamModelViewer.Wow, Races = Wow.Races, Genders = Wow.Genders, Slots = Wow.Slots, CharVariationType = Wow.CharVariationType;
@@ -1047,55 +1073,67 @@ namespace WowheadModelLoader
 
             Geosets[7] = 702;
 
-            //if (self.hairGeosets) {
-            //    if (self.race == Races.ZANDALARITROLL) {
-            //        var earring = self.hairGeosets.getHairGeosetByVariationId(CharVariationType.Custom3, self.EyePatchIndex);
-            //        self.setGeometryVisibleCustom(earring);
-            //        var tusk = self.hairGeosets.getHairGeosetByVariationId(CharVariationType.Custom2, self.HornsIndex);
-            //        self.setGeometryVisibleCustom(tusk)
-            //    } else if (self.race == Races.VULPERA) {
-            //        var nose = self.hairGeosets.getHairGeosetByVariationId(CharVariationType.Custom2, self.HornsIndex);
-            //        self.setGeometryVisibleCustom(nose)
-            //    } else if (self.race == Races.DARKIRONDWARF) {
-            //        var earring = self.hairGeosets.getHairGeosetByVariationId(CharVariationType.Custom1, self.HornsIndex);
-            //        self.setGeometryVisibleCustom(earring)
-            //    } else if (self.race == Races.LIGHTFORGEDDRAENEI) {
-            //        var rune = self.hairGeosets.getHairGeosetByVariationId(CharVariationType.Custom3, self.EyePatchIndex);
-            //        self.setGeometryVisibleCustom(rune)
-            //    }
-            //    var skin = self.hairGeosets.getHairGeosetByColorIndex(CharVariationType.Skin, self.skinIndex);
-            //    self.setGeometryVisibleCustom(skin);
-            //    var face = self.hairGeosets.getHairGeosetByVariationId(CharVariationType.Face, self.faceIndex);
-            //    self.setGeometryVisibleCustom(face)
-            //}
+            if (HairGeosets != null)
+            {
+                if (Race == WhRace.ZANDALARITROLL)
+                {
+                    var earring = HairGeosets.GetHairGeosetByVariationId(WhCharVariationType.Custom3, EyePatchIndex);
+                    SetGeometryVisibleCustom(earring);
+                    var tusk = HairGeosets.GetHairGeosetByVariationId(WhCharVariationType.Custom2, HornsIndex);
+                    SetGeometryVisibleCustom(tusk);
+                }
+                else if (Race == WhRace.VULPERA)
+                {
+                    var nose = HairGeosets.GetHairGeosetByVariationId(WhCharVariationType.Custom2, HornsIndex);
+                    SetGeometryVisibleCustom(nose);
+                }
+                else if (Race == WhRace.DARKIRONDWARF)
+                {
+                    var earring = HairGeosets.GetHairGeosetByVariationId(WhCharVariationType.Custom1, HornsIndex);
+                    SetGeometryVisibleCustom(earring);
+                }
+                else if (Race == WhRace.LIGHTFORGEDDRAENEI)
+                {
+                    var rune = HairGeosets.GetHairGeosetByVariationId(WhCharVariationType.Custom3, EyePatchIndex);
+                    SetGeometryVisibleCustom(rune);
+                }
 
-            //self.setGeometryVisibleCustom(self.currentHairGeoset);
+                var skin = HairGeosets.GetHairGeosetByColorIndex(WhCharVariationType.Skin, SkinIndex);
+                SetGeometryVisibleCustom(skin);
+
+                var face = HairGeosets.GetHairGeosetByVariationId(WhCharVariationType.Face, FaceIndex);
+                SetGeometryVisibleCustom(face);
+            }
+
+            SetGeometryVisibleCustom(CurrentHairGeoset);
 
             if (Geosets[0] == 0)
                 Geosets[0] = 1;
 
-            //if (self.facialHairStyles) {
-            //    var facialStyle = self.facialHairStyles.getStyle(self.featuresIndex);
-            //    if (facialStyle) {
-            //        if (facialStyle.geoset[0] != -1)
-            //            self.geosets[1] = 100 + facialStyle.geoset[0];
-            //        if (facialStyle.geoset[1] != -1)
-            //            self.geosets[3] = 300 + facialStyle.geoset[1];
-            //        if (facialStyle.geoset[2] != -1)
-            //            self.geosets[2] = 200 + facialStyle.geoset[2];
-            //        if (facialStyle.geoset[3] != -1)
-            //            self.geosets[16] = 1600 + facialStyle.geoset[3];
-            //        if (facialStyle.geoset[4] != -1)
-            //            self.geosets[17] = 1700 + facialStyle.geoset[4]
-            //    }
-            //}
+            if (FacialHairStyles != null)
+            {
+                var facialStyle = FacialHairStyles.GetStyle(FeaturesIndex);
+                if (facialStyle != null)
+                {
+                    if (facialStyle.geoset[0] != -1)
+                        Geosets[1] = (ushort)(100 + facialStyle.geoset[0]);
+                    if (facialStyle.geoset[1] != -1)
+                        Geosets[3] = (ushort)(300 + facialStyle.geoset[1]);
+                    if (facialStyle.geoset[2] != -1)
+                        Geosets[2] = (ushort)(200 + facialStyle.geoset[2]);
+                    if (facialStyle.geoset[3] != -1)
+                        Geosets[16] = (ushort)(1600 + facialStyle.geoset[3]);
+                    if (facialStyle.geoset[4] != -1)
+                        Geosets[17] = (ushort)(1700 + facialStyle.geoset[4]);
+                }
+            }
 
             bool eyeGlowFlag = false;
             if (Class == WhClass.DEATHKNIGHT)
                 eyeGlowFlag = true;
             else
             {
-                var faceSection = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Face).ToString(), FaceIndex, SkinIndex);
+                var faceSection = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Face), FaceIndex, SkinIndex);
                 if (faceSection != null)
                     eyeGlowFlag = (faceSection.flags & 4) != 0;
                 else
@@ -1115,17 +1153,18 @@ namespace WowheadModelLoader
             }
 
             bool tailFlag = false;
-            var skinSection = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Skin).ToString(), 0, SkinIndex);
+            var skinSection = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Skin), 0, SkinIndex);
             if (skinSection != null)
                 tailFlag = (skinSection.flags & 256) != 0;
 
-            //var tailGeoset = 1;
-            //if (!tailFlag) {
-            //    tailGeoset = self.hairGeosets.getHairGeosetConditional(CharVariationType.Skin, self.skinIndex, 19)
-            //}
-            //if (tailGeoset <= 0)
-            //    tailGeoset = 1;
-            //self.setGeometryVisible(1900 + tailGeoset, 1900 + tailGeoset, true);
+            int tailGeoset = 1;
+            if (!tailFlag)
+                tailGeoset = HairGeosets.GetHairGeosetConditional(WhCharVariationType.Skin, SkinIndex, 19);
+
+            if (tailGeoset <= 0)
+                tailGeoset = 1;
+
+            SetGeometryVisible((ushort)(1900 + tailGeoset), (ushort)(1900 + tailGeoset), true);
 
             foreach (var item in Items.Values)
             {
@@ -1173,18 +1212,22 @@ namespace WowheadModelLoader
                 var race = Race;
                 var gender = Gender;
 
-                //var hideGeoset = gender == Genders.MALE ? helm.HideGeosetMale : helm.HideGeosetFemale;
-                //if (hideGeoset) {
-                //    var groups = [0, 1, 2, 3, 7, 16, 17, 24, 25];
-                //    for (i = 0; i < hideGeoset.length; i++) {
-                //        if ((1 << race & hideGeoset[i]) != 0) {
-                //            var meshBase = groups[i] * 100;
-                //            var meshID = meshBase + self.geosetDefaults[groups[i]];
-                //            self.setGeometryVisible(meshBase + self.geosetDefaults[i], meshBase + 99, false);
-                //            self.setGeometryVisible(meshID, meshID, true)
-                //        }
-                //    }
-                //}
+                var hideGeoset = gender == WhGender.MALE ? helm.HideGeosetMale : helm.HideGeosetFemale;
+                if (hideGeoset != null)
+                {
+                    var groups = new int[] { 0, 1, 2, 3, 7, 16, 17, 24, 25 };
+                    for (int i = 0; i < hideGeoset.Length; i++)
+                    {
+                        if ((1 << (int)race & hideGeoset[i]) != 0)
+                        {
+                            var meshBase = groups[i] * 100;
+                            var meshID = meshBase + GeosetDefaults[groups[i]];
+
+                            SetGeometryVisible((ushort)(meshBase + GeosetDefaults[i]), (ushort)(meshBase + 99), false);
+                            SetGeometryVisible((ushort)meshID, (ushort)meshID, true);
+                        }
+                    }
+                }
             }
 
             var shirt = Items.GetOrDefault(WhSlot.SHIRT);
@@ -1201,155 +1244,198 @@ namespace WowheadModelLoader
             if (tabard != null)
                 flags |= 16;
 
-            //if (gloves && gloves.geosetGroup && gloves.geosetGroup[0]) {
-            //    var glovesGeoset = 401 + gloves.geosetGroup[0];
-            //    self.setGeometryVisible(401, 499, false);
-            //    self.setGeometryVisible(glovesGeoset, glovesGeoset, true);
-            //    gloves.sortValue += 2
-            //} else {
-            //    if (chest && chest.geosetGroup && chest.geosetGroup[0]) {
-            //        var chesetGeoset = 801 + chest.geosetGroup[0];
-            //        self.setGeometryVisible(chesetGeoset, chesetGeoset, true)
-            //    }
-            //}
+            if (gloves != null && gloves.GeosetGroup != null && gloves.GeosetGroup[0] != 0)
+            {
+                var glovesGeoset = 401 + gloves.GeosetGroup[0];
+                SetGeometryVisible(401, 499, false);
+                SetGeometryVisible((ushort)glovesGeoset, (ushort)glovesGeoset, true);
+                gloves.SortValue += 2;
+            }
+            else
+            {
+                if (chest != null && chest.GeosetGroup != null && chest.GeosetGroup[0] != 0)
+                {
+                    var chesetGeoset = 801 + chest.GeosetGroup[0];
+                    SetGeometryVisible((ushort)chesetGeoset, (ushort)chesetGeoset, true);
+                }
+            }
 
-            //var canShowShirt = !(chest || belt || wrist);
-            //if (canShowShirt && shirt && shirt.geosetGroup && shirt.geosetGroup[0]) {
-            //    var shirtGeoset = 801 + shirt.geosetGroup[0];
-            //    self.setGeometryVisible(shirtGeoset, shirtGeoset, true)
-            //}
+            var canShowShirt = !(chest != null || belt != null || wrist != null);
+            if (canShowShirt && shirt != null && shirt.GeosetGroup != null && shirt.GeosetGroup[0] != 0)
+            {
+                var shirtGeoset = 801 + shirt.GeosetGroup[0];
+                SetGeometryVisible((ushort)shirtGeoset, (ushort)shirtGeoset, true);
+            }
 
-            //if (tabard) {
-            //    if ((tabard.flags & 1048576) == 0) {
-            //        self.setGeometryVisible(2200, 2299, false);
-            //        self.setGeometryVisible(2202, 2202, true)
-            //    }
-            //} else {
-            //    if (chest && chest.geosetGroup && chest.geosetGroup[3]) {
-            //        var chestGeoset = 2201 + chest.geosetGroup[3];
-            //        self.setGeometryVisible(2200, 2299, false);
-            //        self.setGeometryVisible(chestGeoset, chestGeoset, true)
-            //    }
-            //}
+            if (tabard != null)
+            {
+                if ((tabard.Flags & 1048576) == 0)
+                {
+                    SetGeometryVisible(2200, 2299, false);
+                    SetGeometryVisible(2202, 2202, true);
+                }
+            }
+            else
+            {
+                if (chest != null && chest.GeosetGroup != null && chest.GeosetGroup[3] != 0)
+                {
+                    var chestGeoset = 2201 + chest.GeosetGroup[3];
+                    SetGeometryVisible(2200, 2299, false);
+                    SetGeometryVisible((ushort)chestGeoset, (ushort)chestGeoset, true);
+                }
+            }
 
             bool largeBelt = false;
-            //if (belt && belt.geosetGroup && belt.geosetGroup[0]) {
-            //    largeBelt = (belt.flags & 512) != 0
-            //}
+            if (belt != null && belt.GeosetGroup != null && belt.GeosetGroup[0] != 0)
+                largeBelt = (belt.Flags & 512) != 0;
 
             bool robePants = false;
             bool robeChest = false;
-            //if (chest && chest.geosetGroup && chest.geosetGroup[2]) {
-            //    robeChest = true;
-            //    self.setGeometryVisible(501, 599, false);
-            //    self.setGeometryVisible(902, 999, false);
-            //    self.setGeometryVisible(1100, 1199, false);
-            //    self.setGeometryVisible(1300, 1399, false);
-            //    var chestGeoset = 1301 + chest.geosetGroup[2];
-            //    self.setGeometryVisible(chestGeoset, chestGeoset, true)
-            //} else if (pants && pants.geosetGroup && pants.geosetGroup[2]) {
-            //    robePants = true;
-            //    self.setGeometryVisible(501, 599, false);
-            //    self.setGeometryVisible(902, 999, false);
-            //    self.setGeometryVisible(1100, 1199, false);
-            //    self.setGeometryVisible(1300, 1399, false);
-            //    var pantsGeoset = 1301 + pants.geosetGroup[2];
-            //    self.setGeometryVisible(pantsGeoset, pantsGeoset, true)
-            //} else {
-            //    if (boots && boots.geosetGroup && boots.geosetGroup[0]) {
-            //        self.setGeometryVisible(501, 599, false);
-            //        self.setGeometryVisible(901, 901, true);
-            //        var bootsGeoset = 501 + boots.geosetGroup[0];
-            //        self.setGeometryVisible(bootsGeoset, bootsGeoset, true)
-            //    } else {
-            //        var pantsGeoset;
-            //        if (pants && pants.geosetGroup && pants.geosetGroup[1]) {
-            //            pantsGeoset = 901 + pants.geosetGroup[1]
-            //        } else {
-            //            pantsGeoset = 901
-            //        }
-            //        self.setGeometryVisible(pantsGeoset, pantsGeoset, true)
-            //    }
-            //}
 
-            //var bootsGeoset;
-            //if (boots && boots.geosetGroup && boots.geosetGroup[1]) {
-            //    bootsGeoset = 2e3 + boots.geosetGroup[1]
-            //} else if (boots && (boots.flags & 1048576) == 0) {
-            //    bootsGeoset = 2002
-            //} else {
-            //    bootsGeoset = 2001
-            //}
-            //self.setGeometryVisible(bootsGeoset, bootsGeoset, true);
+            if (chest != null && chest.GeosetGroup != null && chest.GeosetGroup[2] != 0)
+            {
+                robeChest = true;
+                SetGeometryVisible(501, 599, false);
+                SetGeometryVisible(902, 999, false);
+                SetGeometryVisible(1100, 1199, false);
+                SetGeometryVisible(1300, 1399, false);
+                var chestGeoset = 1301 + chest.GeosetGroup[2];
+                SetGeometryVisible((ushort)chestGeoset, (ushort)chestGeoset, true);
+            }
+            else if (pants != null && pants.GeosetGroup != null && pants.GeosetGroup[2] != 0)
+            {
+                robePants = true;
+                SetGeometryVisible(501, 599, false);
+                SetGeometryVisible(902, 999, false);
+                SetGeometryVisible(1100, 1199, false);
+                SetGeometryVisible(1300, 1399, false);
+                var pantsGeoset = 1301 + pants.GeosetGroup[2];
+                SetGeometryVisible((ushort)pantsGeoset, (ushort)pantsGeoset, true);
+            }
+            else
+            {
+                if (boots != null && boots.GeosetGroup != null && boots.GeosetGroup[0] != 0)
+                {
+                    SetGeometryVisible(501, 599, false);
+                    SetGeometryVisible(901, 901, true);
+                    var bootsGeoset = 501 + boots.GeosetGroup[0];
+                    SetGeometryVisible((ushort)bootsGeoset, (ushort)bootsGeoset, true);
+                }
+                else
+                {
+                    int pantsGeoset;
+                    if (pants != null && pants.GeosetGroup != null && pants.GeosetGroup[1] != 0)
+                        pantsGeoset = 901 + pants.GeosetGroup[1];
+                    else
+                        pantsGeoset = 901;
+
+                    SetGeometryVisible((ushort)pantsGeoset, (ushort)pantsGeoset, true);
+                }
+            }
+
+            {
+                int bootsGeoset;
+                if (boots != null && boots.GeosetGroup != null && boots.GeosetGroup[1] != 0)
+                    bootsGeoset = 2000 + boots.GeosetGroup[1];
+                else if (boots != null && (boots.Flags & 1048576) == 0)
+                    bootsGeoset = 2002;
+                else
+                    bootsGeoset = 2001;
+
+                SetGeometryVisible((ushort)bootsGeoset, (ushort)bootsGeoset, true);
+            }
 
             bool showTabard = false;
-            //var hasDress = robeChest | robePants;
-            //if (!hasDress && tabard && tabard.geosetGroup && tabard.geosetGroup[0]) {
-            //    showTabard = false;
-            //    var tabardGeoset;
-            //    if (largeBelt) {
-            //        showTabard = true;
-            //        tabardGeoset = 1203
-            //    } else {
-            //        showTabard = true;
-            //        tabardGeoset = 1201 + tabard.geosetGroup[0]
-            //    }
-            //    self.setGeometryVisible(tabardGeoset, tabardGeoset, true)
-            //} else if (!(flags & 16)) {} else {
-            //    self.setGeometryVisible(1201, 1201, true);
-            //    if (!hasDress) {
-            //        self.setGeometryVisible(1202, 1202, true);
-            //        showTabard = true
-            //    }
-            //}
+            var hasDress = robeChest | robePants;
+            if (!hasDress && tabard != null && tabard.GeosetGroup != null && tabard.GeosetGroup[0] != 0)
+            {
+                showTabard = false;
+
+                int tabardGeoset;
+                if (largeBelt)
+                {
+                    showTabard = true;
+                    tabardGeoset = 1203;
+                }
+                else
+                {
+                    showTabard = true;
+                    tabardGeoset = 1201 + tabard.GeosetGroup[0];
+                }
+
+                SetGeometryVisible((ushort)tabardGeoset, (ushort)tabardGeoset, true);
+            }
+            else if ((flags & 16) != 0)
+            {
+            }
+            else
+            {
+                SetGeometryVisible(1201, 1201, true);
+
+                if (!hasDress)
+                {
+                    SetGeometryVisible(1202, 1202, true);
+                    showTabard = true;
+                }
+            }
 
             if (!(showTabard || robeChest)) {
-                //if (chest && chest.geosetGroup && chest.geosetGroup[1]) {
-                //    var chestGeoset = 1001 + chest.geosetGroup[1];
-                //    self.setGeometryVisible(chestGeoset, chestGeoset, true)
-                //} else if (shirt && shirt.geosetGroup && shirt.geosetGroup[1]) {
-                //    var shirtGeoset = 1001 + shirt.geosetGroup[1];
-                //    self.setGeometryVisible(shirtGeoset, shirtGeoset, true)
-                //}
+                if (chest != null && chest.GeosetGroup != null && chest.GeosetGroup[1] != 0)
+                {
+                    var chestGeoset = 1001 + chest.GeosetGroup[1];
+                    SetGeometryVisible((ushort)chestGeoset, (ushort)chestGeoset, true);
+                }
+                else if (shirt != null && shirt.GeosetGroup != null && shirt.GeosetGroup[1] != 0)
+                {
+                    var shirtGeoset = 1001 + shirt.GeosetGroup[1];
+                    SetGeometryVisible((ushort)shirtGeoset, (ushort)shirtGeoset, true);
+                }
             }
 
             if (!robeChest) {
-                //if (pants && pants.geosetGroup && pants.geosetGroup[0]) {
-                //    var geosetGroup = pants.geosetGroup[0];
-                //    var pantsGeoset = 1101 + geosetGroup;
-                //    if (geosetGroup > 2) {
-                //        self.setGeometryVisible(1300, 1399, false);
-                //        self.setGeometryVisible(pantsGeoset, pantsGeoset, true)
-                //    } else if (!showTabard) {
-                //        self.setGeometryVisible(pantsGeoset, pantsGeoset, true)
-                //    }
-                //}
+                if (pants != null && pants.GeosetGroup != null && pants.GeosetGroup[0] != 0)
+                {
+                    var geosetGroup = pants.GeosetGroup[0];
+                    var pantsGeoset = 1101 + geosetGroup;
+                    if (geosetGroup > 2)
+                    {
+                        SetGeometryVisible(1300, 1399, false);
+                        SetGeometryVisible((ushort)pantsGeoset, (ushort)pantsGeoset, true);
+                    }
+                    else if (!showTabard)
+                        SetGeometryVisible((ushort)pantsGeoset, (ushort)pantsGeoset, true);
+                }
             }
 
-            //if (cloak && cloak.geosetGroup && cloak.geosetGroup[0]) {
-            //    self.setGeometryVisible(1500, 1599, false);
-            //    var cloakGeoset = 1501 + cloak.geosetGroup[0];
-            //    self.setGeometryVisible(cloakGeoset, cloakGeoset, true)
-            //}
+            if (cloak != null && cloak.GeosetGroup != null && cloak.GeosetGroup[0] != 0)
+            {
+                SetGeometryVisible(1500, 1599, false);
+                var cloakGeoset = 1501 + cloak.GeosetGroup[0];
+                SetGeometryVisible((ushort)cloakGeoset, (ushort)cloakGeoset, true);
+            }
 
-            //if (belt && belt.geosetGroup && belt.geosetGroup[0]) {
-            //    self.setGeometryVisible(1800, 1899, false);
-            //    var beltGeoset = 1801 + belt.geosetGroup[0];
-            //    self.setGeometryVisible(beltGeoset, beltGeoset, true)
-            //}
+            if (belt != null && belt.GeosetGroup != null && belt.GeosetGroup[0] != 0)
+            {
+                SetGeometryVisible(1800, 1899, false);
+                var beltGeoset = 1801 + belt.GeosetGroup[0];
+                SetGeometryVisible((ushort)beltGeoset, (ushort)beltGeoset, true);
+            }
 
             if (pants == null && !robeChest && !robePants && !showTabard && !tailFlag && !largeBelt)
                 SetGeometryVisible(1401, 1401, true);
             else
                 SetGeometryVisible(1400, 1499, false);
 
-            //if (self.hornsModel) {
-            //    self.hornsModel.setGeometryVisible(0, 3e3, false);
-            //    if (!pants)
-            //        self.hornsModel.setGeometryVisible(1401, 1401, true);
-            //    self.hornsModel.setGeometryVisible(2400 + self.HornsIndex, 2400 + self.HornsIndex, true);
-            //    self.hornsModel.setGeometryVisible(2500 + self.EyePatchIndex, 2500 + self.EyePatchIndex, true)
-            //}
+            if (HornsModel != null)
+            {
+                HornsModel.SetGeometryVisible(0, 3000, false);
+
+                if (pants == null)
+                    HornsModel.SetGeometryVisible(1401, 1401, true);
+
+                HornsModel.SetGeometryVisible((ushort)(2400 + HornsIndex), (ushort)(2400 + HornsIndex), true);
+                HornsModel.SetGeometryVisible((ushort)(2500 + EyePatchIndex), (ushort)(2500 + EyePatchIndex), true);
+            }
 
             //var attach;
             //for (slot in self.items) {
@@ -1604,18 +1690,19 @@ namespace WowheadModelLoader
             var data = WhDataLoader.LoadMetaCharacterCustomization(race, gender);
 
             CustomFeatures = new WhCustomFeatures(data.customFeatures);
-
-            //self.hairGeosets = new ZamModelViewer.Wow.HairGeosets(data.hairGeosets);
-            //self.facialHairStyles = new ZamModelViewer.Wow.FacialHairStyles(data.facialHairStyles);
+            HairGeosets = new WhHairGeosets(data.hairGeosets);
+            FacialHairStyles = new WhFacialHairStyles(data.facialHairStyles);
 
             if (data.HDCustomGeoFileDataID != 0 && Class == WhClass.DEMONHUNTER)
             {
-                //    var modelInfo = {
-                //        type: Type.PATH,
-                //        id: data.HDCustomGeoFileDataID,
-                //        parent: self
-                //    };
-                //    self.hornsModel = new ZamModelViewer.Wow.Model(self.renderer, self.viewer, modelInfo,0)
+                var modelInfo = new WhModelInfo()
+                {
+                    Type = WhType.PATH,
+                    Id = data.HDCustomGeoFileDataID.ToString(),
+                    Parent = this
+                };
+
+                HornsModel = new WhModel(Opts, modelInfo, 0);
             }
 
             if (NeedsCompositing)

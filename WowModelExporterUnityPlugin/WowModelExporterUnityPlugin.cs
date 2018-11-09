@@ -31,42 +31,18 @@ namespace WowModelExporterUnityPlugin
             return CreateTextureFromBitmap(_exporter.GetFirstTexture(model));
         }
 
-        public void DoStuff()
+        public void DoStuff(string characterId, string[] items)
         {
-            var model = _exporter.LoadModel("humanmale", new string[] {
-                // шлем
-                "161600",
+            var containerGo = new GameObject("container_" + characterId);
+            containerGo.transform.position = Vector3.zero;
 
-                // плечи
-                "161621",
-
-                // плащ
-                "163365",
-
-                // чест
-                "161602",
-
-                // брасы
-                "161629",
-
-                // руки
-                "161610",
-
-                // пояс
-                "161624",
-
-                // ноги
-                "161616",
-
-                // ступни
-                "161605"
-            });
+            var model = _exporter.LoadModel(characterId, items);
 
             var texture = CreateTextureFromModel(model);
 
             var mesh = CreateMesh(model);
 
-            CreateGameObject("character", mesh, texture);
+            CreateGameObject(containerGo, "character", mesh, texture);
 
             foreach (var item in model.Items)
             {
@@ -77,11 +53,11 @@ namespace WowModelExporterUnityPlugin
                 var itemMesh = CreateMesh(itemModel);
 
                 var unityItemTexture = CreateTextureFromModel(itemModel);
-                CreateGameObject("item", itemMesh, unityItemTexture);
+                CreateGameObject(containerGo, "item_" + item.Key.ToString() + "_" + item.Value.Id, itemMesh, unityItemTexture);
             }
         }
 
-        private GameObject CreateGameObject(string name, Mesh mesh, Texture2D mainTexture)
+        private GameObject CreateGameObject(GameObject parent, string name, Mesh mesh, Texture2D mainTexture)
         {
             var go = new GameObject(name);
 
@@ -112,6 +88,7 @@ namespace WowModelExporterUnityPlugin
 
 
 
+            go.transform.parent = parent.transform;
 
             return go;
         }

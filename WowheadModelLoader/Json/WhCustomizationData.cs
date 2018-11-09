@@ -14,8 +14,7 @@ namespace WowheadModelLoader.Json
 
     public class WhJsonCustomFeatures
     {
-        // ToDo: похоже что ключи - числа 
-        public Dictionary<string, WhJsonCustomFeature[]> features { get; set; }
+        public Dictionary<int, WhJsonCustomFeature[]> features { get; set; }
     }
 
     public class WhJsonCustomFeature
@@ -28,8 +27,7 @@ namespace WowheadModelLoader.Json
 
     public class WhJsonHairGeosets
     {
-        // ToDo: похоже что ключи - числа 
-        public Dictionary<string, WhJsonHairGeoset[]> hairGeosets { get; set; }
+        public Dictionary<WhCharVariationType, WhJsonHairGeoset[]> hairGeosets { get; set; }
     }
 
     public class WhJsonHairGeoset

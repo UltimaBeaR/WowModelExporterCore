@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace WowheadModelLoader.Json
 {
@@ -32,14 +33,22 @@ namespace WowheadModelLoader.Json
         public WhRace Race { get; set; }
         public WhGender Gender { get; set; }
 
-        // ToDo: непонятно из использования это массив строк или словарь строк по ключу int
-        public object Equipment { get; set; }
+        public JToken Equipment { get; set; }
+
+        public WhViewerOptions.Item[] GetEquipmentAsItemObjects()
+        {
+            return Equipment.ToObject<WhViewerOptions.Item[]>();
+        }
+
+        public string[] GetEquipmentAsStringIds()
+        {
+            return Equipment.ToObject<string[]>();
+        }
 
         // ToDo: смотрел тип из использования, а не json-а. ключ регион (похоже что int так как идет parseint),
         // значение это textureId, скорее всего тоже int, но на всякий случай пусть пока будет строкой 
         public Dictionary<WhRegion, string> ComponentTextures { get; set; }
 
-        // ToDo: похоже что ключи - числа 
         public Dictionary<string, int> ComponentModels { get; set; }
 
         public float Scale { get; set; }
@@ -66,6 +75,9 @@ namespace WowheadModelLoader.Json
 
         public class CreatureStruct
         {
+            public int CreatureGeosetData { get; set; }
+            public uint Texture { get; set; }
+            public uint HDTexture { get; set; }
             public int SkinColor { get; set; }
             public int HairStyle { get; set; }
             public int HairColor { get; set; }

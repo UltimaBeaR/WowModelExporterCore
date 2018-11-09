@@ -40,8 +40,8 @@ namespace WowheadModelLoader
         public WhRace Race { get; set; }
         public WhGender Gender { get; set; }
 
-        public object HideGeosetMale { get; set; }
-        public object HideGeosetFemale { get; set; }
+        public int[] HideGeosetMale { get; set; }
+        public int[] HideGeosetFemale { get; set; }
 
         public int ItemClass { get; set; }
         public int ItemSubClass { get; set; }

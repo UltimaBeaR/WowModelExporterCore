@@ -10,7 +10,7 @@ namespace WowheadModelLoader
             Features = customFeatures.features;
         }
 
-        public WhJsonCustomFeature[] GetFeatures(string baseSection)
+        public WhJsonCustomFeature[] GetFeatures(int baseSection)
         {
             if (Features.TryGetValue(baseSection, out var result))
                 return result;
@@ -18,7 +18,7 @@ namespace WowheadModelLoader
             return null;
         }
 
-        public WhJsonCustomFeature GetFeature(string baseSection, int variationIndex, int colorIndex)
+        public WhJsonCustomFeature GetFeature(int baseSection, int variationIndex, int colorIndex)
         {
             var numVariations = GetVariationsCount(baseSection, variationIndex);
 
@@ -38,7 +38,7 @@ namespace WowheadModelLoader
             return null;
         }
 
-        public int GetVariationsCount(string baseSection, long variationIndex)
+        public int GetVariationsCount(int baseSection, long variationIndex)
         {
             int count = 0;
 
@@ -57,6 +57,6 @@ namespace WowheadModelLoader
             return count;
         }
 
-        public Dictionary<string, WhJsonCustomFeature[]> Features { get; set; }
+        public Dictionary<int, WhJsonCustomFeature[]> Features { get; set; }
     }
 }

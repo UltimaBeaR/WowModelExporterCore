@@ -68,8 +68,10 @@
     <Compile Include="WhClass.cs" />
     <Compile Include="WhCustomFeatures.cs" />
     <Compile Include="WhDataLoader.cs" />
+    <Compile Include="WhFacialHairStyles.cs" />
     <Compile Include="WhGender.cs" />
     <Compile Include="WhGlobal.cs" />
+    <Compile Include="WhHairGeosets.cs" />
     <Compile Include="WhItem.cs" />
     <Compile Include="WhMaterial.cs" />
     <Compile Include="WhMesh.cs" />
