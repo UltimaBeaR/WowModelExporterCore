@@ -28,6 +28,8 @@ namespace WowModelExporterUnityPlugin
 
             foreach (var childWowObject in characterWowObject.Children)
                 CreateGameObjectForWowObject("item", characterGo.transform, childWowObject);
+
+            CreateVisibleSkeletonForWowObject(containerGo.transform, characterWowObject);
         }
 
         public GameObject CreateGameObjectForWowObject(string name, Transform parent, WowObject wowObject)
@@ -36,7 +38,7 @@ namespace WowModelExporterUnityPlugin
             var materials = CreateMaterialsFromWowMeshWithMaterials(wowObject.Mesh);
 
             var go = new GameObject(name);
-            go.transform.position = new Vector3(wowObject.Position.X, wowObject.Position.Y);
+            go.transform.position = new Vector3(wowObject.Position.X, wowObject.Position.Y, wowObject.Position.Z);
             go.transform.parent = parent;
 
             var meshFilter = go.AddComponent<MeshFilter>();
@@ -46,6 +48,27 @@ namespace WowModelExporterUnityPlugin
             renderer.materials = materials;
 
             return go;
+        }
+
+        public GameObject CreateVisibleSkeletonForWowObject(Transform parent, WowObject wowObject)
+        {
+            if (wowObject.Bones == null)
+                return null;
+
+            var skeletonRootGo = new GameObject("skeleton");
+            skeletonRootGo.transform.position = new Vector3(wowObject.Position.X, wowObject.Position.Y);
+            skeletonRootGo.transform.parent = parent;
+
+            foreach (var wowBone in wowObject.Bones)
+            {
+                var boneGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                const float boneSphereScale = 0.05f;
+                boneGo.transform.localScale = new Vector3(boneSphereScale, boneSphereScale, boneSphereScale);
+                boneGo.transform.position = new Vector3(wowBone.X, wowBone.Y, wowBone.Z);
+                boneGo.transform.parent = skeletonRootGo.transform;
+            }
+
+            return skeletonRootGo;
         }
 
         public Mesh CreateMeshFromWowMeshWithMaterials(WowMeshWithMaterials wowMesh)

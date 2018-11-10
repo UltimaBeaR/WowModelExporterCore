@@ -14,12 +14,10 @@ namespace WowModelExporterCore
 
             // Сам перс
 
-            var characterObject = new WowObject()
-            {
-                Children = new List<WowObject>()
-            };
+            var characterObject = new WowObject();
 
             characterObject.Mesh = MakeMeshFromWhModel(whCharacterModel);
+            characterObject.Bones = MakeBonesFromWhModel(whCharacterModel);
 
             // Рога
 
@@ -27,8 +25,7 @@ namespace WowModelExporterCore
             {
                 var hornsObject = new WowObject()
                 {
-                    Parent = characterObject,
-                    Children = new List<WowObject>()
+                    Parent = characterObject
                 };
 
                 hornsObject.Mesh = MakeMeshFromWhModel(whCharacterModel.HornsModel);
@@ -42,8 +39,7 @@ namespace WowModelExporterCore
             {
                 var mountObject = new WowObject()
                 {
-                    Parent = characterObject,
-                    Children = new List<WowObject>()
+                    Parent = characterObject
                 };
 
                 mountObject.Mesh = MakeMeshFromWhModel(whCharacterModel.Mount);
@@ -70,7 +66,6 @@ namespace WowModelExporterCore
                     var itemObject = new WowObject()
                     {
                         Parent = characterObject,
-                        Children = new List<WowObject>(),
                         Position = itemPosition
                     };
 
@@ -89,7 +84,6 @@ namespace WowModelExporterCore
                                 var visualObject = new WowObject()
                                 {
                                     Parent = characterObject,
-                                    Children = new List<WowObject>(),
                                     Position = visualPosition
                                 };
 
@@ -131,6 +125,14 @@ namespace WowModelExporterCore
             }
 
             return mesh;
+        }
+
+        private Vec3[] MakeBonesFromWhModel(WhModel whModel)
+        {
+            if (whModel.Bones == null)
+                return null;
+
+            return whModel.Bones.Select(x => ConvertPositionFromWh(x.Pivot)).ToArray();
         }
 
         private WowMaterial MakeMaterialFromWhTexUnit(WhTexUnit whTexUnit)
