@@ -9,6 +9,9 @@ namespace WowModelExporterCore
     {
         public WowObject BuildFromCharacterWhModel(WhModel whCharacterModel)
         {
+            // ToDo: Смотреть как работает, Wow.Model.draw,
+            // по сути в зависимости от алгоритма отрисовки идет и алгоритм построения объектов для дальнейшей отрисовки (то что тут происодит)
+
             // Сам перс
 
             var characterObject = new WowObject()
@@ -18,9 +21,23 @@ namespace WowModelExporterCore
 
             characterObject.Mesh = MakeMeshFromWhModel(whCharacterModel);
 
+            // Рога
+
+            if (whCharacterModel.HornsModel != null)
+            {
+                var hornsObject = new WowObject()
+                {
+                    Parent = characterObject,
+                    Children = new List<WowObject>()
+                };
+
+                hornsObject.Mesh = MakeMeshFromWhModel(whCharacterModel.HornsModel);
+
+                characterObject.Children.Add(hornsObject);
+            }
+
             // Маунт
 
-            // ToDo: незнаю проверять ли флаг IsMount
             if (whCharacterModel.Mount != null)
             {
                 var mountObject = new WowObject()
@@ -36,25 +53,52 @@ namespace WowModelExporterCore
 
             // Итемы
 
-            foreach (var whItem in whCharacterModel.Items)
+            foreach (var whItemInSlot in whCharacterModel.Items)
             {
-                if (whItem.Value.Models == null)
+                var whItem = whItemInSlot.Value;
+
+                if (whItem?.Models == null)
                     continue;
 
-                foreach (var whItemModel in whItem.Value.Models)
+                foreach (var whItemModel in whItem.Models)
                 {
-                    if (whItemModel == null)
+                    if (whItemModel?.Model == null)
                         continue;
+
+                    var itemPosition = ConvertPositionFromWh(whItemModel.Attachment.Position);
 
                     var itemObject = new WowObject()
                     {
                         Parent = characterObject,
-                        Children = new List<WowObject>()
+                        Children = new List<WowObject>(),
+                        Position = itemPosition
                     };
 
                     itemObject.Mesh = MakeMeshFromWhModel(whItemModel.Model);
 
                     characterObject.Children.Add(itemObject);
+
+                    if (whItem.Visual?.Models != null && whItemModel.Model.Loaded)
+                    {
+                        foreach (var visual in whItem.Visual.Models)
+                        {
+                            if (visual != null)
+                            {
+                                var visualPosition = ConvertPositionFromWh(visual.Attachment.Position);
+
+                                var visualObject = new WowObject()
+                                {
+                                    Parent = characterObject,
+                                    Children = new List<WowObject>(),
+                                    Position = visualPosition
+                                };
+
+                                visualObject.Mesh = MakeMeshFromWhModel(visual.Model);
+
+                                characterObject.Children.Add(visualObject);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -128,13 +172,23 @@ namespace WowModelExporterCore
         {
             return new WowVertex()
             {
-                Position = new Vec3(whVertex.Position.X, whVertex.Position.Z, -whVertex.Position.Y),
+                Position = ConvertPositionFromWh(whVertex.Position),
                 Normal = whVertex.Normal,
-                UV1 = new Vec2(whVertex.U, 1f - whVertex.V),
-                UV2 = new Vec2(whVertex.U2, 1f - whVertex.V2),
+                UV1 = ConvertUVFromWh(whVertex.U, whVertex.V),
+                UV2 = ConvertUVFromWh(whVertex.U2, whVertex.V2),
                 Weights = whVertex.Weights,
                 Bones = whVertex.Bones
             };
+        }
+
+        private Vec3 ConvertPositionFromWh(Vec3 position)
+        {
+            return new Vec3(position.X, position.Z, -position.Y);
+        }
+
+        private Vec2 ConvertUVFromWh(float u, float v)
+        {
+            return new Vec2(u, 1f - v);
         }
     }
 }

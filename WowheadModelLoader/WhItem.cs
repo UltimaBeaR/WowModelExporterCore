@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using WowheadModelLoader.Json;
 
 namespace WowheadModelLoader
@@ -60,7 +61,7 @@ namespace WowheadModelLoader
                 metaPath = $"armor/{(int)Slot}";
             }
 
-            LoadAndHandle_Meta(metaPath, id);
+            WhDefferedList.Add(() => LoadAndHandle_Meta(metaPath, id));
         }
 
         private uint SelectBestTexture(WhJsonMeta meta, string textureid, WhGender gender, WhClass cls, WhRace race) {

@@ -35,6 +35,9 @@ namespace WowModelExporterCore
                 options,
                 WhModelInfo.CreateForCharacter(race, gender), 0);
 
+            WhDefferedList.Execute();
+            WhDefferedList.Execute("whenAllModelsLoaded");
+
             return characterModel;
         }
     }

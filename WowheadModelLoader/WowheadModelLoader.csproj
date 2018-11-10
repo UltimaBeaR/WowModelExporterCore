@@ -69,6 +69,7 @@
     <Compile Include="WhClass.cs" />
     <Compile Include="WhCustomFeatures.cs" />
     <Compile Include="WhDataLoader.cs" />
+    <Compile Include="WhDefferedList.cs" />
     <Compile Include="WhFacialHairStyles.cs" />
     <Compile Include="WhGender.cs" />
     <Compile Include="WhGlobal.cs" />

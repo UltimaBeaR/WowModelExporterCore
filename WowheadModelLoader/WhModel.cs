@@ -175,6 +175,8 @@ namespace WowheadModelLoader
 
             if (!skipLoad)
                 Load();
+
+            WhDefferedList.Add(() => SetupWhenLoaded(), "whenAllModelsLoaded");
         }
 
         public WhModelInfo Model { get; set; }
@@ -276,8 +278,6 @@ namespace WowheadModelLoader
                 return;
 
             _Load(Model.Type, Model.Id);
-
-            SetupWhenLoaded();
         }
 
         public int[] GetFallbackRaceGender(WhGender gender, WhRace race, bool isTexture)
@@ -358,7 +358,7 @@ namespace WowheadModelLoader
                 if (Enum.IsDefined(typeof(WhClass), Opts.Cls))
                     Class = Opts.Cls;
 
-                LoadAndHandle_MetaCharacterCustomization(meta.Race, meta.Gender);
+                WhDefferedList.Add(() => LoadAndHandle_MetaCharacterCustomization(meta.Race, meta.Gender));
 
                 if (Opts.SheathMain != 0)
                     SheathMain = Opts.SheathMain;
@@ -1165,20 +1165,9 @@ namespace WowheadModelLoader
                 SpecialTextures[6] = new WhTexture(this, 6, hairFeature.textures[0]);
         }
 
+        // этот метод я добавил сам. то что тут делается в оригинале происходит на отрисовке (draw()), но я делаю это тут один раз после создания модели
         private void SetupWhenLoaded()
         {
-            // ToDo: этого метода нету в оригинальном js
-            // тут я буду выносить все что нужно дополнительно сделать после загрузки модели
-            // например мне нужны некоторые вещи из draw() метода (в Model, то есть текущем классе).
-            // при этом самого draw() тут не реализовано, т.к. отрисовка тут не нужна но нужно сделать некую подготовку которая вызывается из него в оригинале
-            // может быть тут еще что то будет
-            // сначало наверно надо удостовериться что все текстуры и модели подгрузились (это наверно будет кейс, если я сделаю асинхронно подгрузку всего этого)
-            // и только после этого выполнять основной код.
-
-
-
-            // Далее код из draw()
-
             if (NeedsCompositing)
                 CompositeTextures();
         }
@@ -1222,7 +1211,7 @@ namespace WowheadModelLoader
         }
 
         public void UpdateMeshes()
-        {            
+        {
             if (TexUnits == null || TexUnits.Length == 0)
                 return;
 
@@ -1827,7 +1816,7 @@ namespace WowheadModelLoader
 
             if (metaPath != null)
             {
-                LoadAndHandle_Meta(metaPath, type, id);
+                WhDefferedList.Add(() => LoadAndHandle_Meta(metaPath, type, id));
             }
             else if (type == WhType.PATH)
             {
@@ -1836,7 +1825,7 @@ namespace WowheadModelLoader
                 if (Meta == null)
                     Meta = new WhJsonMeta();
 
-                LoadAndHandle_Mo3(id);
+                WhDefferedList.Add(() => LoadAndHandle_Mo3(id));
             }
         }
 

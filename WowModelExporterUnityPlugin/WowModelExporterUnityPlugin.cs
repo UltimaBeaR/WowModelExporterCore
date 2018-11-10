@@ -36,7 +36,7 @@ namespace WowModelExporterUnityPlugin
             var materials = CreateMaterialsFromWowMeshWithMaterials(wowObject.Mesh);
 
             var go = new GameObject(name);
-            go.transform.position = Vector3.zero;
+            go.transform.position = new Vector3(wowObject.Position.X, wowObject.Position.Y);
             go.transform.parent = parent;
 
             var meshFilter = go.AddComponent<MeshFilter>();

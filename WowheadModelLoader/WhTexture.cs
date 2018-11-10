@@ -20,7 +20,7 @@ namespace WowheadModelLoader
 
             Loaded = false;
 
-            LoadAndHandle_Texture(file);
+            WhDefferedList.Add(() => LoadAndHandle_Texture(file));
         }
 
         public WhModel Model { get; set; }

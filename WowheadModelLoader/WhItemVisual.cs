@@ -24,7 +24,7 @@ namespace WowheadModelLoader
         {
             Id = id;
 
-            LoadAndHandle_ItemVisual(Id);
+            WhDefferedList.Add(() => LoadAndHandle_ItemVisual(Id));
         }
 
         // ToDo: я не уверен что тут тип меты такой - надо протестить (аналогично везде, в загрузке из json-а и тд)
