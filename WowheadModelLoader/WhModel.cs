@@ -8,6 +8,8 @@ using WowheadModelLoader.Json;
 
 namespace WowheadModelLoader
 {
+    // ToDo: неплохо было бы по всему этому проекту заменить get по индексу в dictionary на DictionaryExtensions.GetOrDefault()
+
     /// <summary>
     /// ZamModelViewer.Wow.Model
     /// </summary>
@@ -27,7 +29,8 @@ namespace WowheadModelLoader
 
             Opts = viewerOptions;
 
-            //self.mount = null;
+            Mount = null;
+
             //self.isMount = self.opts.mount && self.opts.mount.type == ZamModelViewer.Wow.Types.NPC && self.opts.mount.id == self.model.id;
             //if (self.model.type == ZamModelViewer.Wow.Types.CHARACTER) {
             //    if (self.opts.mount && self.opts.mount.type == ZamModelViewer.Wow.Types.NPC && self.opts.mount.id) {
@@ -152,8 +155,10 @@ namespace WowheadModelLoader
             //self.textureAnims = null;
             TextureAnimLookup = null;
             TextureReplacements = null;
-            //self.attachments = null;
+
+            Attachments = null;
             AttachmentLookup = null;
+
             //self.colors = null;
             //self.alphas = null;
             AlphaLookup = null;
@@ -176,6 +181,8 @@ namespace WowheadModelLoader
         public bool Loaded { get; set; }
 
         public WhViewerOptions Opts { get; set; }
+
+        public object Mount { get; set; }
 
         public WhRace Race { get; set; }
         public WhGender Gender { get; set; }
@@ -239,7 +246,10 @@ namespace WowheadModelLoader
 
         public short[] TextureAnimLookup { get; set; }
         public short[] TextureReplacements { get; set; }
+
+        public WhAttachment[] Attachments { get; set; }
         public short[] AttachmentLookup { get; set; }
+
         public short[] AlphaLookup { get; set; }
 
         public WhHairGeosets HairGeosets { get; set; }
@@ -250,6 +260,9 @@ namespace WowheadModelLoader
         public WhModel HornsModel { get; set; }
 
         public List<WhTexUnit> SortedTexUnits { get; set; }
+
+        public int Bone { get; set; }
+        public WhAttachment Attachment { get; set; }
 
         public void Load()
         {
@@ -791,14 +804,15 @@ namespace WowheadModelLoader
                         TextureReplacements[i] = r.ReadInt16();
                 }
 
-                //r.position = ofsAttachments;
-                //var numAttachments = r.getInt32();
-                //if (numAttachments > 0) {
-                //    self.attachments = new Array(numAttachments);
-                //    for (i = 0; i < numAttachments; ++i) {
-                //        self.attachments[i] = new Wow.Attachment(r)
-                //    }
-                //}
+                r.BaseStream.Seek(ofsAttachments, SeekOrigin.Begin);
+                var numAttachments = r.ReadInt32();
+                if (numAttachments > 0)
+                {
+                    Attachments = new WhAttachment[numAttachments];
+
+                    for (int i = 0; i < numAttachments; i++)
+                        Attachments[i] = new WhAttachment(r);
+                }
 
                 r.BaseStream.Seek(ofsAttachmentLookup, SeekOrigin.Begin);
                 var numAttachmentLookup = r.ReadInt32();
@@ -858,6 +872,141 @@ namespace WowheadModelLoader
             }
 
             OnLoaded();
+        }
+
+        public List<short> GetSlotAttachments(WhSlot slot, WhItem item)
+        {
+            var slotAttachments = new List<short>();
+
+            if (Attachments != null && AttachmentLookup != null)
+            {
+                var slotMap = new Dictionary<WhSlot, Func<WhItem, int[]>>()
+                {
+                    { (WhSlot)1, itm => new int[] { 11 } },
+                    { (WhSlot)3, itm => new int[] { 6, 5 } },
+                    { (WhSlot)22,
+                        itm =>
+                        {
+                            if (itm != null && itm.Slot == WhSlot.SHIELD)
+                                return new int[] { 0 };
+
+                            return new int[] { 2 };
+                        }
+                    },
+                    { (WhSlot)21, itm => new int[] { 1 } },
+                    { (WhSlot)17, itm => new int[] { 1 } },
+                    { (WhSlot)15, itm => new int[] { 2 } },
+                    { (WhSlot)25, itm => new int[] { 1 } },
+                    { (WhSlot)13, itm => new int[] { 1 } },
+                    { (WhSlot)14, itm => new int[] { 0 } },
+                    { (WhSlot)23, itm => new int[] { 2 } },
+                    { (WhSlot)6, itm => new int[] { 53 } },
+                    { (WhSlot)26, itm => new int[] { 1 } },
+                    { (WhSlot)27, itm => new int[] { 55 } }
+                };
+
+                var sheathStandardOverrides = new Dictionary<WhSlot, int>()
+                {
+                    { (WhSlot)21, 26},
+                    { (WhSlot)22, 27},
+                    { (WhSlot)15, 28},
+                    { (WhSlot)17, 26},
+                    { (WhSlot)25, 32},
+                    { (WhSlot)13, 32},
+                    { (WhSlot)23, 33},
+                    { (WhSlot)14, 28},
+                    { (WhSlot)26, 26 }
+                };
+
+                var sheathWeaponOverrides = new Dictionary<int, Dictionary<WhSlot, int>>()
+                {
+                    { 0, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 26 },
+                            { (WhSlot)22, 27 }
+                        }
+                    },
+                    { 1, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 26 },
+                            { (WhSlot)22, 27 }
+                        }
+                    },
+                    { 2, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 30 },
+                            { (WhSlot)22, 31 }
+                        }
+                    },
+                    { 3, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 33 },
+                            { (WhSlot)22, 32 }
+                        }
+                    },
+                    { 4, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 26 },
+                            { (WhSlot)22, 27 },
+                            { (WhSlot)15, 28 }
+                        }
+                    },
+                    { 5, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 26}
+                        }
+                    },
+                    { 6, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 26 },
+                            { (WhSlot)22, 27 }
+                        }
+                    },
+                    { 7, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 26 },
+                            { (WhSlot)22, 27 }
+                        }
+                    },
+                    { 8, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 26 },
+                            { (WhSlot)22, 27 }
+                        }
+                    },
+                    { 9, new Dictionary<WhSlot, int>()
+                        {
+                            { (WhSlot)21, 33 },
+                            { (WhSlot)22, 28 }
+                        }
+                    },
+                };
+
+                if (slotMap.ContainsKey(slot))
+                {
+                    var data = slotMap[slot](item);
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        var att = data[i];
+
+                        if ((SheathMain >= 0 || SheathOff >= 0 || Mount != null) && sheathStandardOverrides.ContainsKey(slot))
+                            att = sheathStandardOverrides[slot];
+
+                        if (SheathMain >= 0 && slot == (WhSlot)21 && sheathWeaponOverrides[SheathMain].ContainsKey(slot))
+                            att = sheathWeaponOverrides[SheathMain][slot];
+
+                        if (SheathOff >= 0 && slot == (WhSlot)22 && sheathWeaponOverrides[SheathOff].ContainsKey(slot))
+                            att = sheathWeaponOverrides[SheathOff][slot];
+
+                        if (att >= AttachmentLookup.Length || AttachmentLookup[att] == -1)
+                            continue;
+
+                        slotAttachments.Add(AttachmentLookup[att]);
+                    }
+                }
+            }
+
+            return slotAttachments;
         }
 
         public void OnLoaded()
@@ -1346,6 +1495,7 @@ namespace WowheadModelLoader
             }
 
             bool showTabard = false;
+
             var hasDress = robeChest | robePants;
             if (!hasDress && tabard != null && tabard.GeosetGroup != null && tabard.GeosetGroup[0] != 0)
             {
@@ -1365,7 +1515,7 @@ namespace WowheadModelLoader
 
                 SetGeometryVisible((ushort)tabardGeoset, (ushort)tabardGeoset, true);
             }
-            else if ((flags & 16) != 0)
+            else if ((flags & 16) == 0)
             {
             }
             else
@@ -1379,7 +1529,8 @@ namespace WowheadModelLoader
                 }
             }
 
-            if (!(showTabard || robeChest)) {
+            if (!(showTabard || robeChest))
+            {
                 if (chest != null && chest.GeosetGroup != null && chest.GeosetGroup[1] != 0)
                 {
                     var chestGeoset = 1001 + chest.GeosetGroup[1];
@@ -1392,7 +1543,8 @@ namespace WowheadModelLoader
                 }
             }
 
-            if (!robeChest) {
+            if (!robeChest)
+            {
                 if (pants != null && pants.GeosetGroup != null && pants.GeosetGroup[0] != 0)
                 {
                     var geosetGroup = pants.GeosetGroup[0];
@@ -1437,32 +1589,43 @@ namespace WowheadModelLoader
                 HornsModel.SetGeometryVisible((ushort)(2500 + EyePatchIndex), (ushort)(2500 + EyePatchIndex), true);
             }
 
-            //var attach;
-            //for (slot in self.items) {
-            //    item = self.items[slot];
-            //    if (!item.models)
-            //        continue;
-            //    var slotAttachments = self.getSlotAttachments(slot, item);
-            //    for (i = 0; i < item.models.length; ++i) {
-            //        if (item.models[i] && !item.models[i].isCollection && slotAttachments.length > i) {
-            //            attach = self.attachments[slotAttachments[i]];
-            //            item.models[i].bone = attach.bone;
-            //            item.models[i].attachment = attach;
-            //            if (item.visual && item.visual.models) {
-            //                var itemModel = item.models[i].model;
-            //                for (var j = 0; j < item.visual.models.length; j++) {
-            //                    if (!itemModel.attachments || !itemModel.attachments[j] || !item.visual.models[j])
-            //                        continue;
-            //                    attach = itemModel.attachments[j];
-            //                    item.visual.models[j].bone = attach.bone;
-            //                    item.visual.models[j].attachment = attach;
-            //                    item.visual.models[j].model.bone = attach.bone;
-            //                    item.visual.models[j].model.attachment = attach
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
+            foreach (var itemInSlot in Items)
+            {
+                var slot = itemInSlot.Key;
+                var item = itemInSlot.Value;
+
+                if (item.Models == null)
+                    continue;
+
+                var slotAttachments = GetSlotAttachments(slot, item);
+                for (int i = 0; i < item.Models.Count; i++)
+                {
+                    if (item.Models[i] != null && !item.Models[i].IsCollection && slotAttachments.Count > i)
+                    {
+                        var attach = Attachments[slotAttachments[i]];
+                        item.Models[i].Bone = attach.Bone;
+                        item.Models[i].Attachment = attach;
+
+                        if (item.Visual != null && item.Visual.Models != null)
+                        {
+                            var itemModel = item.Models[i].Model;
+
+                            for (var j = 0; j < item.Visual.Models.Length; j++)
+                            {
+                                if (itemModel.Attachments == null || itemModel.Attachments[j] == null || item.Visual.Models[j] == null)
+                                    continue;
+
+                                attach = itemModel.Attachments[j];
+
+                                item.Visual.Models[j].Bone = attach.Bone;
+                                item.Visual.Models[j].Attachment = attach;
+                                item.Visual.Models[j].Model.Bone = attach.Bone;
+                                item.Visual.Models[j].Model.Attachment = attach;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void CompositeTextures()

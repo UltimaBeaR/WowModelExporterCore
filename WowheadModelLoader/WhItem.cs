@@ -32,8 +32,7 @@ namespace WowheadModelLoader
         public int[] GeosetGroup { get; set; }
         public int Flags { get; set; }
         public bool Loaded { get; set; }
-        // ToDo: это Wow.ItemVisual
-        public object Visual { get; set; }
+        public WhItemVisual Visual { get; set; }
         public int Visualid { get; set; }
 
         public int Id { get; set; }
@@ -222,9 +221,7 @@ namespace WowheadModelLoader
                 SortValue += 2;
 
             if (Visualid != 0)
-            {
-                //Visual = new Wow.ItemVisual(self.models[0].model, self.visualid)
-            }
+                Visual = new WhItemVisual(Models[0].Model, Visualid);
 
             Loaded = true;
 
@@ -233,12 +230,15 @@ namespace WowheadModelLoader
 
         public void SetVisual(int id)
         {
-            //var self = this;
-            //if (self.visual)
-            //{
-            //    self.visual.destroy()
-            //}
-            //self.visualid = id
+            if (Visual != null)
+            {
+                Visual = null;
+
+                // было так
+                //self.visual.destroy()
+            }
+
+            Visualid = id;
         }
 
         private void LoadAndHandle_Meta(string metaPath, int id)
@@ -254,7 +254,7 @@ namespace WowheadModelLoader
         public WhRace Race { get; set; }
         public WhGender Gender { get; set; }
         public int Bone { get; set; }
-        public object Attachment { get; set; }
+        public WhAttachment Attachment { get; set; }
         public WhModel Model { get; set; }
         public bool IsCollection { get; set; }
     }

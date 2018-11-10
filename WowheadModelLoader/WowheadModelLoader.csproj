@@ -64,6 +64,7 @@
     <Compile Include="ByteVec4.cs" />
     <Compile Include="Vec4.cs" />
     <Compile Include="WhAnimation.cs" />
+    <Compile Include="WhAttachment.cs" />
     <Compile Include="WhCharVariationType.cs" />
     <Compile Include="WhClass.cs" />
     <Compile Include="WhCustomFeatures.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="WhGlobal.cs" />
     <Compile Include="WhHairGeosets.cs" />
     <Compile Include="WhItem.cs" />
+    <Compile Include="WhItemVisual.cs" />
     <Compile Include="WhMaterial.cs" />
     <Compile Include="WhMesh.cs" />
     <Compile Include="WhModel.cs" />

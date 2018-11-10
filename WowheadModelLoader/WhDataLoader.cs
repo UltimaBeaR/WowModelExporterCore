@@ -29,6 +29,15 @@ namespace WowheadModelLoader
             return JsonConvert.DeserializeObject<Dictionary<string, WhJsonGathererItem>>(itemsJson);
         }
 
+        public static WhJsonMeta LoadItemVisual(int id)
+        {
+            var relativeUrl = $"meta/itemvisual/{id}.json";
+            var url = GetModelViewerUrl(relativeUrl);
+            var json = DataLoaderBase.LoadString(url, ".json");
+
+            return JsonConvert.DeserializeObject<WhJsonMeta>(json);
+        }
+
         public static Bitmap LoadTexture(uint file)
         {
             var relativeUrl = $"textures/{file}.png";

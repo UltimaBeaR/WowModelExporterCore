@@ -33,7 +33,7 @@ namespace WowModelExporterUnityPlugin
 
         public void DoStuff(string characterId, string[] items)
         {
-            var containerGo = new GameObject("container_" + characterId);
+            var containerGo = new GameObject("container_" + characterId + "_" + (items?.Count().ToString() ?? "0"));
             containerGo.transform.position = Vector3.zero;
 
             var model = _exporter.LoadModel(characterId, items);
