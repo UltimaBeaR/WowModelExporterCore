@@ -84,7 +84,7 @@
     <Compile Include="WhTexture.cs" />
     <Compile Include="WhTexUnit.cs" />
     <Compile Include="WhType.cs" />
-    <Compile Include="WhTypedModel.cs" />
+    <Compile Include="WhModelInfo.cs" />
     <Compile Include="WhVertex.cs" />
     <Compile Include="WhViewerOptions.cs" />
   </ItemGroup>

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -10,130 +9,95 @@ namespace WowModelExporterUnityPlugin
 {
     public class WowModelExporterUnityPlugin
     {
-        // ToDo: основная модель - перс, у него внутренние модели - итемы.
-        // у каждой модели есть несколько texunits (брать только те у которых show = true)
-        // по сути это материалы из юнити, а модели это игровые объекты(либо меши).
-        // То есть можно на каждую модель создать объект с мешем, внутри этого меша сделать сабмеши по используемым в show(видимых) texunits.
-        // то есть создаем материалы на основе [show] texunits (текстуры исопльзуемые в материале получаются через texunit.gettextures()) и из них же вытаскиваем сабмеши.
-        // далее на каждую модель создаем игровой объект с мешем, пихаем в сабмеши полученные сабмеши с материалом. при этом сабмеши видимо могут шарится, там надо будет
-        // перестраивать меш(вертексы и индексы), так чтобы удалить неиспользуемые куски. то есть должны остаться только те вершины и индексы,
-        // которые используются в видимых texunits (они определяют границы исползуемых индексов, которые определяют используемые вершины)
-
-
-
         public WowModelExporterUnityPlugin()
         {
             _exporter = new WowModelExporter();
         }
 
-        private Texture2D CreateTextureFromModel(WhModel model)
+        public void CreateCharacterGameObjects(WhRace race, WhGender gender, string[] items)
         {
-            return CreateTextureFromBitmap(_exporter.GetFirstTexture(model));
-        }
+            var characterWowObject = _exporter.LoadCharacter(race, gender, items);
 
-        public void DoStuff(string characterId, string[] items)
-        {
-            var containerGo = new GameObject("container_" + characterId + "_" + (items?.Count().ToString() ?? "0"));
+            var containerGo = new GameObject();
             containerGo.transform.position = Vector3.zero;
 
-            var model = _exporter.LoadModel(characterId, items);
+            var characterGo = CreateGameObjectForWowObject(
+                "character_" + race.ToString() + "_" + gender.ToString() + "_" + (items?.Count().ToString() ?? "0"),
+                containerGo.transform,
+                characterWowObject);
 
-            var texture = CreateTextureFromModel(model);
-
-            var mesh = CreateMesh(model);
-
-            CreateGameObject(containerGo, "character", mesh, texture);
-
-            foreach (var item in model.Items)
-            {
-                if (item.Value.Models == null || !item.Value.Models.Any())
-                    continue;
-
-                var itemModel = item.Value.Models.First().Model;
-                var itemMesh = CreateMesh(itemModel);
-
-                var unityItemTexture = CreateTextureFromModel(itemModel);
-                CreateGameObject(containerGo, "item_" + item.Key.ToString() + "_" + item.Value.Id, itemMesh, unityItemTexture);
-            }
+            foreach (var childWowObject in characterWowObject.Children)
+                CreateGameObjectForWowObject("item", characterGo.transform, childWowObject);
         }
 
-        private GameObject CreateGameObject(GameObject parent, string name, Mesh mesh, Texture2D mainTexture)
+        public GameObject CreateGameObjectForWowObject(string name, Transform parent, WowObject wowObject)
         {
-            var go = new GameObject(name);
+            var mesh = CreateMeshFromWowMeshWithMaterials(wowObject.Mesh);
+            var materials = CreateMaterialsFromWowMeshWithMaterials(wowObject.Mesh);
 
+            var go = new GameObject(name);
             go.transform.position = Vector3.zero;
+            go.transform.parent = parent;
 
             var meshFilter = go.AddComponent<MeshFilter>();
             var renderer = go.AddComponent<MeshRenderer>();
 
             meshFilter.mesh = mesh;
-
-
-            // ToDo: по аналогии с тем как сделано в js варианте TexUnit, надо также получить текстуру по TexUnit-у (= сабмеш в юнити) и сделать для нее материал и поставить на соответствующий
-            // сабмеш (ее еще надо видимо будет загрузить, ну скорее всего код для этого есть он просто закомменчен сейчас, в том же месте где идет получение текстуры для кожи)
-
-            renderer.materials = new Material[mesh.subMeshCount];
-
-            foreach (var material in renderer.materials)
-            {
-                // Smoothness
-                material.SetFloat("_Glossiness", 0);
-
-                //StandardShaderUtils.ChangeRenderMode(material, StandardShaderUtils.BlendMode.Transparent);
-                //material.color = new UnityEngine.Color(Random.value, Random.value, Random.value, 0.5f);
-                material.SetTexture("_MainTex", mainTexture);
-
-
-            }
-
-
-
-            go.transform.parent = parent.transform;
+            renderer.materials = materials;
 
             return go;
         }
 
-        private Mesh CreateMesh(WhModel model)
+        public Mesh CreateMeshFromWowMeshWithMaterials(WowMeshWithMaterials wowMesh)
         {
             var mesh = new Mesh();
 
-            mesh.SetVertices(model.Vertices
-                .Select(x => MakeVector3PositionFromVec3Position(x.Position))
-                .ToList());
+            var vertices = wowMesh.Vertices
+                .Select(x => new Vector3(x.Position.X, x.Position.Y, x.Position.Z))
+                .ToList();
 
-            mesh.SetUVs(0, model.Vertices
-                .Select(x => new Vector2(x.U, 1f - x.V))
-                .ToList());
-            mesh.SetUVs(1, model.Vertices
-                .Select(x => new Vector2(x.U2, 1f - x.V2))
-                .ToList());
+            var uv1 = wowMesh.Vertices
+                .Select(x => new Vector2(x.UV1.X, x.UV1.Y))
+                .ToList();
 
-            var submeshesTriangles = new List<List<int>>();
+            var uv2 = wowMesh.Vertices
+                .Select(x => new Vector2(x.UV2.X, x.UV2.Y))
+                .ToList();
 
-            foreach (var texUnit in model.TexUnits)
-            {
-                if (!texUnit.Show)
-                    continue;
+            mesh.SetVertices(vertices);
 
-                var submesh = texUnit.Mesh;
+            mesh.SetUVs(0, uv1);
+            mesh.SetUVs(1, uv2);
 
-                var triangles = model.Indices
-                    .Skip(submesh.IndexStart)
-                    .Take(submesh.IndexCount)
-                    .Select(x => (int)x)
-                    .ToList();
-
-                submeshesTriangles.Add(triangles);
-            }
-
-            mesh.subMeshCount = submeshesTriangles.Count;
-            for(int submeshIdx = 0; submeshIdx < submeshesTriangles.Count; submeshIdx++)
-                mesh.SetTriangles(submeshesTriangles[submeshIdx], submeshIdx);
+            mesh.subMeshCount = wowMesh.Submeshes.Count;
+            for (int submeshIdx = 0; submeshIdx < wowMesh.Submeshes.Count; submeshIdx++)
+                mesh.SetTriangles(wowMesh.Submeshes[submeshIdx].Triangles.Select(x => (int)x).ToList(), submeshIdx);
 
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
 
             return mesh;
+        }
+
+        public Material[] CreateMaterialsFromWowMeshWithMaterials(WowMeshWithMaterials wowMesh)
+        {
+            var materials = new Material[wowMesh.Submeshes.Count];
+
+            for (int submeshIdx = 0; submeshIdx < wowMesh.Submeshes.Count; submeshIdx++)
+            {
+                var whMaterial = wowMesh.Submeshes[submeshIdx].Material;
+
+                var material = new Material(Shader.Find("Standard"));
+                
+                // Smoothness
+                material.SetFloat("_Glossiness", 0);
+
+                material.SetTexture("_MainTex", CreateTextureFromBitmap(whMaterial.MainImage));
+
+                materials[submeshIdx] = material;
+            }
+
+            return materials;
         }
 
         private Texture2D CreateTextureFromBitmap(Bitmap bitmap)
@@ -150,11 +114,6 @@ namespace WowModelExporterUnityPlugin
             texture.LoadImage(pngBytes);
 
             return texture;
-        }
-
-        private Vector3 MakeVector3PositionFromVec3Position(Vec3 position)
-        {
-            return new Vector3(position.X, position.Z, -position.Y);
         }
 
         private WowModelExporter _exporter;

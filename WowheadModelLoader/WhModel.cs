@@ -525,10 +525,11 @@ namespace WowheadModelLoader
                     _Load(WhType.PATH, meta.Model.ToString());
                 else if ((int)meta.Race > 0)
                 {
-                    var sModel = meta.Race.GetStringIdentifier() + meta.Gender.GetStringIdentifier();
                     Race = meta.Race;
                     Gender = meta.Gender;
-                    _Load(WhType.CHARACTER, sModel);
+
+                    var modelInfo = WhModelInfo.CreateForCharacter(meta.Race, meta.Gender);
+                    _Load(modelInfo.Type, modelInfo.Id);
                 }
             }
         }

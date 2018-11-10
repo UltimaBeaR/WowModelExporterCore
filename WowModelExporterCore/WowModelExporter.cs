@@ -1,12 +1,18 @@
-﻿using System.Drawing;
-using System.Linq;
+﻿using System.Linq;
 using WowheadModelLoader;
 
 namespace WowModelExporterCore
 {
     public class WowModelExporter
     {
-        public WhModel LoadModel(string characterId, string[] itemIds)
+        public WowObject LoadCharacter(WhRace race, WhGender gender, string[] itemIds)
+        {
+            var whCharacterModel = LoadWhCharacterModel(race, gender, itemIds);
+
+            return new WowObjectBuilder().BuildFromCharacterWhModel(whCharacterModel);
+        }
+
+        private WhModel LoadWhCharacterModel(WhRace race, WhGender gender, string[] itemIds)
         {
             var gathererItems = WhDataLoader.LoadItemsFromGatherer(itemIds);
 
@@ -27,25 +33,9 @@ namespace WowModelExporterCore
 
             var characterModel = new WhModel(
                 options,
-                new WhModelInfo() { Type = WhType.CHARACTER, Id = characterId }, 0);
+                WhModelInfo.CreateForCharacter(race, gender), 0);
 
             return characterModel;
-        }
-
-        public Bitmap GetFirstTexture(WhModel model)
-        {
-            var texturesWithCompositeFirst = model.TexUnits.Where(x => x.Show).SelectMany(x => x.GetTextures().Values).Select(x => new { ddd = x, order = x.Img != null ? 0 : 1 }).OrderBy(x => x.order).Select(x => x.ddd).ToArray();
-
-            foreach (var texture in texturesWithCompositeFirst)
-            {
-                if (texture.Img != null)
-                    return texture.Img;
-
-                if (texture.Texture != null)
-                    return texture.Texture.Img;
-            }
-
-            return null;
         }
     }
 }

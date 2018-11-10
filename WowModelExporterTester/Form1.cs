@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using WowModelExporterCore;
+using WowheadModelLoader;
 
 namespace WowModelExporterTester
 {
@@ -15,41 +16,29 @@ namespace WowModelExporterTester
         {
             var exporter = new WowModelExporter();
 
-            var model = exporter.LoadModel("humanmale", new string[]
+            var wowObject = exporter.LoadCharacter(WhRace.HUMAN, WhGender.MALE, new string[]
             {
                 // шлем
                 "161600",
-
                 // плечи
                 "161621",
-
                 // плащ
                 "163365",
-
                 // чест
                 "161602",
-
                 // брасы
                 "161629",
-
                 // руки
                 "161610",
-
                 // пояс
                 "161624",
-
                 // ноги
                 "161616",
-
                 // ступни
                 "161605"
             });
 
-
-            var texture = exporter.GetFirstTexture(model);
-
-
-            textBox1.Text = model.Vertices.Length.ToString();
+            textBox1.Text = wowObject.Children.Count.ToString();
         }
     }
 }
