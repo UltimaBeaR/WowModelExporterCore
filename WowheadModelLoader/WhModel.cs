@@ -141,7 +141,7 @@ namespace WowheadModelLoader
             Animations = null;
 
             AnimLookup = null;
-            //self.bones = null;
+            Bones = null;
             BoneLookup = null;
             KeyBoneLookup = null;
 
@@ -239,6 +239,7 @@ namespace WowheadModelLoader
         public WhAnimation[] Animations { get; set; }
 
         public short[] AnimLookup { get; set; }
+        public WhBone[] Bones { get; set; }
         public short[] BoneLookup { get; set; }
         public short[] KeyBoneLookup { get; set; }
 
@@ -694,14 +695,15 @@ namespace WowheadModelLoader
                         AnimLookup[i] = r.ReadInt16();
                 }
 
-                //r.position = ofsBones;
-                //var numBones = r.getInt32();
-                //if (numBones > 0) {
-                //    self.bones = new Array(numBones);
-                //    for (i = 0; i < numBones; ++i) {
-                //        self.bones[i] = new Wow.Bone(self,i,r)
-                //    }
-                //}
+                r.BaseStream.Seek(ofsBones, SeekOrigin.Begin);
+                var numBones = r.ReadInt32();
+                if (numBones > 0)
+                {
+                    Bones = new WhBone[numBones];
+
+                    for (int i = 0; i < numBones; i++)
+                        Bones[i] = new WhBone(this, i, r);
+                }
 
                 r.BaseStream.Seek(ofsBoneLookup, SeekOrigin.Begin);
                 var numBoneLookup = r.ReadInt32();

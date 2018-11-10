@@ -63,8 +63,12 @@
     <Compile Include="Vec3.cs" />
     <Compile Include="ByteVec4.cs" />
     <Compile Include="Vec4.cs" />
+    <Compile Include="WhAnimated.cs" />
+    <Compile Include="WhAnimatedQuat.cs" />
+    <Compile Include="WhAnimatedVec3.cs" />
     <Compile Include="WhAnimation.cs" />
     <Compile Include="WhAttachment.cs" />
+    <Compile Include="WhBone.cs" />
     <Compile Include="WhCharVariationType.cs" />
     <Compile Include="WhClass.cs" />
     <Compile Include="WhCustomFeatures.cs" />
