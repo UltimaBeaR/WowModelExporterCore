@@ -80,6 +80,7 @@
     <Compile Include="WhModel.cs" />
     <Compile Include="WhRace.cs" />
     <Compile Include="WhRegion.cs" />
+    <Compile Include="WhRenderFlag.cs" />
     <Compile Include="WhSlot.cs" />
     <Compile Include="WhTexture.cs" />
     <Compile Include="WhTexUnit.cs" />

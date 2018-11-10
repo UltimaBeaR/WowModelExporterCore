@@ -70,6 +70,8 @@ namespace WowheadModelLoader.Json
             public int[] HideGeosetMale { get; set; }
             public int[] HideGeosetFemale { get; set; }
             public int[] GeosetGroup { get; set; }
+
+            // ToDo: узнать тип
             public object ParticleColor { get; set; }
         }
 

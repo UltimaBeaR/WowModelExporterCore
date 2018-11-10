@@ -7,16 +7,36 @@ namespace WowModelExporterCore
 {
     public class WowObjectBuilder
     {
-        public WowObject BuildFromCharacterWhModel(WhModel characterWhModel)
+        public WowObject BuildFromCharacterWhModel(WhModel whCharacterModel)
         {
+            // Сам перс
+
             var characterObject = new WowObject()
             {
                 Children = new List<WowObject>()
             };
 
-            characterObject.Mesh = MakeMeshFromWhModel(characterWhModel);
+            characterObject.Mesh = MakeMeshFromWhModel(whCharacterModel);
 
-            foreach (var whItem in characterWhModel.Items)
+            // Маунт
+
+            // ToDo: незнаю проверять ли флаг IsMount
+            if (whCharacterModel.Mount != null)
+            {
+                var mountObject = new WowObject()
+                {
+                    Parent = characterObject,
+                    Children = new List<WowObject>()
+                };
+
+                mountObject.Mesh = MakeMeshFromWhModel(whCharacterModel.Mount);
+
+                characterObject.Children.Add(mountObject);
+            }
+
+            // Итемы
+
+            foreach (var whItem in whCharacterModel.Items)
             {
                 if (whItem.Value.Models == null)
                     continue;

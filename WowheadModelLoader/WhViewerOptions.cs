@@ -6,6 +6,8 @@
         public bool Hd { get; set; }
         public Item[] Items { get; set; }
 
+        public WhModelInfo Mount { get; set; }
+
         public int SheathMain { get; set; }
         public int SheathOff { get; set; }
 

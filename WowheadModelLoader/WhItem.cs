@@ -171,51 +171,60 @@ namespace WowheadModelLoader
                 }
             }
 
-            //if (self.slot == Wow.Slots.BELT && meta.Model && meta.Model != 0) {
-            //    var model = {
-            //        race: 0,
-            //        gender: 0,
-            //        bone: -1,
-            //        attachment: null,
-            //        model: null
-            //    };
-            //    var modelInfo = {
-            //        type: Wow.SlotType[self.slot],
-            //        id: self.id,
-            //        parent: self.model
-            //    };
-            //    model.model = new Wow.Model(self.model.renderer,self.model.viewer,modelInfo,0,true);
-            //    model.model.loadMeta(meta, Wow.Types.ARMOR, 0);
-            //    self.models = [model]
-            //}
+            if (Slot == WhSlot.BELT && meta.Model != 0) {
+                var model = new WhItemModel()
+                {
+                    Race = WhRace.Undefined2,
+                    Gender = WhGender.MALE,
+                    Bone = -1,
+                    Attachment = null,
+                    Model = null
+                };
 
-            //if (self.slot == Wow.Slots.SHIRT || self.slot == Wow.Slots.CHEST || self.slot == Wow.Slots.ROBE || self.slot == Wow.Slots.BELT || self.slot == Wow.Slots.PANTS || self.slot == Wow.Slots.HANDS || self.slot == Wow.Slots.BOOTS || self.slot == Wow.Slots.HEAD) {
-            //    var componentIndex = 0;
-            //    if (self.slot == Wow.Slots.HEAD) {
-            //        componentIndex = 1
-            //    }
-            //    if (meta.ComponentModels && meta.ComponentModels[componentIndex]) {
-            //        var model = {
-            //            race: 0,
-            //            gender: 0,
-            //            bone: -1,
-            //            attachment: null,
-            //            model: null,
-            //            isCollection: true
-            //        };
-            //        var modelInfo = {
-            //            type: Wow.SlotType[self.slot],
-            //            id: self.id,
-            //            parent: self.model
-            //        };
-            //        model.model = new Wow.Model(self.model.renderer,self.model.viewer,modelInfo,0,true);
-            //        model.model.loadMeta(meta, Wow.Types.COLLECTION, componentIndex);
-            //        if (!self.models)
-            //            self.models = [model];
-            //        else
-            //            self.models.push(model)
-            //    }
-            //}
+                var modelInfo = new WhModelInfo()
+                {
+                    Type = WhGlobal.SlotType[Slot],
+                    Id = Id.ToString(),
+                    Parent = Model
+                };
+
+                model.Model = new WhModel(Model.Opts, modelInfo, 0, true);
+                model.Model.LoadMeta(meta, WhType.ARMOR, 0);
+                Models = new List<WhItemModel>() { model };
+            }
+
+            if (Slot == WhSlot.SHIRT || Slot == WhSlot.CHEST || Slot == WhSlot.ROBE || Slot == WhSlot.BELT || Slot == WhSlot.PANTS || Slot == WhSlot.HANDS || Slot == WhSlot.BOOTS || Slot == WhSlot.HEAD)
+            {
+                int componentIndex = 0;
+                if (Slot == WhSlot.HEAD)
+                    componentIndex = 1;
+                if (meta.ComponentModels != null && meta.ComponentModels.ContainsKey(componentIndex.ToString()))
+                {
+                    var model = new WhItemModel()
+                    {
+                        Race = WhRace.Undefined2,
+                        Gender = WhGender.MALE,
+                        Bone = -1,
+                        Attachment = null,
+                        Model = null,
+                        IsCollection = true
+                    };
+
+                    var modelInfo = new WhModelInfo()
+                    {
+                        Type = WhGlobal.SlotType[Slot],
+                        Id = Id.ToString(),
+                        Parent = Model
+                    };
+
+                    model.Model = new WhModel(Model.Opts, modelInfo, 0, true);
+                    model.Model.LoadMeta(meta, WhType.COLLECTION, componentIndex);
+                    if (Models == null)
+                        Models = new List<WhItemModel>() { model };
+                    else
+                        Models.Add(model);
+                }
+            }
 
             if (Slot == WhSlot.PANTS && GeosetGroup[2] > 0)
                 SortValue += 2;
@@ -230,13 +239,11 @@ namespace WowheadModelLoader
 
         public void SetVisual(int id)
         {
-            if (Visual != null)
-            {
-                Visual = null;
-
-                // было так
-                //self.visual.destroy()
-            }
+            //if (Visual != null)
+            //{
+            //    // было так, обнуления нет
+            //    //self.visual.destroy()
+            //}
 
             Visualid = id;
         }

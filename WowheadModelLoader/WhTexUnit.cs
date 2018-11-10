@@ -33,6 +33,7 @@ namespace WowheadModelLoader
 
             Color = null;
             Alpha = null;
+
             Unlit = false;
             Cull = false;
             NoZWrite = false;
@@ -60,12 +61,14 @@ namespace WowheadModelLoader
         public WhModel Model { get; set; }
         public WhMesh Mesh { get; set; }
         public ushort MeshId { get; set; }
-        public object RenderFlag { get; set; }
+        public WhRenderFlag RenderFlag { get; set; }
         public List<WhMaterial> Material { get; set; }
         public List<object> TextureAnim { get; set; }
         //textureMatrix
         public object Color { get; set; }
         public object Alpha { get; set; }
+
+        public bool Flip { get; set; }
         public bool Unlit { get; set; }
         public bool Cull { get; set; }
         public bool NoZWrite { get; set; }
@@ -79,7 +82,7 @@ namespace WowheadModelLoader
             Mesh = model.Meshes[MeshIndex];
             MeshId = Mesh.Id;
 
-            //ZamModelViewer.Wow.RenderFlag.ComputeFlags(self);
+            WhRenderFlag.ComputeFlags(this);
 
             // На момент теста эта штука была undefined, так что думаю можно это не использовать
             //window.MeshLoadFilter && window.MeshLoadFilter(self);
@@ -213,8 +216,11 @@ namespace WowheadModelLoader
 
         public class TextureInfo
         {
+            // Всегда будет что-то одно либо Img, либо Texture, оба одновременно заданными быть не могут
+
             public WhTexture Texture { get; set; }
             public Bitmap Img { get; set; }
+
             public int Location { get; set; }
             public string Uniform { get; set; }
             public string Unit { get; set; }

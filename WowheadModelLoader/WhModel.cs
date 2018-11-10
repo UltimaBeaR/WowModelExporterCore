@@ -31,13 +31,16 @@ namespace WowheadModelLoader
 
             Mount = null;
 
-            //self.isMount = self.opts.mount && self.opts.mount.type == ZamModelViewer.Wow.Types.NPC && self.opts.mount.id == self.model.id;
-            //if (self.model.type == ZamModelViewer.Wow.Types.CHARACTER) {
-            //    if (self.opts.mount && self.opts.mount.type == ZamModelViewer.Wow.Types.NPC && self.opts.mount.id) {
-            //        self.opts.mount.parent = self;
-            //        self.mount = new ZamModelViewer.Wow.Model(renderer,viewer,self.opts.mount,0)
-            //    }
-            //}
+            IsMount = Opts.Mount != null && Opts.Mount.Type == WhType.NPC && Opts.Mount.Id == Model.Id;
+
+            if (Model.Type == WhType.CHARACTER)
+            {
+                if (Opts.Mount != null && Opts.Mount.Type == WhType.NPC && Opts.Mount.Id != null)
+                {
+                    Opts.Mount.Parent = this;
+                    Mount = new WhModel(viewerOptions, Opts.Mount, 0);
+                }
+            }
 
             Race = WhRace.Undefined;
             Gender = WhGender.Undefined;
@@ -147,7 +150,7 @@ namespace WowheadModelLoader
             TexUnits = null;
             TexUnitLookup = null;
 
-            //self.renderFlags = null;
+            RenderFlags = null;
 
             Materials = null;
             MaterialLookup = null;
@@ -182,7 +185,8 @@ namespace WowheadModelLoader
 
         public WhViewerOptions Opts { get; set; }
 
-        public object Mount { get; set; }
+        public bool IsMount { get; set; }
+        public WhModel Mount { get; set; }
 
         public WhRace Race { get; set; }
         public WhGender Gender { get; set; }
@@ -240,6 +244,8 @@ namespace WowheadModelLoader
 
         public WhTexUnit[] TexUnits { get; set; }
         public short[] TexUnitLookup { get; set; }
+
+        public WhRenderFlag[] RenderFlags { get; set; }
 
         public WhMaterial[] Materials { get; set; }
         public short[] MaterialLookup { get; set; }
@@ -747,14 +753,15 @@ namespace WowheadModelLoader
                         TexUnitLookup[i] = r.ReadInt16();
                 }
 
-                //r.position = ofsRenderFlags;
-                //var numRenderFlags = r.getInt32();
-                //if (numRenderFlags > 0) {
-                //    self.renderFlags = new Array(numRenderFlags);
-                //    for (i = 0; i < numRenderFlags; ++i) {
-                //        self.renderFlags[i] = new Wow.RenderFlag(r)
-                //    }
-                //}
+                r.BaseStream.Seek(ofsRenderFlags, SeekOrigin.Begin);
+                var numRenderFlags = r.ReadInt32();
+                if (numRenderFlags > 0)
+                {
+                    RenderFlags = new WhRenderFlag[numRenderFlags];
+
+                    for (int i = 0; i < numRenderFlags; i++)
+                        RenderFlags[i] = new WhRenderFlag(r);
+                }
 
                 r.BaseStream.Seek(ofsMaterials, SeekOrigin.Begin);
                 var numMaterials = r.ReadInt32();
@@ -1215,9 +1222,7 @@ namespace WowheadModelLoader
         }
 
         public void UpdateMeshes()
-        {
-            //var self = this, i, j, u, Wow = ZamModelViewer.Wow, Races = Wow.Races, Genders = Wow.Genders, Slots = Wow.Slots, CharVariationType = Wow.CharVariationType;
-            
+        {            
             if (TexUnits == null || TexUnits.Length == 0)
                 return;
 
