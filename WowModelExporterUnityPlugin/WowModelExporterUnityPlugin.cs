@@ -63,10 +63,21 @@ namespace WowModelExporterUnityPlugin
             skinnedMeshRenderer.sharedMesh = mesh;
             skinnedMeshRenderer.materials = materials;
 
-            var rootBoneGo = CreateSkeletonForWowObject(parent, characterWowObject,
-                // Временно, чтобы отображались гружки для костей (потом можно поставить null сюда)
-                () => GameObject.CreatePrimitive(PrimitiveType.Sphere)
-                , out var boneTransforms);
+            var rootBoneGo = CreateSkeletonForWowObject(parent, characterWowObject, out var boneTransforms);
+
+            // ToDo: временно, чтобы отображать кружки на костях, потом убрать
+            foreach (var boneTransform in boneTransforms)
+            {
+                const float boneSphereScale = 0.05f;
+
+                if (boneTransform != null)
+                {
+                    var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    sphere.transform.parent = boneTransform;
+                    sphere.transform.localScale = new Vector3(boneSphereScale, boneSphereScale, boneSphereScale);
+                    sphere.transform.localPosition = new Vector3();
+                }
+            }
 
             ApplyMeshBindposesFromBoneHierarchy(mesh, boneTransforms, rootBoneGo.transform);
 
@@ -75,7 +86,7 @@ namespace WowModelExporterUnityPlugin
             return go;
         }
 
-        private GameObject CreateSkeletonForWowObject(Transform parent, WowObject wowObject, Func<GameObject> createGoForBone, out Transform[] boneTransforms)
+        private GameObject CreateSkeletonForWowObject(Transform parent, WowObject wowObject, out Transform[] boneTransforms)
         {
             var wowRootBone = wowObject.GetRootBone();
 
@@ -86,31 +97,24 @@ namespace WowModelExporterUnityPlugin
             }
 
             boneTransforms = new Transform[wowObject.Bones.Length];
-            return CreateSkeletonElementsForWowBoneAndItsChildren(parent, wowRootBone, createGoForBone, boneTransforms);
+            return CreateSkeletonElementsForWowBoneAndItsChildren(parent, wowRootBone, boneTransforms);
         }
 
-        private GameObject CreateSkeletonElementsForWowBoneAndItsChildren(Transform parent, WowBone wowBone, Func<GameObject> createGoForBone, Transform[] boneTransformsToFill)
+        private GameObject CreateSkeletonElementsForWowBoneAndItsChildren(Transform parent, WowBone wowBone, Transform[] boneTransformsToFill)
         {
-            var boneGo = CreateSkeletonElementsForWowBone(parent, wowBone, createGoForBone);
+            var boneGo = CreateSkeletonElementsForWowBone(parent, wowBone);
             boneTransformsToFill[wowBone.Index] = boneGo.transform;
 
             foreach (var childWowBone in wowBone.ChildBones)
-                CreateSkeletonElementsForWowBoneAndItsChildren(boneGo.transform, childWowBone, createGoForBone, boneTransformsToFill);
+                CreateSkeletonElementsForWowBoneAndItsChildren(boneGo.transform, childWowBone, boneTransformsToFill);
 
             return boneGo;
         }
 
-        private GameObject CreateSkeletonElementsForWowBone(Transform parent, WowBone wowBone, Func<GameObject> createGoForBone)
+        private GameObject CreateSkeletonElementsForWowBone(Transform parent, WowBone wowBone)
         {
-            const float rootBoneSphereScale = 0.15f;
-            const float normalBoneSphereScale = 0.05f;
-
-            float boneSphereScale = wowBone.ParentBone == null ? rootBoneSphereScale : normalBoneSphereScale;
-
-            var boneGo = createGoForBone == null ? new GameObject() : createGoForBone();
-
-            boneGo.name = (wowBone.ParentBone == null ? "root bone" : "bone") + $" [{wowBone.Index}]";
-            boneGo.transform.localScale = new Vector3(boneSphereScale, boneSphereScale, boneSphereScale);
+            var boneGo = new GameObject((wowBone.ParentBone == null ? "root bone" : "bone") + $" [{wowBone.Index}]");
+            
             boneGo.transform.position = new Vector3(wowBone.LocalPosition.X, wowBone.LocalPosition.Y, wowBone.LocalPosition.Z);
             boneGo.transform.parent = parent;
 
