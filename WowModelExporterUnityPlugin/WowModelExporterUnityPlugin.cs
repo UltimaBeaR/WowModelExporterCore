@@ -65,20 +65,6 @@ namespace WowModelExporterUnityPlugin
 
             var rootBoneGo = CreateSkeletonForWowObject(parent, characterWowObject, out var boneTransforms);
 
-            // ToDo: временно, чтобы отображать кружки на костях, потом убрать
-            foreach (var boneTransform in boneTransforms)
-            {
-                const float boneSphereScale = 0.05f;
-
-                if (boneTransform != null)
-                {
-                    var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    sphere.transform.parent = boneTransform;
-                    sphere.transform.localScale = new Vector3(boneSphereScale, boneSphereScale, boneSphereScale);
-                    sphere.transform.localPosition = new Vector3();
-                }
-            }
-
             ApplyMeshBindposesFromBoneHierarchy(mesh, boneTransforms, rootBoneGo.transform);
 
             skinnedMeshRenderer.bones = boneTransforms;
@@ -113,7 +99,7 @@ namespace WowModelExporterUnityPlugin
 
         private GameObject CreateSkeletonElementsForWowBone(Transform parent, WowBone wowBone)
         {
-            var boneGo = new GameObject((wowBone.ParentBone == null ? "[root] bone" : "bone") + $" {wowBone.Id}");
+            var boneGo = new GameObject("bone " + (wowBone.GetName() ?? wowBone.Id.ToString()));
             
             boneGo.transform.position = new Vector3(wowBone.LocalPosition.X, wowBone.LocalPosition.Y, wowBone.LocalPosition.Z);
             boneGo.transform.parent = parent;
