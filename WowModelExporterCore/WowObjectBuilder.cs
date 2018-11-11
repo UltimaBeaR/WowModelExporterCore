@@ -138,6 +138,7 @@ namespace WowModelExporterCore
                 .Select(x => new WowBone()
                 {
                     Index = Convert.ToByte(x.Index),
+                    Id = x.Id,
                     LocalPosition = ConvertPositionFromWh(x.Pivot)
                 })
                 .ToArray();
