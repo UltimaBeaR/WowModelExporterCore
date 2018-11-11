@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -18,21 +19,19 @@ namespace WowModelExporterUnityPlugin
         {
             var characterWowObject = _exporter.LoadCharacter(race, gender, items);
 
-            var containerGo = new GameObject();
+            var containerGo = new GameObject(race.ToString() + " " + gender.ToString());
             containerGo.transform.position = Vector3.zero;
 
-            var characterGo = CreateGameObjectForWowObject(
-                "character_" + race.ToString() + "_" + gender.ToString() + "_" + (items?.Count().ToString() ?? "0"),
+            var characterGo = CreateGameObjectForCharacterWowObject(
+                "character items: " + (items?.Count().ToString() ?? "0"),
                 containerGo.transform,
                 characterWowObject);
 
             foreach (var childWowObject in characterWowObject.Children)
-                CreateGameObjectForWowObject("item", characterGo.transform, childWowObject);
-
-            CreateVisibleSkeletonForWowObject(containerGo.transform, characterWowObject);
+                CreateGameObjectForWowObject("detail", characterGo.transform, childWowObject);
         }
 
-        public GameObject CreateGameObjectForWowObject(string name, Transform parent, WowObject wowObject)
+        private GameObject CreateGameObjectForWowObject(string name, Transform parent, WowObject wowObject)
         {
             var mesh = CreateMeshFromWowMeshWithMaterials(wowObject.Mesh);
             var materials = CreateMaterialsFromWowMeshWithMaterials(wowObject.Mesh);
@@ -50,28 +49,75 @@ namespace WowModelExporterUnityPlugin
             return go;
         }
 
-        public GameObject CreateVisibleSkeletonForWowObject(Transform parent, WowObject wowObject)
+        private GameObject CreateGameObjectForCharacterWowObject(string name, Transform parent, WowObject characterWowObject)
         {
-            if (wowObject.Bones == null)
-                return null;
+            var mesh = CreateMeshFromWowMeshWithMaterials(characterWowObject.Mesh);
+            var materials = CreateMaterialsFromWowMeshWithMaterials(characterWowObject.Mesh);
 
-            var skeletonRootGo = new GameObject("skeleton");
-            skeletonRootGo.transform.position = new Vector3(wowObject.Position.X, wowObject.Position.Y);
-            skeletonRootGo.transform.parent = parent;
+            var go = new GameObject(name);
+            go.transform.position = new Vector3(characterWowObject.Position.X, characterWowObject.Position.Y, characterWowObject.Position.Z);
+            go.transform.parent = parent;
 
-            foreach (var wowBone in wowObject.Bones)
-            {
-                var boneGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                const float boneSphereScale = 0.05f;
-                boneGo.transform.localScale = new Vector3(boneSphereScale, boneSphereScale, boneSphereScale);
-                boneGo.transform.position = new Vector3(wowBone.X, wowBone.Y, wowBone.Z);
-                boneGo.transform.parent = skeletonRootGo.transform;
-            }
+            var skinnedMeshRenderer = go.AddComponent<SkinnedMeshRenderer>();
 
-            return skeletonRootGo;
+            skinnedMeshRenderer.sharedMesh = mesh;
+            skinnedMeshRenderer.materials = materials;
+
+            var rootBoneGo = CreateSkeletonForWowObject(parent, characterWowObject,
+                // Временно, чтобы отображались гружки для костей (потом можно поставить null сюда)
+                () => GameObject.CreatePrimitive(PrimitiveType.Sphere)
+                , out var boneTransforms);
+
+            ApplyMeshBindposesFromBoneHierarchy(mesh, boneTransforms, rootBoneGo.transform);
+
+            skinnedMeshRenderer.bones = boneTransforms;
+
+            return go;
         }
 
-        public Mesh CreateMeshFromWowMeshWithMaterials(WowMeshWithMaterials wowMesh)
+        private GameObject CreateSkeletonForWowObject(Transform parent, WowObject wowObject, Func<GameObject> createGoForBone, out Transform[] boneTransforms)
+        {
+            var wowRootBone = wowObject.GetRootBone();
+
+            if (wowRootBone == null)
+            {
+                boneTransforms = new Transform[0];
+                return null;
+            }
+
+            boneTransforms = new Transform[wowObject.Bones.Length];
+            return CreateSkeletonElementsForWowBoneAndItsChildren(parent, wowRootBone, createGoForBone, boneTransforms);
+        }
+
+        private GameObject CreateSkeletonElementsForWowBoneAndItsChildren(Transform parent, WowBone wowBone, Func<GameObject> createGoForBone, Transform[] boneTransformsToFill)
+        {
+            var boneGo = CreateSkeletonElementsForWowBone(parent, wowBone, createGoForBone);
+            boneTransformsToFill[wowBone.Index] = boneGo.transform;
+
+            foreach (var childWowBone in wowBone.ChildBones)
+                CreateSkeletonElementsForWowBoneAndItsChildren(boneGo.transform, childWowBone, createGoForBone, boneTransformsToFill);
+
+            return boneGo;
+        }
+
+        private GameObject CreateSkeletonElementsForWowBone(Transform parent, WowBone wowBone, Func<GameObject> createGoForBone)
+        {
+            const float rootBoneSphereScale = 0.15f;
+            const float normalBoneSphereScale = 0.05f;
+
+            float boneSphereScale = wowBone.ParentBone == null ? rootBoneSphereScale : normalBoneSphereScale;
+
+            var boneGo = createGoForBone == null ? new GameObject() : createGoForBone();
+
+            boneGo.name = (wowBone.ParentBone == null ? "root bone" : "bone") + $" [{wowBone.Index}]";
+            boneGo.transform.localScale = new Vector3(boneSphereScale, boneSphereScale, boneSphereScale);
+            boneGo.transform.position = new Vector3(wowBone.LocalPosition.X, wowBone.LocalPosition.Y, wowBone.LocalPosition.Z);
+            boneGo.transform.parent = parent;
+
+            return boneGo;
+        }
+
+        private Mesh CreateMeshFromWowMeshWithMaterials(WowMeshWithMaterials wowMesh)
         {
             var mesh = new Mesh();
 
@@ -87,10 +133,29 @@ namespace WowModelExporterUnityPlugin
                 .Select(x => new Vector2(x.UV2.X, x.UV2.Y))
                 .ToList();
 
+            var boneWeights = wowMesh.Vertices
+                .Select(x => new BoneWeight()
+                {
+                    boneIndex0 = x.BoneIndexes[0],
+                    weight0 = x.BoneWeights[0],
+
+                    boneIndex1 = x.BoneIndexes[1],
+                    weight1 = x.BoneWeights[1],
+
+                    boneIndex2 = x.BoneIndexes[2],
+                    weight2 = x.BoneWeights[2],
+
+                    boneIndex3 = x.BoneIndexes[3],
+                    weight3 = x.BoneWeights[3],
+                })
+                .ToArray();
+
             mesh.SetVertices(vertices);
 
             mesh.SetUVs(0, uv1);
             mesh.SetUVs(1, uv2);
+
+            mesh.boneWeights = boneWeights;
 
             mesh.subMeshCount = wowMesh.Submeshes.Count;
             for (int submeshIdx = 0; submeshIdx < wowMesh.Submeshes.Count; submeshIdx++)
@@ -102,7 +167,23 @@ namespace WowModelExporterUnityPlugin
             return mesh;
         }
 
-        public Material[] CreateMaterialsFromWowMeshWithMaterials(WowMeshWithMaterials wowMesh)
+        /// <summary>
+        /// Записывает <see cref="Mesh.bindposes"/> от текущего расположения костей в просранстве. Кости передаются в порядке следования индексов
+        /// </summary>
+        private void ApplyMeshBindposesFromBoneHierarchy(Mesh mesh, Transform[] boneTransforms, Transform rootTransorm)
+        {
+            mesh.bindposes = boneTransforms
+                .Select(boneTransform =>
+                {
+                    if (boneTransform == null)
+                        return Matrix4x4.identity;
+
+                    return boneTransform.worldToLocalMatrix * rootTransorm.localToWorldMatrix;
+                })
+                .ToArray();
+        }
+
+        private Material[] CreateMaterialsFromWowMeshWithMaterials(WowMeshWithMaterials wowMesh)
         {
             var materials = new Material[wowMesh.Submeshes.Count];
 

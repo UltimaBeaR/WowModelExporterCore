@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using WowheadModelLoader;
@@ -17,7 +18,7 @@ namespace WowModelExporterCore
             var characterObject = new WowObject();
 
             characterObject.Mesh = MakeMeshFromWhModel(whCharacterModel);
-            characterObject.Bones = MakeBonesFromWhModel(whCharacterModel);
+            characterObject.Bones = MakeBoneHierarchyFromWhModel(whCharacterModel);
 
             // Рога
 
@@ -127,12 +128,38 @@ namespace WowModelExporterCore
             return mesh;
         }
 
-        private Vec3[] MakeBonesFromWhModel(WhModel whModel)
+        private WowBone[] MakeBoneHierarchyFromWhModel(WhModel whModel)
         {
-            if (whModel.Bones == null)
+            if (whModel.Bones == null || whModel.Bones.Length == 0)
                 return null;
 
-            return whModel.Bones.Select(x => ConvertPositionFromWh(x.Pivot)).ToArray();
+            // Формируем начальный массив всех костей и задаем абсолютные позиции для всех костей (прописываем их временно в локальную позицию)
+            var wowBones = whModel.Bones
+                .Select(x => new WowBone()
+                {
+                    Index = Convert.ToByte(x.Index),
+                    LocalPosition = ConvertPositionFromWh(x.Pivot)
+                })
+                .ToArray();
+
+            // Прописываем иерархию родители/дети для всех костей
+
+            for (int boneIdx = 0; boneIdx < wowBones.Length; boneIdx++)
+            {
+                var wowBone = wowBones[boneIdx];
+                var whBone = whModel.Bones[boneIdx];
+
+                // Если у текущей кости есть родительская кость
+                if (whBone.Parent >= 0)
+                {
+                    wowBone.ParentBone = wowBones[whBone.Parent];
+                    wowBone.ParentBone.ChildBones.Add(wowBone);
+                }
+            }
+
+            // ToDo: Вычисляем локальные позиции для полученной иерархии
+
+            return wowBones;
         }
 
         private WowMaterial MakeMaterialFromWhTexUnit(WhTexUnit whTexUnit)
@@ -175,11 +202,20 @@ namespace WowModelExporterCore
             return new WowVertex()
             {
                 Position = ConvertPositionFromWh(whVertex.Position),
+
                 Normal = whVertex.Normal,
+
                 UV1 = ConvertUVFromWh(whVertex.U, whVertex.V),
                 UV2 = ConvertUVFromWh(whVertex.U2, whVertex.V2),
-                Weights = whVertex.Weights,
-                Bones = whVertex.Bones
+
+                BoneIndexes = whVertex.Bones,
+
+                BoneWeights = new Vec4(
+                    ConvertBoneWeightFromWh(whVertex.Weights[0]),
+                    ConvertBoneWeightFromWh(whVertex.Weights[1]),
+                    ConvertBoneWeightFromWh(whVertex.Weights[2]),
+                    ConvertBoneWeightFromWh(whVertex.Weights[3])
+                )
             };
         }
 
@@ -191,6 +227,11 @@ namespace WowModelExporterCore
         private Vec2 ConvertUVFromWh(float u, float v)
         {
             return new Vec2(u, 1f - v);
+        }
+
+        private float ConvertBoneWeightFromWh(byte boneWeight)
+        {
+            return boneWeight / 255f;
         }
     }
 }
