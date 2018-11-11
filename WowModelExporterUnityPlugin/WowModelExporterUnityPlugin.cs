@@ -18,6 +18,7 @@ namespace WowModelExporterUnityPlugin
         public void CreateCharacterGameObjects(WhRace race, WhGender gender, string[] items)
         {
             var characterWowObject = _exporter.LoadCharacter(race, gender, items);
+            characterWowObject.RemoveBones(new[] { "ROOT", "body" });
 
             var containerGo = new GameObject(race.ToString() + " " + gender.ToString());
             containerGo.transform.position = Vector3.zero;
@@ -69,7 +70,22 @@ namespace WowModelExporterUnityPlugin
 
             skinnedMeshRenderer.bones = boneTransforms;
 
+            MakeAvatar(go);
+
             return go;
+        }
+
+        private void MakeAvatar(GameObject go)
+        {
+            //var humanDescription = new HumanDescription()
+            //{
+            //    human = new HumanBone[]
+            //    {
+            //        new HumanBone() { boneName = "bone body", humanName = "Hips" },
+            //    }
+            //};
+
+            //var avatar = AvatarBuilder.BuildHumanAvatar(go, humanDescription);
         }
 
         private GameObject CreateSkeletonForWowObject(Transform parent, WowObject wowObject, out Transform[] boneTransforms)
