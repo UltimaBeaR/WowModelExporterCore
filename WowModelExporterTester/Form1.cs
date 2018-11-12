@@ -2,6 +2,8 @@
 using System.Windows.Forms;
 using WowModelExporterCore;
 using WowheadModelLoader;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace WowModelExporterTester
 {
@@ -38,7 +40,7 @@ namespace WowModelExporterTester
                 "161605"
             });
 
-            textBox1.Text = wowObject.Children.Count.ToString();
+            textBox1.Text = "ok";
         }
     }
 }

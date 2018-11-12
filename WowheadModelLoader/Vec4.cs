@@ -43,5 +43,18 @@
                 throw new System.ArgumentOutOfRangeException();
             }
         }
+
+        /// <summary>
+        /// Нормализирует компоненты, чтобы их сумма была равна 1
+        /// </summary>
+        public void NormalizeSum()
+        {
+            float sum = X + Y + Z + W;
+
+            X = X / sum;
+            Y = Y / sum;
+            Z = Z / sum;
+            W = W / sum;
+        }
     }
 }
