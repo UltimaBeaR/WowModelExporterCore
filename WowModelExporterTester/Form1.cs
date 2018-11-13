@@ -2,8 +2,7 @@
 using System.Windows.Forms;
 using WowModelExporterCore;
 using WowheadModelLoader;
-using System.Linq;
-using System.Collections.Generic;
+using WowModelExporterFbx;
 
 namespace WowModelExporterTester
 {
@@ -40,7 +39,9 @@ namespace WowModelExporterTester
                 "161605"
             });
 
-            textBox1.Text = "ok";
+            var test = new Class1();
+
+            textBox1.Text = test.GetStuff();
         }
     }
 }

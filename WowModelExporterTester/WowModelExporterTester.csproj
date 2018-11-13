@@ -89,6 +89,10 @@
       <Project>{2d5e8fcd-2226-4900-a434-323971a72cde}</Project>
       <Name>WowModelExporterCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\WowModelExporterFbx\WowModelExporterFbx.vcxproj">
+      <Project>{6cede10b-c91d-43b0-b66e-cc9ce40d6972}</Project>
+      <Name>WowModelExporterFbx</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
