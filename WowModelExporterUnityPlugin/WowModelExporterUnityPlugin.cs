@@ -228,6 +228,10 @@ namespace WowModelExporterUnityPlugin
                 .Select(x => new Vector3(x.Position.X, x.Position.Y, x.Position.Z))
                 .ToList();
 
+            var normals = wowMesh.Vertices
+                .Select(x => new Vector3(x.Normal.X, x.Normal.Y, x.Normal.Z))
+                .ToList();
+
             var uv1 = wowMesh.Vertices
                 .Select(x => new Vector2(x.UV1.X, x.UV1.Y))
                 .ToList();
@@ -255,6 +259,8 @@ namespace WowModelExporterUnityPlugin
 
             mesh.SetVertices(vertices);
 
+            mesh.SetNormals(normals);
+
             mesh.SetUVs(0, uv1);
             mesh.SetUVs(1, uv2);
 
@@ -265,7 +271,7 @@ namespace WowModelExporterUnityPlugin
                 mesh.SetTriangles(wowMesh.Submeshes[submeshIdx].Triangles.Select(x => (int)x).ToList(), submeshIdx);
 
             mesh.RecalculateBounds();
-            mesh.RecalculateNormals();
+            //mesh.RecalculateNormals();
 
             return mesh;
         }

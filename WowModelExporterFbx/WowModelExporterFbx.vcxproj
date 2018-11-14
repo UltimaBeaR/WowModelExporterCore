@@ -107,6 +107,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies />
@@ -131,6 +132,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies />
@@ -156,6 +158,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WowheadModelLoader\WowheadModelLoader.csproj">
+      <Project>{edaebb19-87ae-4549-9ce4-acb267779366}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\WowModelExporterCore\WowModelExporterCore.csproj">
       <Project>{2d5e8fcd-2226-4900-a434-323971a72cde}</Project>
     </ProjectReference>

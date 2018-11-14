@@ -6,7 +6,7 @@ namespace WowModelExporterCore
     {
         public Vec3 Position { get; set; }
 
-        public Vec4 Normal { get; set; }
+        public Vec3 Normal { get; set; }
 
         public Vec2 UV1 { get; set; }
         public Vec2 UV2 { get; set; }

@@ -204,7 +204,7 @@ namespace WowModelExporterCore
             {
                 Position = ConvertPositionFromWh(whVertex.Position),
 
-                Normal = whVertex.Normal,
+                Normal = ConvertPositionFromWh(new Vec3(whVertex.Normal.X, whVertex.Normal.Y, whVertex.Normal.Z)),
 
                 UV1 = ConvertUVFromWh(whVertex.U, whVertex.V),
                 UV2 = ConvertUVFromWh(whVertex.U2, whVertex.V2),
@@ -222,7 +222,9 @@ namespace WowModelExporterCore
 
         private Vec3 ConvertPositionFromWh(Vec3 position)
         {
-            return new Vec3(position.X, position.Z, -position.Y);
+            var res = new Vec3(position.X, position.Z, -position.Y);
+            res.RotateAroundY(-((float)Math.PI / 2));
+            return res;
         }
 
         private Vec2 ConvertUVFromWh(float u, float v)

@@ -1,4 +1,6 @@
-﻿namespace WowheadModelLoader
+﻿using System;
+
+namespace WowheadModelLoader
 {
     public struct Vec3
     {
@@ -38,6 +40,42 @@
 
                 throw new System.ArgumentOutOfRangeException();
             }
+        }
+
+        public void RotateAroundX(float angleRad)
+        {
+            var sin = (float)Math.Sin(angleRad);
+            var cos = (float)Math.Cos(angleRad);
+
+            var y = Y * cos - Z * sin;
+            var z = Y * sin + Z * cos;
+
+            Y = y;
+            Z = z;
+        }
+
+        public void RotateAroundY(float angleRad)
+        {
+            var sin = (float)Math.Sin(angleRad);
+            var cos = (float)Math.Cos(angleRad);
+
+            var x = X * cos + Z * sin;
+            var z = -X * sin + Z * cos;
+
+            X = x;
+            Z = z;
+        }
+
+        public void RotateAroundZ(float angleRad)
+        {
+            var sin = (float)Math.Sin(angleRad);
+            var cos = (float)Math.Cos(angleRad);
+
+            var x = X * cos - Y * sin;
+            var y = X * sin + Y * cos;
+
+            X = X;
+            Y = y;
         }
     }
 }
