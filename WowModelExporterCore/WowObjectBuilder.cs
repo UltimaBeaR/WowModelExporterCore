@@ -19,6 +19,7 @@ namespace WowModelExporterCore
 
             characterObject.Mesh = MakeMeshFromWhModel(whCharacterModel);
             characterObject.Bones = MakeBoneHierarchyFromWhModel(whCharacterModel);
+            TranslateBonePositionsFromGlobalToLocal(characterObject);
 
             // Рога
 
@@ -158,9 +159,29 @@ namespace WowModelExporterCore
                 }
             }
 
-            // ToDo: Вычисляем локальные позиции для полученной иерархии
-
             return wowBones;
+        }
+
+        private void TranslateBonePositionsFromGlobalToLocal(WowObject wowObject)
+        {
+            var rootBone = wowObject.GetRootBone();
+            TranslateBoneChildrenPositionsFromGlobalToLocal(rootBone);
+        }
+
+        private void TranslateBoneChildrenPositionsFromGlobalToLocal(WowBone wowBone)
+        {
+            if (wowBone == null)
+                return;
+
+            foreach (var childBone in wowBone.ChildBones)
+            {
+                TranslateBoneChildrenPositionsFromGlobalToLocal(childBone);
+
+                childBone.LocalPosition = new Vec3(
+                    childBone.LocalPosition.X - wowBone.LocalPosition.X,
+                    childBone.LocalPosition.Y - wowBone.LocalPosition.Y,
+                    childBone.LocalPosition.Z - wowBone.LocalPosition.Z);
+            }
         }
 
         private WowMaterial MakeMaterialFromWhTexUnit(WhTexUnit whTexUnit)

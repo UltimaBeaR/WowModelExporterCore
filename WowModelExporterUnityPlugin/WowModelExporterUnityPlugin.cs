@@ -213,9 +213,9 @@ namespace WowModelExporterUnityPlugin
         private GameObject CreateSkeletonElementsForWowBone(Transform parent, WowBone wowBone)
         {
             var boneGo = new GameObject(wowBone.GetName() ?? ("bone " + wowBone.Id));
-            
-            boneGo.transform.position = new Vector3(wowBone.LocalPosition.X, wowBone.LocalPosition.Y, wowBone.LocalPosition.Z);
+
             boneGo.transform.parent = parent;
+            boneGo.transform.localPosition = new Vector3(wowBone.LocalPosition.X, wowBone.LocalPosition.Y, wowBone.LocalPosition.Z);
 
             return boneGo;
         }
