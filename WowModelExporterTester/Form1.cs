@@ -41,7 +41,7 @@ namespace WowModelExporterTester
 
             var test = new Exporter();
 
-            textBox1.Text = test.ExportWowObject(wowObject, "tessst.fbx").ToString();
+            textBox1.Text = test.ExportWowObject(wowObject, "newtest").ToString();
         }
     }
 }
