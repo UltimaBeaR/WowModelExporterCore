@@ -36,10 +36,6 @@ namespace WowModelExporterCore
             return Bones.First(x => x != null && x.ParentBone == null);
         }
 
-        // ToDo: при удалении костей у меня еще какой то глюк происходит с позициями. Это хорошо видно на toes (кости смещены сильно вверх от геометрии)
-        // это либо изза удаления костей между toe и родителем который не удаляется либо изза того что я позиции все недавно начал считать локальными.
-        // повторяется как в юнити плагине так и в экспорте в fbx
-
         /// <summary>
         /// "Схлопывает" все кости, не включенные в список к родителям (мержит свои веса и иерархию в родителей)
         /// Возможна ситуация что останется рутовая кость, которая отсутствует в списке, а внутри нее будет несколько "детей" из списка
@@ -115,7 +111,7 @@ namespace WowModelExporterCore
 
                     foreach (var child in boneToRemove.ChildBones)
                     {
-                        child.ParentBone = boneToRemove.ParentBone;
+                        child.SetParentAndKeepGlobalPosition(boneToRemove.ParentBone);
                         child.ParentBone?.ChildBones.Add(child);
                     }
 

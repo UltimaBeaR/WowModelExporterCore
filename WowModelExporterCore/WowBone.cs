@@ -16,7 +16,25 @@ namespace WowModelExporterCore
         }
 
         public WowBone ParentBone { get; set; }
+
         public List<WowBone> ChildBones { get; set; }
+
+        /// <summary>
+        /// Устанавливает родительскую кость без изменения глобальной позиции текущей кости
+        /// </summary>
+        public void SetParentAndKeepGlobalPosition(WowBone parentBone)
+        {
+            var globalPosition = GetGlobalPosition();
+
+            ParentBone = parentBone;
+
+            var parentGlobalPosition = ParentBone?.GetGlobalPosition() ?? new Vec3(0, 0, 0);
+
+            LocalPosition = new Vec3(
+                globalPosition.X - parentGlobalPosition.X,
+                globalPosition.Y - parentGlobalPosition.Y,
+                globalPosition.Z - parentGlobalPosition.Z);
+        }
 
         /// <summary>
         /// Индекс кости в массиве костей (тот, который указывается в <see cref="WowVertex.BoneIndexes"/>)
@@ -34,6 +52,19 @@ namespace WowModelExporterCore
         /// Локальная позиция кости, относительно родителя
         /// </summary>
         public Vec3 LocalPosition { get; set; }
+
+        public Vec3 GetGlobalPosition()
+        {
+            if (ParentBone == null)
+                return LocalPosition;
+
+            var parentGlobalPosition = ParentBone.GetGlobalPosition();
+
+            return new Vec3(
+                LocalPosition.X + parentGlobalPosition.X,
+                LocalPosition.Y + parentGlobalPosition.Y,
+                LocalPosition.Z + parentGlobalPosition.Z);
+        }
 
         /// <summary>
         /// Задает имя. После этого имя перестанет генерироваться из таблицы подстановки имен по id кости. Чтобы убрать явно заданное имя можно установить его в null
