@@ -94,6 +94,10 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\FBX_SDK_2019\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>
+      </LanguageStandard>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libfbxsdk-md.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -108,6 +112,10 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>
+      </LanguageStandard>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
     </ClCompile>
     <Link>
       <AdditionalDependencies />

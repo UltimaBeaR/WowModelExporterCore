@@ -36,12 +36,23 @@ namespace WowModelExporterCore
         public Vec3 LocalPosition { get; set; }
 
         /// <summary>
+        /// Задает имя. После этого имя перестанет генерироваться из таблицы подстановки имен по id кости. Чтобы убрать явно заданное имя можно установить его в null
+        /// </summary>
+        /// <returns></returns>
+        public void SetName(string name)
+        {
+            _name = name;
+        }
+
+        /// <summary>
         /// Возвращает название кости (идет маппинг на Id), по которому кость потом можно найти
         /// </summary>
         public string GetName()
         {
-            return _boneNames.TryGetValue(Id, out var val) ? val : null;
+            return _name ?? (_boneNames.TryGetValue(Id, out var val) ? val : null);
         }
+
+        private string _name;
 
         private static readonly Dictionary<uint, string> _boneNames = new Dictionary<uint, string>()
         {
