@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WowModelExporterCore
@@ -17,8 +18,23 @@ namespace WowModelExporterCore
 
         private static void MakeHumanoidSkeleton(WowObject wowObject, bool removeToes, bool removeJaw)
         {
-            // Удаляем все кости кроме тех что заданы в маппинге
-            wowObject.RemoveAllBonesExceptSpecifiedByNames(_normalToHumanoidBoneNamesMapping.Keys.ToArray());
+            // Удаляем все кости кроме тех что заданы в маппинге, либо если приатачен объект к кости
+            var normalMappedBoneNames = _normalToHumanoidBoneNamesMapping.Keys.ToArray();
+            wowObject.RemoveBones(
+                boneToRemove =>
+                {
+                    // не удаляем кость, если она есть в маппине для костей гуманоида
+                    if (Array.IndexOf(normalMappedBoneNames, boneToRemove.GetName()) >= 0)
+                        return false;
+
+                    // неу удаляем кость, если для нее есть прикрепленные объекты
+                    if (boneToRemove.AttachedWowObjects.Count > 0)
+                        return false;
+
+                    // иначе удаляем ксоть
+                    return true;
+                }
+            );
 
             // Оставшиеся кости переименовываем в названия, понятные юнити (для создания humanoid аватара)
 

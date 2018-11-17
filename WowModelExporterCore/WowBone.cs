@@ -13,28 +13,13 @@ namespace WowModelExporterCore
             Index = 0;
 
             LocalPosition = new Vec3();
+
+            AttachedWowObjects = new List<WowObject>();
         }
 
         public WowBone ParentBone { get; set; }
 
         public List<WowBone> ChildBones { get; set; }
-
-        /// <summary>
-        /// Устанавливает родительскую кость без изменения глобальной позиции текущей кости
-        /// </summary>
-        public void SetParentAndKeepGlobalPosition(WowBone parentBone)
-        {
-            var globalPosition = GetGlobalPosition();
-
-            ParentBone = parentBone;
-
-            var parentGlobalPosition = ParentBone?.GetGlobalPosition() ?? new Vec3(0, 0, 0);
-
-            LocalPosition = new Vec3(
-                globalPosition.X - parentGlobalPosition.X,
-                globalPosition.Y - parentGlobalPosition.Y,
-                globalPosition.Z - parentGlobalPosition.Z);
-        }
 
         /// <summary>
         /// Индекс кости в массиве костей (тот, который указывается в <see cref="WowVertex.BoneIndexes"/>)
@@ -52,6 +37,25 @@ namespace WowModelExporterCore
         /// Локальная позиция кости, относительно родителя
         /// </summary>
         public Vec3 LocalPosition { get; set; }
+
+        public List<WowObject> AttachedWowObjects { get; set; }
+
+        /// <summary>
+        /// Устанавливает родительскую кость без изменения глобальной позиции текущей кости
+        /// </summary>
+        public void SetParentAndKeepGlobalPosition(WowBone parentBone)
+        {
+            var globalPosition = GetGlobalPosition();
+
+            ParentBone = parentBone;
+
+            var parentGlobalPosition = ParentBone?.GetGlobalPosition() ?? new Vec3(0, 0, 0);
+
+            LocalPosition = new Vec3(
+                globalPosition.X - parentGlobalPosition.X,
+                globalPosition.Y - parentGlobalPosition.Y,
+                globalPosition.Z - parentGlobalPosition.Z);
+        }
 
         public Vec3 GetGlobalPosition()
         {
@@ -215,6 +219,11 @@ namespace WowModelExporterCore
             { 585371248,    "lip_lower_to_middle_1_l" },
             { 1440956134,   "lip_lower_to_middle_2_l" },
             { 3437915996,   "lip_lower_to_middle_3_l" },
+
+            { 2526474064,   "attachment_head" },
+            { 28063340,     "attachment_shoulder_r" },
+            { 4221766415,   "attachment_shoulder_l" },
+            { 2776517278,   "attachment_belt" }
         };
     }
 }

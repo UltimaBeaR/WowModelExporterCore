@@ -54,7 +54,7 @@ namespace WowModelExporterUnityPlugin
             var materials = CreateMaterialsFromWowMeshWithMaterials(wowObject.Mesh);
 
             var go = new GameObject(name);
-            go.transform.position = new Vector3(wowObject.Position.X, wowObject.Position.Y, wowObject.Position.Z);
+            go.transform.position = new Vector3(wowObject.GlobalPosition.X, wowObject.GlobalPosition.Y, wowObject.GlobalPosition.Z);
             go.transform.parent = parent;
 
             var meshFilter = go.AddComponent<MeshFilter>();
@@ -72,7 +72,7 @@ namespace WowModelExporterUnityPlugin
             var materials = CreateMaterialsFromWowMeshWithMaterials(characterWowObject.Mesh);
 
             var go = new GameObject(name);
-            go.transform.position = new Vector3(characterWowObject.Position.X, characterWowObject.Position.Y, characterWowObject.Position.Z);
+            go.transform.position = new Vector3(characterWowObject.GlobalPosition.X, characterWowObject.GlobalPosition.Y, characterWowObject.GlobalPosition.Z);
             go.transform.parent = parent;
 
             var skinnedMeshRenderer = go.AddComponent<SkinnedMeshRenderer>();

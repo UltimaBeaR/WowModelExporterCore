@@ -68,10 +68,31 @@ namespace WowModelExporterCore
                     var itemObject = new WowObject()
                     {
                         Parent = characterObject,
-                        Position = itemPosition
+                        GlobalPosition = itemPosition,
                     };
 
                     itemObject.Mesh = MakeMeshFromWhModel(whItemModel.Model);
+
+                    // Если у итема есть кость, к которой можно прикрепиться
+                    if (itemObject.Parent != null && whItemModel.Attachment.Bone >= 0)
+                    {
+                        var parentAttachmentBone = itemObject.Parent.Bones[whItemModel.Attachment.Bone];
+
+                        // записываем объект этого итема в кость, к которой крепимся(у родительского объекта)
+                        parentAttachmentBone.AttachedWowObjects.Add(itemObject);
+
+                        // меняем данные о костях в вершинах так итема так, чтобы при привязке к скелету родителя этот итем двигался вместе с костью
+                        // (при этом в иерархии объектов он не будет в ноде кости, а будет на том же уровне что и родительский объект, к скелету которого мы привязываем итем)
+
+                        var eachVertexItemBoneIndexes = new ByteVec4((byte)parentAttachmentBone.Index, 0, 0, 0);
+                        var eachVertexItemBoneWeights = new Vec4(1, 0, 0, 0);
+
+                        foreach (var vertex in itemObject.Mesh.Vertices)
+                        {
+                            vertex.BoneIndexes = eachVertexItemBoneIndexes;
+                            vertex.BoneWeights = eachVertexItemBoneWeights;
+                        }
+                    }
 
                     characterObject.Children.Add(itemObject);
 
@@ -86,7 +107,7 @@ namespace WowModelExporterCore
                                 var visualObject = new WowObject()
                                 {
                                     Parent = characterObject,
-                                    Position = visualPosition
+                                    GlobalPosition = visualPosition
                                 };
 
                                 visualObject.Mesh = MakeMeshFromWhModel(visual.Model);

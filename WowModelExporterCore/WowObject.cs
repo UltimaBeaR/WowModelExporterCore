@@ -12,7 +12,7 @@ namespace WowModelExporterCore
             Parent = null;
             Children = new List<WowObject>();
 
-            Position = new Vec3();
+            GlobalPosition = new Vec3();
 
             Mesh = null;
 
@@ -22,7 +22,7 @@ namespace WowModelExporterCore
         public WowObject Parent { get; set; }
         public List<WowObject> Children { get; set; }
 
-        public Vec3 Position { get; set; }
+        public Vec3 GlobalPosition { get; set; }
 
         public WowMeshWithMaterials Mesh { get; set; }
 
@@ -38,21 +38,19 @@ namespace WowModelExporterCore
 
         public void RemoveBonesByNames(string[] boneNames)
         {
-            foreach (var boneToRemove in Bones.Where(x => x != null && Array.IndexOf(boneNames, x.GetName()) > -1))
-                RemoveBone(boneToRemove);
+            RemoveBones(x => Array.IndexOf(boneNames, x.GetName()) > -1);
         }
 
         /// <summary>
         /// "Схлопывает" все кости, не включенные в список к родителям (мержит свои веса и иерархию в родителей)
-        /// Возможна ситуация что останется рутовая кость, которая отсутствует в списке, а внутри нее будет несколько "детей" из списка
         /// </summary>
-        public void RemoveAllBonesExceptSpecifiedByNames(string[] exceptBoneNames)
+        public void RemoveBones(Predicate<WowBone> predicate)
         {
-            foreach (var boneToRemove in Bones.Where(x => x != null && Array.IndexOf(exceptBoneNames, x.GetName()) <= -1))
+            foreach (var boneToRemove in Bones.Where(x => x != null && predicate(x)))
                 RemoveBone(boneToRemove);
-            
+
             var rootBone = GetRootBone();
-            if (Array.IndexOf(exceptBoneNames, rootBone.GetName()) <= -1)
+            if (predicate(rootBone))
                 RemoveBone(rootBone);
         }
 
