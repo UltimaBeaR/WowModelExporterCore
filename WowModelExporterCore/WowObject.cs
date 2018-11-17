@@ -36,11 +36,17 @@ namespace WowModelExporterCore
             return Bones.First(x => x != null && x.ParentBone == null);
         }
 
+        public void RemoveBonesByNames(string[] boneNames)
+        {
+            foreach (var boneToRemove in Bones.Where(x => x != null && Array.IndexOf(boneNames, x.GetName()) > -1))
+                RemoveBone(boneToRemove);
+        }
+
         /// <summary>
         /// "Схлопывает" все кости, не включенные в список к родителям (мержит свои веса и иерархию в родителей)
         /// Возможна ситуация что останется рутовая кость, которая отсутствует в списке, а внутри нее будет несколько "детей" из списка
         /// </summary>
-        public void RemoveBones(string[] exceptBoneNames)
+        public void RemoveAllBonesExceptSpecifiedByNames(string[] exceptBoneNames)
         {
             foreach (var boneToRemove in Bones.Where(x => x != null && Array.IndexOf(exceptBoneNames, x.GetName()) <= -1))
                 RemoveBone(boneToRemove);

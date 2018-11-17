@@ -98,14 +98,14 @@ namespace WowModelExporterCore
             { 3337573636,   "leg_lower_r" },
             { 685847592,    "leg_lower_middle_r" },
             { 90603765,     "foot_r" },
-            { 2608964796,   "toe_r" },
+            { 2608964796,   "toes_r" },
 
             { 3118917107,   "leg_upper_l" },
             { 1474856159,   "leg_upper_middle_l" },
             { 2282684270,   "leg_lower_l" },
             { 1711316546,   "leg_lower_middle_l" },
             { 4285119894,   "foot_l" },
-            { 1656702206,   "toe_l" },
+            { 1656702206,   "toes_l" },
 
             { 2031597313,   "spine" },
             { 981834931,    "chest" },
