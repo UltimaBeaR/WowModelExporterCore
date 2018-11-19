@@ -3,8 +3,6 @@ using System.Windows.Forms;
 using WowModelExporterCore;
 using WowheadModelLoader;
 using WowModelExporterFbx;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace WowModelExporterTester
 {
@@ -13,6 +11,31 @@ namespace WowModelExporterTester
         public Form1()
         {
             InitializeComponent();
+
+            InitBrowser();
+        }
+
+        private void InitBrowser()
+        {
+            webView.UrlChanged += (obj, ev) => { addressTextBox.Text = webView.Url; };
+            webView.NewWindow += (obj, ev) => { ev.Accepted = true; };
+
+            var interceptor = new WebViewOptsInterceptor(webView);
+            interceptor.OptsIntercepted += (json) =>
+            {
+                MessageBox.Show(json);
+            };
+        }
+
+        private void navigateToDressroomButton_Click(object sender, EventArgs e)
+        {
+            webView.Url = "https://www.wowhead.com/dressing-room";
+        }
+
+        private void addressTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+                webView.Url = addressTextBox.Text;
         }
 
         private void button1_Click(object sender, EventArgs e)
