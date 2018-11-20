@@ -35,7 +35,7 @@ namespace WowheadModelLoader
 
             if (Model.Type == WhType.CHARACTER)
             {
-                if (Opts.Mount != null && Opts.Mount.Type == WhType.NPC && Opts.Mount.Id != null)
+                if (Opts.Mount != null && Opts.Mount.Type == WhType.NPC && (Opts.Mount.Id != null && Opts.Mount.Id != "0"))
                 {
                     Opts.Mount.Parent = this;
                     Mount = new WhModel(viewerOptions, Opts.Mount, 0);

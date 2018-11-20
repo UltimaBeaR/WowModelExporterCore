@@ -42,7 +42,9 @@ namespace WowModelExporterCore
             {
                 if (bone != null)
                 {
-                    if (_normalToHumanoidBoneNamesMapping.TryGetValue(bone.GetName(), out var boneHumanoidName))
+                    var boneName = bone.GetName();
+
+                    if (boneName != null && _normalToHumanoidBoneNamesMapping.TryGetValue(boneName, out var boneHumanoidName))
                         bone.SetName(boneHumanoidName);
                 }
             }

@@ -12,18 +12,25 @@ namespace WowModelExporterTester
         {
             InitializeComponent();
 
+            OptsJsonForExport = null;
+
             InitBrowser();
         }
 
         private void InitBrowser()
         {
-            webView.UrlChanged += (obj, ev) => { addressTextBox.Text = webView.Url; };
+            webView.UrlChanged += (obj, ev) =>
+            {
+                OptsJsonForExport = null;
+                addressTextBox.Text = webView.Url;
+            };
+
             webView.NewWindow += (obj, ev) => { ev.Accepted = true; };
 
             var interceptor = new WebViewOptsInterceptor(webView);
             interceptor.OptsIntercepted += (json) =>
             {
-                MessageBox.Show(json);
+                OptsJsonForExport = json;
             };
         }
 
@@ -32,10 +39,30 @@ namespace WowModelExporterTester
             webView.Url = "https://www.wowhead.com/dressing-room";
         }
 
+        private void navigateToCharacterSearchButton_Click(object sender, EventArgs e)
+        {
+            webView.Url = "https://www.wowhead.com/list";
+        }
+
         private void addressTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
                 webView.Url = addressTextBox.Text;
+        }
+
+        private void exportButton_Click(object sender, EventArgs e)
+        {
+            var exporter = new WowModelExporter();
+
+            var wowObject = exporter.LoadCharacter(OptsJsonForExport);
+
+            PrepareForVRChatUtility.PrepareObject(wowObject, true, true);
+
+            var fbxExporter = new Exporter();
+
+            fbxExporter.ExportWowObject(wowObject, "newtest").ToString();
+
+            MessageBox.Show("Готово");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -70,5 +97,19 @@ namespace WowModelExporterTester
 
             textBox1.Text = test.ExportWowObject(wowObject, "newtest").ToString();
         }
+
+        private string OptsJsonForExport
+        {
+            get => _optsJsonForExport;
+
+            set
+            {
+                _optsJsonForExport = value;
+
+                exportButton.Enabled = value != null;
+            }
+        }
+
+        private string _optsJsonForExport;
     }
 }

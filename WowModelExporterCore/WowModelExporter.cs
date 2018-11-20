@@ -12,6 +12,13 @@ namespace WowModelExporterCore
             return new WowObjectBuilder().BuildFromCharacterWhModel(whCharacterModel);
         }
 
+        public WowObject LoadCharacter(string optsJson)
+        {
+            var whCharacterModel = LoadWhCharacterModel(WhViewerOptions.FromJson(optsJson));
+
+            return new WowObjectBuilder().BuildFromCharacterWhModel(whCharacterModel);
+        }
+
         private WhModel LoadWhCharacterModel(WhRace race, WhGender gender, string[] itemIds)
         {
             var gathererItems = WhDataLoader.LoadItemsFromGatherer(itemIds);
@@ -34,6 +41,18 @@ namespace WowModelExporterCore
             var characterModel = new WhModel(
                 options,
                 WhModelInfo.CreateForCharacter(race, gender), 0);
+
+            WhDefferedList.Execute();
+            WhDefferedList.Execute("whenAllModelsLoaded");
+
+            return characterModel;
+        }
+
+        private WhModel LoadWhCharacterModel(WhViewerOptions opts)
+        {
+            var characterModel = new WhModel(
+                opts,
+                opts.Model, 0);
 
             WhDefferedList.Execute();
             WhDefferedList.Execute("whenAllModelsLoaded");

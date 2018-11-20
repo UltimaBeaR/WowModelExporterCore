@@ -34,18 +34,20 @@
             this.webView = new EO.WebBrowser.WebView();
             this.tabs = new System.Windows.Forms.TabControl();
             this.browserTab = new System.Windows.Forms.TabPage();
-            this.utilityTab = new System.Windows.Forms.TabPage();
-            this.addressPanel = new System.Windows.Forms.Panel();
             this.browserContentPanel = new System.Windows.Forms.Panel();
-            this.addressTextBox = new System.Windows.Forms.TextBox();
+            this.addressPanel = new System.Windows.Forms.Panel();
             this.urlButtonsPanel = new System.Windows.Forms.Panel();
+            this.exportButton = new System.Windows.Forms.Button();
             this.navigateToDressroomButton = new System.Windows.Forms.Button();
+            this.addressTextBox = new System.Windows.Forms.TextBox();
+            this.utilityTab = new System.Windows.Forms.TabPage();
+            this.navigateToCharacterSearchButton = new System.Windows.Forms.Button();
             this.tabs.SuspendLayout();
             this.browserTab.SuspendLayout();
-            this.utilityTab.SuspendLayout();
-            this.addressPanel.SuspendLayout();
             this.browserContentPanel.SuspendLayout();
+            this.addressPanel.SuspendLayout();
             this.urlButtonsPanel.SuspendLayout();
+            this.utilityTab.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -72,7 +74,7 @@
             this.webControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.webControl.Location = new System.Drawing.Point(0, 0);
             this.webControl.Name = "webControl";
-            this.webControl.Size = new System.Drawing.Size(786, 356);
+            this.webControl.Size = new System.Drawing.Size(786, 361);
             this.webControl.TabIndex = 2;
             this.webControl.Text = "webControl";
             this.webControl.WebView = this.webView;
@@ -104,6 +106,67 @@
             this.browserTab.Text = "browser";
             this.browserTab.UseVisualStyleBackColor = true;
             // 
+            // browserContentPanel
+            // 
+            this.browserContentPanel.Controls.Add(this.webControl);
+            this.browserContentPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.browserContentPanel.Location = new System.Drawing.Point(3, 60);
+            this.browserContentPanel.Name = "browserContentPanel";
+            this.browserContentPanel.Size = new System.Drawing.Size(786, 361);
+            this.browserContentPanel.TabIndex = 4;
+            // 
+            // addressPanel
+            // 
+            this.addressPanel.Controls.Add(this.urlButtonsPanel);
+            this.addressPanel.Controls.Add(this.addressTextBox);
+            this.addressPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.addressPanel.Location = new System.Drawing.Point(3, 3);
+            this.addressPanel.Name = "addressPanel";
+            this.addressPanel.Size = new System.Drawing.Size(786, 57);
+            this.addressPanel.TabIndex = 3;
+            // 
+            // urlButtonsPanel
+            // 
+            this.urlButtonsPanel.BackColor = System.Drawing.Color.Transparent;
+            this.urlButtonsPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.urlButtonsPanel.Controls.Add(this.navigateToCharacterSearchButton);
+            this.urlButtonsPanel.Controls.Add(this.exportButton);
+            this.urlButtonsPanel.Controls.Add(this.navigateToDressroomButton);
+            this.urlButtonsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.urlButtonsPanel.Location = new System.Drawing.Point(0, 20);
+            this.urlButtonsPanel.Name = "urlButtonsPanel";
+            this.urlButtonsPanel.Size = new System.Drawing.Size(786, 37);
+            this.urlButtonsPanel.TabIndex = 1;
+            // 
+            // exportButton
+            // 
+            this.exportButton.Location = new System.Drawing.Point(4, 5);
+            this.exportButton.Name = "exportButton";
+            this.exportButton.Size = new System.Drawing.Size(75, 23);
+            this.exportButton.TabIndex = 1;
+            this.exportButton.Text = "export";
+            this.exportButton.UseVisualStyleBackColor = true;
+            this.exportButton.Click += new System.EventHandler(this.exportButton_Click);
+            // 
+            // navigateToDressroomButton
+            // 
+            this.navigateToDressroomButton.Location = new System.Drawing.Point(101, 5);
+            this.navigateToDressroomButton.Name = "navigateToDressroomButton";
+            this.navigateToDressroomButton.Size = new System.Drawing.Size(75, 23);
+            this.navigateToDressroomButton.TabIndex = 0;
+            this.navigateToDressroomButton.Text = "dressroom";
+            this.navigateToDressroomButton.UseVisualStyleBackColor = true;
+            this.navigateToDressroomButton.Click += new System.EventHandler(this.navigateToDressroomButton_Click);
+            // 
+            // addressTextBox
+            // 
+            this.addressTextBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.addressTextBox.Location = new System.Drawing.Point(0, 0);
+            this.addressTextBox.Name = "addressTextBox";
+            this.addressTextBox.Size = new System.Drawing.Size(786, 20);
+            this.addressTextBox.TabIndex = 0;
+            this.addressTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.addressTextBox_KeyPress);
+            // 
             // utilityTab
             // 
             this.utilityTab.Controls.Add(this.textBox1);
@@ -116,52 +179,15 @@
             this.utilityTab.Text = "utility";
             this.utilityTab.UseVisualStyleBackColor = true;
             // 
-            // addressPanel
+            // navigateToCharacterSearchButton
             // 
-            this.addressPanel.Controls.Add(this.urlButtonsPanel);
-            this.addressPanel.Controls.Add(this.addressTextBox);
-            this.addressPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.addressPanel.Location = new System.Drawing.Point(3, 3);
-            this.addressPanel.Name = "addressPanel";
-            this.addressPanel.Size = new System.Drawing.Size(786, 62);
-            this.addressPanel.TabIndex = 3;
-            // 
-            // browserContentPanel
-            // 
-            this.browserContentPanel.Controls.Add(this.webControl);
-            this.browserContentPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.browserContentPanel.Location = new System.Drawing.Point(3, 65);
-            this.browserContentPanel.Name = "browserContentPanel";
-            this.browserContentPanel.Size = new System.Drawing.Size(786, 356);
-            this.browserContentPanel.TabIndex = 4;
-            // 
-            // addressTextBox
-            // 
-            this.addressTextBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.addressTextBox.Location = new System.Drawing.Point(0, 0);
-            this.addressTextBox.Name = "addressTextBox";
-            this.addressTextBox.Size = new System.Drawing.Size(786, 20);
-            this.addressTextBox.TabIndex = 0;
-            this.addressTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.addressTextBox_KeyPress);
-            // 
-            // urlButtonsPanel
-            // 
-            this.urlButtonsPanel.Controls.Add(this.navigateToDressroomButton);
-            this.urlButtonsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.urlButtonsPanel.Location = new System.Drawing.Point(0, 20);
-            this.urlButtonsPanel.Name = "urlButtonsPanel";
-            this.urlButtonsPanel.Size = new System.Drawing.Size(786, 42);
-            this.urlButtonsPanel.TabIndex = 1;
-            // 
-            // navigateToDressroomButton
-            // 
-            this.navigateToDressroomButton.Location = new System.Drawing.Point(3, 3);
-            this.navigateToDressroomButton.Name = "navigateToDressroomButton";
-            this.navigateToDressroomButton.Size = new System.Drawing.Size(75, 23);
-            this.navigateToDressroomButton.TabIndex = 0;
-            this.navigateToDressroomButton.Text = "dressroom";
-            this.navigateToDressroomButton.UseVisualStyleBackColor = true;
-            this.navigateToDressroomButton.Click += new System.EventHandler(this.navigateToDressroomButton_Click);
+            this.navigateToCharacterSearchButton.Location = new System.Drawing.Point(182, 5);
+            this.navigateToCharacterSearchButton.Name = "navigateToCharacterSearchButton";
+            this.navigateToCharacterSearchButton.Size = new System.Drawing.Size(105, 23);
+            this.navigateToCharacterSearchButton.TabIndex = 2;
+            this.navigateToCharacterSearchButton.Text = "character search";
+            this.navigateToCharacterSearchButton.UseVisualStyleBackColor = true;
+            this.navigateToCharacterSearchButton.Click += new System.EventHandler(this.navigateToCharacterSearchButton_Click);
             // 
             // Form1
             // 
@@ -173,12 +199,12 @@
             this.Text = "Form1";
             this.tabs.ResumeLayout(false);
             this.browserTab.ResumeLayout(false);
-            this.utilityTab.ResumeLayout(false);
-            this.utilityTab.PerformLayout();
+            this.browserContentPanel.ResumeLayout(false);
             this.addressPanel.ResumeLayout(false);
             this.addressPanel.PerformLayout();
-            this.browserContentPanel.ResumeLayout(false);
             this.urlButtonsPanel.ResumeLayout(false);
+            this.utilityTab.ResumeLayout(false);
+            this.utilityTab.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -197,6 +223,8 @@
         private System.Windows.Forms.Panel urlButtonsPanel;
         private System.Windows.Forms.Button navigateToDressroomButton;
         private System.Windows.Forms.TextBox addressTextBox;
+        private System.Windows.Forms.Button exportButton;
+        private System.Windows.Forms.Button navigateToCharacterSearchButton;
     }
 }
 
