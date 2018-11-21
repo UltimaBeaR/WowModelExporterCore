@@ -42,6 +42,15 @@ namespace WowheadModelLoader
             }
         }
 
+        public static Vec3 Lerp(Vec3 a, Vec3 b, float t)
+        {
+            return new Vec3() {
+                X = a.X + t * (b.X - a.X),
+                Y = a.Y + t * (b.Y - a.Y),
+                Z = a.Z + t * (b.Z - a.Z)
+            };
+        }
+
         public void RotateAroundX(float angleRad)
         {
             var sin = (float)Math.Sin(angleRad);

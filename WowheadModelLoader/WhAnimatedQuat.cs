@@ -24,5 +24,11 @@ namespace WowheadModelLoader
         {
             return new Vec4(r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
         }
+
+        public override Vec4 Interpolate(Vec4 v1, Vec4 v2, float r)
+        {
+            //return quat.slerp(result, v1, v2, r)
+            throw new System.NotImplementedException();
+        }
     }
 }

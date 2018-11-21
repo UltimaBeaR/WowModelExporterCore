@@ -105,9 +105,11 @@ namespace WowheadModelLoader
 
             //self.time = 0;
             //self.frame = 0;
-            //self.startAnimation = null;
-            //self.currentAnimation = null;
-            //self.animStartTime = 0;
+
+            StartAnimation = null;
+            CurrentAnimation = null;
+            AnimStartTime = 0;
+
             //self.animPaused = false;
             //self.matrix = mat4.create();
             //self.vbData = null;
@@ -233,6 +235,12 @@ namespace WowheadModelLoader
         public ushort[] GeosetDefaults { get; set; }
         public int CreatureGeosetData { get; set; }
 
+        public WhAnimation StartAnimation { get; set; }
+        public WhAnimation CurrentAnimation { get; set; }
+
+        // ToDo: не уверен что тут int а не float например, т.к. до сих пор только 0 присваивался
+        public int AnimStartTime { get; set; }
+
         public WhVertex[] Vertices { get; set; }
         public ushort[] Indices { get; set; }
 
@@ -272,6 +280,72 @@ namespace WowheadModelLoader
 
         public int Bone { get; set; }
         public WhAttachment Attachment { get; set; }
+
+        // Сам добавил. если эта модель - аттачмент, то будет не null (будет прописана кость из аттачмента)
+        public int? AttachmentBone { get; set; }
+
+        // Добавил сам (по дефолту скейл 1)
+        public Vec3 BoneAnimationScale { get; set; } = new Vec3(1, 1, 1);
+
+        // Сам сделал. Модифицировал на основе ZamModelViewer.Wow.Bone.update(), тут как минимум идет апдейт скейла итемов (плечи, пояс), который записан в анимации, но не в самих итемах
+        public void Update()
+        {
+            // ToDo: потом переделать - загнать это все таки в кость, как и было в оригинале. просчитывать всю эту фигню для каждой кости. дальше посмотреть где этот апдейт вызывается
+            // и по аналогии это все вызвать после загрузки один раз.
+            // или даже можно реализовать что то типа анимации, чтобы устанавливать состояние анимации и типа устанавливать после загрузки 1 кадр анимации, тогда как раз
+            // просчитается это все для костей.
+            // ДАЛЕЕ для модели, которая приатачена к кости сделать проперти которая будет получать из кости все эти значения скейла и тд
+            // а дальше уже при конверте скейлить на эти значения приатаченные объекты
+
+            if (Animations == null)
+                return;
+
+            var anim = CurrentAnimation;
+            if (anim == null)
+                return;
+
+            if (AttachmentBone != null)
+            {
+                var bone = Parent.Bones[AttachmentBone.Value];
+
+                var billboard = (bone.Flags & 8) != 0;
+                var transUsed = WhAnimatedVec3.IsUsed(bone.Translation, anim.Index);
+                var rotUsed = WhAnimatedQuat.IsUsed(bone.Rotation, anim.Index);
+                var scaleUsed = WhAnimatedVec3.IsUsed(bone.Scale, anim.Index);
+
+                if (scaleUsed)
+                {
+                    // Буду смотреть на 0 кадр, надеюсь прокатит
+                    var time = 0;
+
+                    BoneAnimationScale = WhAnimatedVec3.GetValue(bone.Scale, anim.Index, time);
+                }
+            }
+        }
+
+        public void SetAnimation(string name)
+        {
+            for (var i = 0; i < Animations.Length; i++)
+            {
+                var anim = Animations[i];
+
+                if (anim.Name == null)
+                    continue;
+
+                if (anim.Name == name && anim.SubId == 0)
+                {
+                    AnimStartTime = 0;
+                    StartAnimation = CurrentAnimation = anim;
+
+                    //WH.debug("Set animation to", anim.id, anim.name);
+
+                    break;
+                }
+            }
+
+            if (name != "Stand" && CurrentAnimation == null)
+                SetAnimation("Stand");
+        }
 
         public void Load()
         {
@@ -1034,15 +1108,15 @@ namespace WowheadModelLoader
                 });
             }
 
-            //if (self.mount) {
-            //    if (ZamModelViewer.Wow.StandingMounts[self.mount.model.id]) {
-            //        self.setAnimation("StealthStand")
-            //    } else {
-            //        self.setAnimation("Mount")
-            //    }
-            //} else {
-            //    self.setAnimation("Stand")
-            //}
+            if (Mount != null)
+            {
+                if (WhGlobal.StandingMounts.GetOrDefault(Mount.Model.Id))
+                    SetAnimation("StealthStand");
+                else
+                    SetAnimation("Mount");
+            }
+            else
+                SetAnimation("Stand");
 
             //self.updateBuffers(true);
             //self.updateBounds();
@@ -1172,6 +1246,10 @@ namespace WowheadModelLoader
         {
             if (NeedsCompositing)
                 CompositeTextures();
+
+            // Эта хрень (апдейт костей по анимации, тут это просчет скейла и т.д оттуда)
+            // тоже вызывается для костей когда-то во время рендера, так что тоже пусть тут будет. не уверен правда в каком порядке относительно основного
+            Update();
         }
 
         public void SetGeometryVisibleCustom(WhJsonHairGeoset data)
@@ -1602,6 +1680,9 @@ namespace WowheadModelLoader
                         var attach = Attachments[slotAttachments[i]];
                         item.Models[i].Bone = attach.Bone;
                         item.Models[i].Attachment = attach;
+
+                        // сам добавил
+                        item.Models[i].Model.AttachmentBone = attach.Bone;
 
                         if (item.Visual != null && item.Visual.Models != null)
                         {

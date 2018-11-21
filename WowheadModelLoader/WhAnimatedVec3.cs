@@ -20,9 +20,19 @@ namespace WowheadModelLoader
             return data;
         }
 
+        public static Vec3 GetValue(WhAnimatedVec3[] dataset, ushort anim, int time)
+        {
+            return GetValueBase(() => new Vec3(), dataset, anim, time);
+        }
+
         public override Vec3 ReadValue(BinaryReader r)
         {
             return new Vec3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+        }
+
+        public override Vec3 Interpolate(Vec3 v1, Vec3 v2, float r)
+        {
+            return Vec3.Lerp(v1, v2, r);
         }
     }
 }

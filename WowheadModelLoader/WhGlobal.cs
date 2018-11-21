@@ -168,5 +168,16 @@ namespace WowheadModelLoader
             { (WhRace)23, new int[] { 1, 0, 1, 1, 1, 0, 1, 1 } },
             { (WhRace)15, new int[] { 5, 0, 5, 1, 5, 0, 5, 1 } }
         };
+
+        public static IReadOnlyDictionary<string, bool> StandingMounts = new Dictionary<string, bool>()
+        {
+            { "28060", true },
+            { "28063", true },
+            { "28082", true },
+            { "41903", true },
+            { "42147", true },
+            { "44808", true },
+            { "45271", true }
+        };
     }
 }

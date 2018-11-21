@@ -89,6 +89,12 @@ namespace WowModelExporterCore
 
                         foreach (var vertex in itemObject.Mesh.Vertices)
                         {
+                            // Скейлим на скейл, который был записан в анимации кости
+                            vertex.Position = new Vec3(
+                                vertex.Position.X * whItemModel.Model.BoneAnimationScale.X,
+                                vertex.Position.Y * whItemModel.Model.BoneAnimationScale.Y,
+                                vertex.Position.Z * whItemModel.Model.BoneAnimationScale.Z);
+
                             vertex.BoneIndexes = eachVertexItemBoneIndexes;
                             vertex.BoneWeights = eachVertexItemBoneWeights;
                         }
