@@ -63,7 +63,7 @@ namespace WowModelExporterCore
                     if (whItemModel?.Model == null)
                         continue;
 
-                    var itemPosition = ConvertPositionFromWh(whItemModel.Attachment.Position);
+                    var itemPosition = Vec3.ConvertPositionFromWh(whItemModel.Attachment.Position);
 
                     var itemObject = new WowObject()
                     {
@@ -89,11 +89,18 @@ namespace WowModelExporterCore
 
                         foreach (var vertex in itemObject.Mesh.Vertices)
                         {
+                            // ToDo: понять че за хрень с поворотом (поворачиваются в другую сторону плечи)
+
+                            // Поворачиваем (позицию и нормаль)
+                            vertex.WhPosition = Vec3.TransformQuat(vertex.WhPosition, whItemModel.Model.BoneAnimationRotation);
+                            vertex.WhNormal = Vec3.TransformQuat(vertex.WhNormal, whItemModel.Model.BoneAnimationRotation);
+
                             // Скейлим на скейл, который был записан в анимации кости
-                            vertex.Position = new Vec3(
-                                vertex.Position.X * whItemModel.Model.BoneAnimationScale.X,
-                                vertex.Position.Y * whItemModel.Model.BoneAnimationScale.Y,
-                                vertex.Position.Z * whItemModel.Model.BoneAnimationScale.Z);
+                            // Нормаль вроде можно не скейлить - ниче не изменится
+                            vertex.WhPosition = new Vec3(
+                                vertex.WhPosition.X * whItemModel.Model.BoneAnimationScale.X,
+                                vertex.WhPosition.Y * whItemModel.Model.BoneAnimationScale.Y,
+                                vertex.WhPosition.Z * whItemModel.Model.BoneAnimationScale.Z);
 
                             vertex.BoneIndexes = eachVertexItemBoneIndexes;
                             vertex.BoneWeights = eachVertexItemBoneWeights;
@@ -108,7 +115,7 @@ namespace WowModelExporterCore
                         {
                             if (visual != null)
                             {
-                                var visualPosition = ConvertPositionFromWh(visual.Attachment.Position);
+                                var visualPosition = Vec3.ConvertPositionFromWh(visual.Attachment.Position);
 
                                 var visualObject = new WowObject()
                                 {
@@ -167,7 +174,7 @@ namespace WowModelExporterCore
                 {
                     Index = Convert.ToByte(x.Index),
                     Id = x.Id,
-                    LocalPosition = ConvertPositionFromWh(x.Pivot)
+                    LocalPosition = Vec3.ConvertPositionFromWh(x.Pivot)
                 })
                 .ToArray();
 
@@ -250,9 +257,9 @@ namespace WowModelExporterCore
         {
             return new WowVertex()
             {
-                Position = ConvertPositionFromWh(whVertex.Position),
+                WhPosition = whVertex.Position,
 
-                Normal = ConvertPositionFromWh(new Vec3(whVertex.Normal.X, whVertex.Normal.Y, whVertex.Normal.Z)),
+                WhNormal = new Vec3(whVertex.Normal.X, whVertex.Normal.Y, whVertex.Normal.Z),
 
                 UV1 = ConvertUVFromWh(whVertex.U, whVertex.V),
                 UV2 = ConvertUVFromWh(whVertex.U2, whVertex.V2),
@@ -266,13 +273,6 @@ namespace WowModelExporterCore
                     ConvertBoneWeightFromWh(whVertex.Weights[3])
                 )
             };
-        }
-
-        private Vec3 ConvertPositionFromWh(Vec3 position)
-        {
-            var res = new Vec3(position.X, position.Z, -position.Y);
-            res.RotateAroundY(-((float)Math.PI / 2));
-            return res;
         }
 
         private Vec2 ConvertUVFromWh(float u, float v)

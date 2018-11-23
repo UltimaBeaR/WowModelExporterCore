@@ -284,6 +284,7 @@ namespace WowheadModelLoader
         // Сам добавил. если эта модель - аттачмент, то будет не null (будет прописана кость из аттачмента)
         public int? AttachmentBone { get; set; }
 
+        public Vec4 BoneAnimationRotation { get; set; } = Quat.Create();
         // Добавил сам (по дефолту скейл 1)
         public Vec3 BoneAnimationScale { get; set; } = new Vec3(1, 1, 1);
 
@@ -313,6 +314,13 @@ namespace WowheadModelLoader
                 var rotUsed = WhAnimatedQuat.IsUsed(bone.Rotation, anim.Index);
                 var scaleUsed = WhAnimatedVec3.IsUsed(bone.Scale, anim.Index);
 
+                if (rotUsed)
+                {
+                    // Буду смотреть на 0 кадр, надеюсь прокатит
+                    var time = 0;
+
+                    BoneAnimationRotation = WhAnimatedQuat.GetValue(bone.Rotation, anim.Index, time);
+                }
                 if (scaleUsed)
                 {
                     // Буду смотреть на 0 кадр, надеюсь прокатит

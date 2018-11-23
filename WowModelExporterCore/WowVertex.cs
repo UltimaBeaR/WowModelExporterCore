@@ -4,9 +4,11 @@ namespace WowModelExporterCore
 {
     public class WowVertex
     {
-        public Vec3 Position { get; set; }
+        public Vec3 Position { get { return Vec3.ConvertPositionFromWh(WhPosition); } }
+        public Vec3 Normal { get { return Vec3.ConvertPositionFromWh(WhNormal); } }
 
-        public Vec3 Normal { get; set; }
+        public Vec3 WhPosition { get; set; }
+        public Vec3 WhNormal { get; set; }
 
         public Vec2 UV1 { get; set; }
         public Vec2 UV2 { get; set; }

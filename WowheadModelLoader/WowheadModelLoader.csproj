@@ -60,6 +60,7 @@
     <Compile Include="Json\WhMeta.cs" />
     <Compile Include="Json\WhOpts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Quat.cs" />
     <Compile Include="Vec2.cs" />
     <Compile Include="Vec3.cs" />
     <Compile Include="ByteVec4.cs" />

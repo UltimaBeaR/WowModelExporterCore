@@ -21,7 +21,7 @@ namespace WowModelExporterTester
         {
             webView.UrlChanged += (obj, ev) =>
             {
-                OptsJsonForExport = null;
+                //OptsJsonForExport = null;
                 addressTextBox.Text = webView.Url;
             };
 

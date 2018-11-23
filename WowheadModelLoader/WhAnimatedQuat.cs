@@ -20,6 +20,11 @@ namespace WowheadModelLoader
             return data;
         }
 
+        public static Vec4 GetValue(WhAnimatedQuat[] dataset, ushort anim, int time)
+        {
+            return GetValueBase(() => new Vec4(), dataset, anim, time);
+        }
+
         public override Vec4 ReadValue(BinaryReader r)
         {
             return new Vec4(r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
@@ -27,8 +32,7 @@ namespace WowheadModelLoader
 
         public override Vec4 Interpolate(Vec4 v1, Vec4 v2, float r)
         {
-            //return quat.slerp(result, v1, v2, r)
-            throw new System.NotImplementedException();
+            return Quat.Slerp(v1, v2, r);
         }
     }
 }
