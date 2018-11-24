@@ -37,17 +37,26 @@
             this.browserContentPanel = new System.Windows.Forms.Panel();
             this.addressPanel = new System.Windows.Forms.Panel();
             this.urlButtonsPanel = new System.Windows.Forms.Panel();
+            this.getModelsButton = new System.Windows.Forms.Button();
+            this.navigateToCharacterSearchButton = new System.Windows.Forms.Button();
             this.exportButton = new System.Windows.Forms.Button();
             this.navigateToDressroomButton = new System.Windows.Forms.Button();
             this.addressTextBox = new System.Windows.Forms.TextBox();
+            this.devToolsTab = new System.Windows.Forms.TabPage();
             this.utilityTab = new System.Windows.Forms.TabPage();
-            this.navigateToCharacterSearchButton = new System.Windows.Forms.Button();
+            this.browserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showDevToolsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.devToolsHeader = new System.Windows.Forms.Panel();
+            this.devToolsContent = new System.Windows.Forms.Panel();
+            this.showDevToolsCheckbox = new System.Windows.Forms.CheckBox();
             this.tabs.SuspendLayout();
             this.browserTab.SuspendLayout();
             this.browserContentPanel.SuspendLayout();
             this.addressPanel.SuspendLayout();
             this.urlButtonsPanel.SuspendLayout();
+            this.devToolsTab.SuspendLayout();
             this.utilityTab.SuspendLayout();
+            this.devToolsHeader.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -65,12 +74,12 @@
             this.textBox1.Location = new System.Drawing.Point(6, 35);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(611, 307);
+            this.textBox1.Size = new System.Drawing.Size(156, 145);
             this.textBox1.TabIndex = 1;
             // 
             // webControl
             // 
-            this.webControl.BackColor = System.Drawing.Color.White;
+            this.webControl.BackColor = System.Drawing.Color.Gray;
             this.webControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.webControl.Location = new System.Drawing.Point(0, 0);
             this.webControl.Name = "webControl";
@@ -86,6 +95,7 @@
             // tabs
             // 
             this.tabs.Controls.Add(this.browserTab);
+            this.tabs.Controls.Add(this.devToolsTab);
             this.tabs.Controls.Add(this.utilityTab);
             this.tabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabs.Location = new System.Drawing.Point(0, 0);
@@ -129,6 +139,7 @@
             // 
             this.urlButtonsPanel.BackColor = System.Drawing.Color.Transparent;
             this.urlButtonsPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.urlButtonsPanel.Controls.Add(this.getModelsButton);
             this.urlButtonsPanel.Controls.Add(this.navigateToCharacterSearchButton);
             this.urlButtonsPanel.Controls.Add(this.exportButton);
             this.urlButtonsPanel.Controls.Add(this.navigateToDressroomButton);
@@ -137,6 +148,26 @@
             this.urlButtonsPanel.Name = "urlButtonsPanel";
             this.urlButtonsPanel.Size = new System.Drawing.Size(786, 37);
             this.urlButtonsPanel.TabIndex = 1;
+            // 
+            // getModelsButton
+            // 
+            this.getModelsButton.Location = new System.Drawing.Point(317, 5);
+            this.getModelsButton.Name = "getModelsButton";
+            this.getModelsButton.Size = new System.Drawing.Size(75, 23);
+            this.getModelsButton.TabIndex = 3;
+            this.getModelsButton.Text = "get models";
+            this.getModelsButton.UseVisualStyleBackColor = true;
+            this.getModelsButton.Click += new System.EventHandler(this.getModelsButton_Click);
+            // 
+            // navigateToCharacterSearchButton
+            // 
+            this.navigateToCharacterSearchButton.Location = new System.Drawing.Point(182, 5);
+            this.navigateToCharacterSearchButton.Name = "navigateToCharacterSearchButton";
+            this.navigateToCharacterSearchButton.Size = new System.Drawing.Size(105, 23);
+            this.navigateToCharacterSearchButton.TabIndex = 2;
+            this.navigateToCharacterSearchButton.Text = "character search";
+            this.navigateToCharacterSearchButton.UseVisualStyleBackColor = true;
+            this.navigateToCharacterSearchButton.Click += new System.EventHandler(this.navigateToCharacterSearchButton_Click);
             // 
             // exportButton
             // 
@@ -167,6 +198,17 @@
             this.addressTextBox.TabIndex = 0;
             this.addressTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.addressTextBox_KeyPress);
             // 
+            // devToolsTab
+            // 
+            this.devToolsTab.Controls.Add(this.devToolsContent);
+            this.devToolsTab.Controls.Add(this.devToolsHeader);
+            this.devToolsTab.Location = new System.Drawing.Point(4, 22);
+            this.devToolsTab.Name = "devToolsTab";
+            this.devToolsTab.Size = new System.Drawing.Size(792, 424);
+            this.devToolsTab.TabIndex = 2;
+            this.devToolsTab.Text = "dev tools";
+            this.devToolsTab.UseVisualStyleBackColor = true;
+            // 
             // utilityTab
             // 
             this.utilityTab.Controls.Add(this.textBox1);
@@ -179,15 +221,46 @@
             this.utilityTab.Text = "utility";
             this.utilityTab.UseVisualStyleBackColor = true;
             // 
-            // navigateToCharacterSearchButton
+            // browserToolStripMenuItem
             // 
-            this.navigateToCharacterSearchButton.Location = new System.Drawing.Point(182, 5);
-            this.navigateToCharacterSearchButton.Name = "navigateToCharacterSearchButton";
-            this.navigateToCharacterSearchButton.Size = new System.Drawing.Size(105, 23);
-            this.navigateToCharacterSearchButton.TabIndex = 2;
-            this.navigateToCharacterSearchButton.Text = "character search";
-            this.navigateToCharacterSearchButton.UseVisualStyleBackColor = true;
-            this.navigateToCharacterSearchButton.Click += new System.EventHandler(this.navigateToCharacterSearchButton_Click);
+            this.browserToolStripMenuItem.Name = "browserToolStripMenuItem";
+            this.browserToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.browserToolStripMenuItem.Text = "Browser";
+            // 
+            // showDevToolsTabToolStripMenuItem
+            // 
+            this.showDevToolsTabToolStripMenuItem.Name = "showDevToolsTabToolStripMenuItem";
+            this.showDevToolsTabToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.showDevToolsTabToolStripMenuItem.Text = "Show dev tools tab";
+            // 
+            // devToolsHeader
+            // 
+            this.devToolsHeader.Controls.Add(this.showDevToolsCheckbox);
+            this.devToolsHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.devToolsHeader.Location = new System.Drawing.Point(0, 0);
+            this.devToolsHeader.Name = "devToolsHeader";
+            this.devToolsHeader.Size = new System.Drawing.Size(792, 39);
+            this.devToolsHeader.TabIndex = 0;
+            // 
+            // devToolsContent
+            // 
+            this.devToolsContent.BackColor = System.Drawing.Color.DarkGray;
+            this.devToolsContent.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.devToolsContent.Location = new System.Drawing.Point(0, 39);
+            this.devToolsContent.Name = "devToolsContent";
+            this.devToolsContent.Size = new System.Drawing.Size(792, 385);
+            this.devToolsContent.TabIndex = 1;
+            // 
+            // showDevToolsCheckbox
+            // 
+            this.showDevToolsCheckbox.AutoSize = true;
+            this.showDevToolsCheckbox.Location = new System.Drawing.Point(8, 12);
+            this.showDevToolsCheckbox.Name = "showDevToolsCheckbox";
+            this.showDevToolsCheckbox.Size = new System.Drawing.Size(97, 17);
+            this.showDevToolsCheckbox.TabIndex = 0;
+            this.showDevToolsCheckbox.Text = "show dev tools";
+            this.showDevToolsCheckbox.UseVisualStyleBackColor = true;
+            this.showDevToolsCheckbox.CheckedChanged += new System.EventHandler(this.showDevToolsCheckbox_CheckedChanged);
             // 
             // Form1
             // 
@@ -203,8 +276,11 @@
             this.addressPanel.ResumeLayout(false);
             this.addressPanel.PerformLayout();
             this.urlButtonsPanel.ResumeLayout(false);
+            this.devToolsTab.ResumeLayout(false);
             this.utilityTab.ResumeLayout(false);
             this.utilityTab.PerformLayout();
+            this.devToolsHeader.ResumeLayout(false);
+            this.devToolsHeader.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -225,6 +301,13 @@
         private System.Windows.Forms.TextBox addressTextBox;
         private System.Windows.Forms.Button exportButton;
         private System.Windows.Forms.Button navigateToCharacterSearchButton;
+        private System.Windows.Forms.Button getModelsButton;
+        private System.Windows.Forms.TabPage devToolsTab;
+        private System.Windows.Forms.ToolStripMenuItem browserToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showDevToolsTabToolStripMenuItem;
+        private System.Windows.Forms.Panel devToolsContent;
+        private System.Windows.Forms.Panel devToolsHeader;
+        private System.Windows.Forms.CheckBox showDevToolsCheckbox;
     }
 }
 

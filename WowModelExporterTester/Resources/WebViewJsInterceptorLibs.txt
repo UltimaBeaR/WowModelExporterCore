@@ -1,0 +1,20 @@
+function __webviewinterceptorlibs__JSONstringify(obj, circular) {
+	if (!circular)
+		return JSON.stringify(obj);
+
+	var cache = [];
+	var res = JSON.stringify(obj, function(key, value) {
+		if (typeof value === 'object' && value !== null) {
+			if (cache.indexOf(value) !== -1) {
+				// Circular reference found, discard key
+				return;
+			}
+			// Store value in our collection
+			cache.push(value);
+		}
+		return value;
+	});
+	cache = null; // Enable garbage collection
+
+	return res;
+}

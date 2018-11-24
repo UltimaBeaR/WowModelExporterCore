@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using WowModelExporterCore;
 using WowheadModelLoader;
 using WowModelExporterFbx;
+using System.Collections.Generic;
 
 namespace WowModelExporterTester
 {
@@ -13,25 +14,71 @@ namespace WowModelExporterTester
             InitializeComponent();
 
             OptsJsonForExport = null;
+            GetModels = null;
+        }
 
+        protected override void OnLoad(EventArgs e)
+        {
             InitBrowser();
         }
 
         private void InitBrowser()
         {
-            webView.UrlChanged += (obj, ev) =>
+            webView.UrlChanged += (s, e) =>
             {
                 //OptsJsonForExport = null;
                 addressTextBox.Text = webView.Url;
             };
 
-            webView.NewWindow += (obj, ev) => { ev.Accepted = true; };
+            webView.NewWindow += (s, e) => { e.Accepted = true; };
 
-            var interceptor = new WebViewOptsInterceptor(webView);
-            interceptor.OptsIntercepted += (json) =>
+            InitInterceptor();
+        }
+
+        private void InitInterceptor()
+        {
+            var injections = new List<WebViewJsInjection>();
+
+            injections.Add(CreateInjection_ZamModelViewerContructor());
+            injections.Add(CreateInjection_WebGlDrawFunction());
+
+            var interceptor = new WebViewJsInterceptor(webView, injections);
+        }
+
+        private WebViewJsInjection CreateInjection_ZamModelViewerContructor()
+        {
+            var injection = new WebViewJsInjection(
+                "/modelviewer/viewer/viewer.min.js$",
+                "function ZamModelViewer(opts){",
+                "opts"
+            );
+
+            injection.Intercepted += (sender, getData) =>
             {
-                OptsJsonForExport = json;
+                OptsJsonForExport = getData();
             };
+
+            return injection;
+        }
+
+        private WebViewJsInjection CreateInjection_WebGlDrawFunction()
+        {
+            var injection = new WebViewJsInjection(
+                "/modelviewer/viewer/viewer.min.js$",
+                "draw:function(){var self=this,gl=self.context,i;var time=self.getTime();self.delta=(time-self.time)*.001;self.time=time;self.updateCamera();gl.viewport(0,0,self.width,self.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);",
+                @"(function () {
+                    console.log(self.models);
+                    //self.models
+                    return 'test';
+                })(this)"
+            );
+
+            injection.Intercepted += (sender, getData) =>
+            {
+                GetModels = getData;
+            };
+
+            return injection;
         }
 
         private void navigateToDressroomButton_Click(object sender, EventArgs e)
@@ -110,6 +157,32 @@ namespace WowModelExporterTester
             }
         }
 
+        private Func<string> GetModels
+        {
+            get => _getModels;
+
+            set
+            {
+                _getModels = value;
+
+                getModelsButton.Enabled = value != null;
+            }
+        }
+
         private string _optsJsonForExport;
+        private Func<string> _getModels;
+
+        private void getModelsButton_Click(object sender, EventArgs e)
+        {
+            var json = GetModels();
+        }
+
+        private void showDevToolsCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            webView.HideDevTools();
+
+            if (showDevToolsCheckbox.Checked)
+                webView.ShowDevTools(devToolsContent.Handle);
+        }
     }
 }
