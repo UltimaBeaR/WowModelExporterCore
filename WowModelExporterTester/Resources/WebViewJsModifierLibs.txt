@@ -1,4 +1,4 @@
-function __webviewinterceptorlibs__JSONstringify(obj, circular) {
+function __jsModifierLibs__JSONstringify(obj, circular) {
 	if (!circular)
 		return JSON.stringify(obj);
 

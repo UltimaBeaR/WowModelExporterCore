@@ -4,6 +4,7 @@ using WowModelExporterCore;
 using WowheadModelLoader;
 using WowModelExporterFbx;
 using System.Collections.Generic;
+using WebViewJsModifier;
 
 namespace WowModelExporterTester
 {
@@ -14,7 +15,7 @@ namespace WowModelExporterTester
             InitializeComponent();
 
             OptsJsonForExport = null;
-            GetModels = null;
+            ConsoleLogModelsFunction = null;
         }
 
         protected override void OnLoad(EventArgs e)
@@ -32,53 +33,64 @@ namespace WowModelExporterTester
 
             webView.NewWindow += (s, e) => { e.Accepted = true; };
 
-            InitInterceptor();
+            InitJsModifier();
         }
 
-        private void InitInterceptor()
+        private void InitJsModifier()
         {
-            var injections = new List<WebViewJsInjection>();
+            var jsModifyActions = new List<JsModifyAction>();
 
-            injections.Add(CreateInjection_ZamModelViewerContructor());
-            injections.Add(CreateInjection_WebGlDrawFunction());
+            jsModifyActions.Add(CreateJsModifyAction_ZamModelViewerContructor());
+            jsModifyActions.Add(CreateJsModifyAction_WebGlDrawFunction());
+            //jsModifyActions.Add(CreateJsModifyAction_TestTextReplace());
 
-            var interceptor = new WebViewJsInterceptor(webView, injections);
+            new JsModifier(webView, jsModifyActions);
         }
 
-        private WebViewJsInjection CreateInjection_ZamModelViewerContructor()
+        private InterceptDataJsModifyAction CreateJsModifyAction_ZamModelViewerContructor()
         {
-            var injection = new WebViewJsInjection(
+            var jsModifyAction = new InterceptDataJsModifyAction(
                 "/modelviewer/viewer/viewer.min.js$",
                 "function ZamModelViewer(opts){",
                 "opts"
             );
 
-            injection.Intercepted += (sender, getData) =>
+            jsModifyAction.Intercepted += (sender, getData) =>
             {
                 OptsJsonForExport = getData();
             };
 
-            return injection;
+            return jsModifyAction;
         }
 
-        private WebViewJsInjection CreateInjection_WebGlDrawFunction()
+        private InterceptDataJsModifyAction CreateJsModifyAction_WebGlDrawFunction()
         {
-            var injection = new WebViewJsInjection(
+            var jsModifyAction = new InterceptDataJsModifyAction(
                 "/modelviewer/viewer/viewer.min.js$",
                 "draw:function(){var self=this,gl=self.context,i;var time=self.getTime();self.delta=(time-self.time)*.001;self.time=time;self.updateCamera();gl.viewport(0,0,self.width,self.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);",
                 @"(function () {
                     console.log(self.models);
-                    //self.models
-                    return 'test';
+                    return null;
                 })(this)"
             );
 
-            injection.Intercepted += (sender, getData) =>
+            jsModifyAction.Intercepted += (sender, getData) =>
             {
-                GetModels = getData;
+                ConsoleLogModelsFunction = getData;
             };
 
-            return injection;
+            return jsModifyAction;
+        }
+
+        private TextReplaceJsModifyAction CreateJsModifyAction_TestTextReplace()
+        {
+            var jsModifyAction = new TextReplaceJsModifyAction(
+                "/modelviewer/viewer/viewer.min.js$",
+                "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);mat4.fromQuat(self.tmpMat,self.tmpQuat);mat4.transpose(self.tmpMat,self.tmpMat);",
+                "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);mat4.fromQuat(self.tmpMat,self.tmpQuat);"
+            );
+
+            return jsModifyAction;
         }
 
         private void navigateToDressroomButton_Click(object sender, EventArgs e)
@@ -157,24 +169,24 @@ namespace WowModelExporterTester
             }
         }
 
-        private Func<string> GetModels
+        private Func<string> ConsoleLogModelsFunction
         {
-            get => _getModels;
+            get => _consoleLogModelsFunction;
 
             set
             {
-                _getModels = value;
+                _consoleLogModelsFunction = value;
 
-                getModelsButton.Enabled = value != null;
+                consoleLogModelsButton.Enabled = value != null;
             }
         }
 
         private string _optsJsonForExport;
-        private Func<string> _getModels;
+        private Func<string> _consoleLogModelsFunction;
 
         private void getModelsButton_Click(object sender, EventArgs e)
         {
-            var json = GetModels();
+            ConsoleLogModelsFunction();
         }
 
         private void showDevToolsCheckbox_CheckedChanged(object sender, EventArgs e)

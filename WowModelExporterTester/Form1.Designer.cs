@@ -37,26 +37,26 @@
             this.browserContentPanel = new System.Windows.Forms.Panel();
             this.addressPanel = new System.Windows.Forms.Panel();
             this.urlButtonsPanel = new System.Windows.Forms.Panel();
-            this.getModelsButton = new System.Windows.Forms.Button();
+            this.consoleLogModelsButton = new System.Windows.Forms.Button();
             this.navigateToCharacterSearchButton = new System.Windows.Forms.Button();
             this.exportButton = new System.Windows.Forms.Button();
             this.navigateToDressroomButton = new System.Windows.Forms.Button();
             this.addressTextBox = new System.Windows.Forms.TextBox();
             this.devToolsTab = new System.Windows.Forms.TabPage();
+            this.devToolsContent = new System.Windows.Forms.Panel();
+            this.devToolsHeader = new System.Windows.Forms.Panel();
+            this.showDevToolsCheckbox = new System.Windows.Forms.CheckBox();
             this.utilityTab = new System.Windows.Forms.TabPage();
             this.browserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDevToolsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.devToolsHeader = new System.Windows.Forms.Panel();
-            this.devToolsContent = new System.Windows.Forms.Panel();
-            this.showDevToolsCheckbox = new System.Windows.Forms.CheckBox();
             this.tabs.SuspendLayout();
             this.browserTab.SuspendLayout();
             this.browserContentPanel.SuspendLayout();
             this.addressPanel.SuspendLayout();
             this.urlButtonsPanel.SuspendLayout();
             this.devToolsTab.SuspendLayout();
-            this.utilityTab.SuspendLayout();
             this.devToolsHeader.SuspendLayout();
+            this.utilityTab.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -139,7 +139,7 @@
             // 
             this.urlButtonsPanel.BackColor = System.Drawing.Color.Transparent;
             this.urlButtonsPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.urlButtonsPanel.Controls.Add(this.getModelsButton);
+            this.urlButtonsPanel.Controls.Add(this.consoleLogModelsButton);
             this.urlButtonsPanel.Controls.Add(this.navigateToCharacterSearchButton);
             this.urlButtonsPanel.Controls.Add(this.exportButton);
             this.urlButtonsPanel.Controls.Add(this.navigateToDressroomButton);
@@ -149,19 +149,19 @@
             this.urlButtonsPanel.Size = new System.Drawing.Size(786, 37);
             this.urlButtonsPanel.TabIndex = 1;
             // 
-            // getModelsButton
+            // consoleLogModelsButton
             // 
-            this.getModelsButton.Location = new System.Drawing.Point(317, 5);
-            this.getModelsButton.Name = "getModelsButton";
-            this.getModelsButton.Size = new System.Drawing.Size(75, 23);
-            this.getModelsButton.TabIndex = 3;
-            this.getModelsButton.Text = "get models";
-            this.getModelsButton.UseVisualStyleBackColor = true;
-            this.getModelsButton.Click += new System.EventHandler(this.getModelsButton_Click);
+            this.consoleLogModelsButton.Location = new System.Drawing.Point(607, 5);
+            this.consoleLogModelsButton.Name = "consoleLogModelsButton";
+            this.consoleLogModelsButton.Size = new System.Drawing.Size(129, 23);
+            this.consoleLogModelsButton.TabIndex = 3;
+            this.consoleLogModelsButton.Text = "console.log() models";
+            this.consoleLogModelsButton.UseVisualStyleBackColor = true;
+            this.consoleLogModelsButton.Click += new System.EventHandler(this.getModelsButton_Click);
             // 
             // navigateToCharacterSearchButton
             // 
-            this.navigateToCharacterSearchButton.Location = new System.Drawing.Point(182, 5);
+            this.navigateToCharacterSearchButton.Location = new System.Drawing.Point(224, 5);
             this.navigateToCharacterSearchButton.Name = "navigateToCharacterSearchButton";
             this.navigateToCharacterSearchButton.Size = new System.Drawing.Size(105, 23);
             this.navigateToCharacterSearchButton.TabIndex = 2;
@@ -181,7 +181,7 @@
             // 
             // navigateToDressroomButton
             // 
-            this.navigateToDressroomButton.Location = new System.Drawing.Point(101, 5);
+            this.navigateToDressroomButton.Location = new System.Drawing.Point(143, 5);
             this.navigateToDressroomButton.Name = "navigateToDressroomButton";
             this.navigateToDressroomButton.Size = new System.Drawing.Size(75, 23);
             this.navigateToDressroomButton.TabIndex = 0;
@@ -209,6 +209,35 @@
             this.devToolsTab.Text = "dev tools";
             this.devToolsTab.UseVisualStyleBackColor = true;
             // 
+            // devToolsContent
+            // 
+            this.devToolsContent.BackColor = System.Drawing.Color.DarkGray;
+            this.devToolsContent.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.devToolsContent.Location = new System.Drawing.Point(0, 39);
+            this.devToolsContent.Name = "devToolsContent";
+            this.devToolsContent.Size = new System.Drawing.Size(792, 385);
+            this.devToolsContent.TabIndex = 1;
+            // 
+            // devToolsHeader
+            // 
+            this.devToolsHeader.Controls.Add(this.showDevToolsCheckbox);
+            this.devToolsHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.devToolsHeader.Location = new System.Drawing.Point(0, 0);
+            this.devToolsHeader.Name = "devToolsHeader";
+            this.devToolsHeader.Size = new System.Drawing.Size(792, 39);
+            this.devToolsHeader.TabIndex = 0;
+            // 
+            // showDevToolsCheckbox
+            // 
+            this.showDevToolsCheckbox.AutoSize = true;
+            this.showDevToolsCheckbox.Location = new System.Drawing.Point(8, 12);
+            this.showDevToolsCheckbox.Name = "showDevToolsCheckbox";
+            this.showDevToolsCheckbox.Size = new System.Drawing.Size(97, 17);
+            this.showDevToolsCheckbox.TabIndex = 0;
+            this.showDevToolsCheckbox.Text = "show dev tools";
+            this.showDevToolsCheckbox.UseVisualStyleBackColor = true;
+            this.showDevToolsCheckbox.CheckedChanged += new System.EventHandler(this.showDevToolsCheckbox_CheckedChanged);
+            // 
             // utilityTab
             // 
             this.utilityTab.Controls.Add(this.textBox1);
@@ -233,35 +262,6 @@
             this.showDevToolsTabToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showDevToolsTabToolStripMenuItem.Text = "Show dev tools tab";
             // 
-            // devToolsHeader
-            // 
-            this.devToolsHeader.Controls.Add(this.showDevToolsCheckbox);
-            this.devToolsHeader.Dock = System.Windows.Forms.DockStyle.Top;
-            this.devToolsHeader.Location = new System.Drawing.Point(0, 0);
-            this.devToolsHeader.Name = "devToolsHeader";
-            this.devToolsHeader.Size = new System.Drawing.Size(792, 39);
-            this.devToolsHeader.TabIndex = 0;
-            // 
-            // devToolsContent
-            // 
-            this.devToolsContent.BackColor = System.Drawing.Color.DarkGray;
-            this.devToolsContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.devToolsContent.Location = new System.Drawing.Point(0, 39);
-            this.devToolsContent.Name = "devToolsContent";
-            this.devToolsContent.Size = new System.Drawing.Size(792, 385);
-            this.devToolsContent.TabIndex = 1;
-            // 
-            // showDevToolsCheckbox
-            // 
-            this.showDevToolsCheckbox.AutoSize = true;
-            this.showDevToolsCheckbox.Location = new System.Drawing.Point(8, 12);
-            this.showDevToolsCheckbox.Name = "showDevToolsCheckbox";
-            this.showDevToolsCheckbox.Size = new System.Drawing.Size(97, 17);
-            this.showDevToolsCheckbox.TabIndex = 0;
-            this.showDevToolsCheckbox.Text = "show dev tools";
-            this.showDevToolsCheckbox.UseVisualStyleBackColor = true;
-            this.showDevToolsCheckbox.CheckedChanged += new System.EventHandler(this.showDevToolsCheckbox_CheckedChanged);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -277,10 +277,10 @@
             this.addressPanel.PerformLayout();
             this.urlButtonsPanel.ResumeLayout(false);
             this.devToolsTab.ResumeLayout(false);
-            this.utilityTab.ResumeLayout(false);
-            this.utilityTab.PerformLayout();
             this.devToolsHeader.ResumeLayout(false);
             this.devToolsHeader.PerformLayout();
+            this.utilityTab.ResumeLayout(false);
+            this.utilityTab.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -301,7 +301,7 @@
         private System.Windows.Forms.TextBox addressTextBox;
         private System.Windows.Forms.Button exportButton;
         private System.Windows.Forms.Button navigateToCharacterSearchButton;
-        private System.Windows.Forms.Button getModelsButton;
+        private System.Windows.Forms.Button consoleLogModelsButton;
         private System.Windows.Forms.TabPage devToolsTab;
         private System.Windows.Forms.ToolStripMenuItem browserToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showDevToolsTabToolStripMenuItem;

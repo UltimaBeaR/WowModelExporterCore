@@ -61,11 +61,30 @@ namespace WowModelExporterTester.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to function __jsModifierLibs__JSONstringify(obj, circular) {
+        ///	if (!circular)
+        ///		return JSON.stringify(obj);
+        ///
+        ///	var cache = [];
+        ///	var res = JSON.stringify(obj, function(key, value) {
+        ///		if (typeof value === &apos;object&apos; &amp;&amp; value !== null) {
+        ///			if (cache.indexOf(value) !== -1) {
+        ///				// Circular reference found, discard key
+        ///				return;
+        ///			}
+        ///			// Store value in our collection
+        ///			cache.push(value);
+        ///		}
+        ///		return value;
+        ///	});
+        ///	cache = null; // Enable garbage collection
+        ///
+        ///	return res;
+        ///}.
         /// </summary>
-        internal static string WebViewJsInterceptorLibs {
+        internal static string WebViewJsModifierLibs {
             get {
-                return ResourceManager.GetString("WebViewJsInterceptorLibs", resourceCulture);
+                return ResourceManager.GetString("WebViewJsModifierLibs", resourceCulture);
             }
         }
     }
