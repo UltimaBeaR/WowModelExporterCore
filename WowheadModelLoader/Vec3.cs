@@ -70,8 +70,8 @@ namespace WowheadModelLoader
 
         public static Vec3 ConvertPositionFromWh(Vec3 position)
         {
-            var res = new Vec3(position.X, position.Z, -position.Y);
-            res.RotateAroundY(-((float)Math.PI / 2));
+            var res = new Vec3(-position.X, position.Z, -position.Y);
+            res.RotateAroundY((float)Math.PI / 2);
             return res;
         }
 

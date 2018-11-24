@@ -85,33 +85,16 @@ namespace WowModelExporterCore
                         // меняем данные о костях в вершинах так итема так, чтобы при привязке к скелету родителя этот итем двигался вместе с костью
                         // (при этом в иерархии объектов он не будет в ноде кости, а будет на том же уровне что и родительский объект, к скелету которого мы привязываем итем)
 
+                        itemObject.Mesh.ApplyTransform(
+                            whParentAttachmentBone.LastUpdatedTranslation,
+                            whParentAttachmentBone.LastUpdatedRotation,
+                            whParentAttachmentBone.LastUpdatedScale);
+
                         var eachVertexItemBoneIndexes = new ByteVec4((byte)parentAttachmentBone.Index, 0, 0, 0);
                         var eachVertexItemBoneWeights = new Vec4(1, 0, 0, 0);
 
                         foreach (var vertex in itemObject.Mesh.Vertices)
                         {
-                            // ToDo: тестил только поворот и скейл, возможно если придет транслейт, то будут глюки, так как тут может что-то зависеть от порядка применения
-                            // трансформаций (вроде сделал в том же порядке что применяются матрицы в костях в оригинале)
-                            // также возможны глюки если у костей будут родительские кости с ненулевыми матрицами
-
-                            // Смещаем
-                            vertex.WhPosition = new Vec3(
-                                vertex.WhPosition.X + whParentAttachmentBone.LastUpdatedTranslation.X,
-                                vertex.WhPosition.Y + whParentAttachmentBone.LastUpdatedTranslation.Y,
-                                vertex.WhPosition.Z + whParentAttachmentBone.LastUpdatedTranslation.Z);
-
-                            // Поворачиваем
-                            vertex.WhPosition = Vec3.TransformQuat(vertex.WhPosition, whParentAttachmentBone.LastUpdatedRotation);
-
-                            // Также поворачиваем нормаль (для транслейта и скейла этого не надо)
-                            vertex.WhNormal = Vec3.TransformQuat(vertex.WhNormal, whParentAttachmentBone.LastUpdatedRotation);
-
-                            // Скейлим
-                            vertex.WhPosition = new Vec3(
-                                vertex.WhPosition.X * whParentAttachmentBone.LastUpdatedScale.X,
-                                vertex.WhPosition.Y * whParentAttachmentBone.LastUpdatedScale.Y,
-                                vertex.WhPosition.Z * whParentAttachmentBone.LastUpdatedScale.Z);
-
                             vertex.BoneIndexes = eachVertexItemBoneIndexes;
                             vertex.BoneWeights = eachVertexItemBoneWeights;
                         }
@@ -158,10 +141,10 @@ namespace WowModelExporterCore
                 if (!whTexUnit.Show)
                     continue;
 
-                var triangles = whModel.Indices
+                var triangles = ConvertTrianglesFromWh(whModel.Indices
                     .Skip(whTexUnit.Mesh.IndexStart)
                     .Take(whTexUnit.Mesh.IndexCount)
-                    .ToArray();
+                    .ToArray());
 
                 var material = MakeMaterialFromWhTexUnit(whTexUnit);
 
@@ -283,6 +266,22 @@ namespace WowModelExporterCore
                     ConvertBoneWeightFromWh(whVertex.Weights[3])
                 )
             };
+        }
+
+        public ushort[] ConvertTrianglesFromWh(ushort[] triangles)
+        {
+            // меняем порядок отрисовки индексов, из-за того что ставим негативный X в вершинах
+
+            var newTriangles = new ushort[triangles.Length];
+
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                newTriangles[i] = triangles[i];
+                newTriangles[i + 1] = triangles[i + 2];
+                newTriangles[i + 2] = triangles[i + 1];
+            }
+
+            return newTriangles;
         }
 
         private Vec2 ConvertUVFromWh(float u, float v)

@@ -15,17 +15,27 @@ namespace WowModelExporterUnityPlugin
             _exporter = new WowModelExporter();
         }
 
+        public void CreateCharacterGameObjects(string optsJson)
+        {
+            var characterWowObject = _exporter.LoadCharacter(optsJson);
+            CreateCharacterGameObjects(characterWowObject, null, null, null);
+        }
+
         public void CreateCharacterGameObjects(WhRace race, WhGender gender, string[] items)
         {
             var characterWowObject = _exporter.LoadCharacter(race, gender, items);
+            CreateCharacterGameObjects(characterWowObject, race.ToString(), gender.ToString(), items?.Count().ToString());
+        }
 
-            PrepareForVRChatUtility.PrepareObject(characterWowObject, true , true);
+        private void CreateCharacterGameObjects(WowObject characterWowObject, string race, string gender, string itemCount)
+        {
+            PrepareForVRChatUtility.PrepareObject(characterWowObject, true, true);
 
-            var containerGo = new GameObject(race.ToString() + " " + gender.ToString());
+            var containerGo = new GameObject((race ?? "unknown_race") + " " + (gender ?? "unknown_gender"));
             containerGo.transform.position = Vector3.zero;
 
             var characterGo = CreateGameObjectForCharacterWowObject(
-                "character items: " + (items?.Count().ToString() ?? "0"),
+                "character items: " + (itemCount ?? "unknown_itemCount"),
                 containerGo.transform,
                 characterWowObject, out var rootBoneGo);
 
