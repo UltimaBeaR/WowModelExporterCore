@@ -49,6 +49,7 @@
             this.utilityTab = new System.Windows.Forms.TabPage();
             this.browserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDevToolsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openCacheDirectoryButton = new System.Windows.Forms.Button();
             this.tabs.SuspendLayout();
             this.browserTab.SuspendLayout();
             this.browserContentPanel.SuspendLayout();
@@ -139,6 +140,7 @@
             // 
             this.urlButtonsPanel.BackColor = System.Drawing.Color.Transparent;
             this.urlButtonsPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.urlButtonsPanel.Controls.Add(this.openCacheDirectoryButton);
             this.urlButtonsPanel.Controls.Add(this.consoleLogModelsButton);
             this.urlButtonsPanel.Controls.Add(this.navigateToCharacterSearchButton);
             this.urlButtonsPanel.Controls.Add(this.exportButton);
@@ -151,7 +153,7 @@
             // 
             // consoleLogModelsButton
             // 
-            this.consoleLogModelsButton.Location = new System.Drawing.Point(607, 5);
+            this.consoleLogModelsButton.Location = new System.Drawing.Point(398, 5);
             this.consoleLogModelsButton.Name = "consoleLogModelsButton";
             this.consoleLogModelsButton.Size = new System.Drawing.Size(129, 23);
             this.consoleLogModelsButton.TabIndex = 3;
@@ -262,6 +264,16 @@
             this.showDevToolsTabToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showDevToolsTabToolStripMenuItem.Text = "Show dev tools tab";
             // 
+            // openCacheDirectoryButton
+            // 
+            this.openCacheDirectoryButton.Location = new System.Drawing.Point(533, 5);
+            this.openCacheDirectoryButton.Name = "openCacheDirectoryButton";
+            this.openCacheDirectoryButton.Size = new System.Drawing.Size(92, 23);
+            this.openCacheDirectoryButton.TabIndex = 4;
+            this.openCacheDirectoryButton.Text = "open cache dir";
+            this.openCacheDirectoryButton.UseVisualStyleBackColor = true;
+            this.openCacheDirectoryButton.Click += new System.EventHandler(this.openCacheDirectoryButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -308,6 +320,7 @@
         private System.Windows.Forms.Panel devToolsContent;
         private System.Windows.Forms.Panel devToolsHeader;
         private System.Windows.Forms.CheckBox showDevToolsCheckbox;
+        private System.Windows.Forms.Button openCacheDirectoryButton;
     }
 }
 

@@ -5,6 +5,7 @@ using WowheadModelLoader;
 using WowModelExporterFbx;
 using System.Collections.Generic;
 using WebViewJsModifier;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace WowModelExporterTester
 {
@@ -119,9 +120,25 @@ namespace WowModelExporterTester
 
             var fbxExporter = new Exporter();
 
-            fbxExporter.ExportWowObject(wowObject, "newtest").ToString();
+            var dialog = new CommonOpenFileDialog
+            {
+                EnsurePathExists = true,
+                ShowPlacesList = true,
+                Title = "Choose directory to export .fbx and it's dependencies",
+                InitialDirectory = System.IO.Path.GetDirectoryName(Application.ExecutablePath),
+                IsFolderPicker = true
+            };
 
-            MessageBox.Show("Готово");
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                fbxExporter.ExportWowObject(wowObject, dialog.FileName).ToString();
+
+                System.Diagnostics.Process.Start("explorer.exe", dialog.FileName);
+            }
+            else
+            {
+                MessageBox.Show("Export canceled");
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -195,6 +212,11 @@ namespace WowModelExporterTester
 
             if (showDevToolsCheckbox.Checked)
                 webView.ShowDevTools(devToolsContent.Handle);
+        }
+
+        private void openCacheDirectoryButton_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("explorer.exe", DataLoaderBase.CacheDirectory);
         }
     }
 }

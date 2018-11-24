@@ -101,7 +101,7 @@ namespace WowheadModelLoader
             return Path.Combine(CacheDirectory, GetHashFromUrl(url) + cacheExtension);
         }
 
-        private static readonly string CacheDirectory = Path.Combine(Path.GetTempPath(), "WowheadModelLoader__DataLoaderCache");
+        public static readonly string CacheDirectory = Path.Combine(Path.GetTempPath(), "WowheadModelLoader__DataLoaderCache");
 
         private static readonly SHA256 _sha = SHA256.Create();
     }
