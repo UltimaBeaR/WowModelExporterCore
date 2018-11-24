@@ -42,7 +42,7 @@ namespace WowModelExporterTester
 
             jsModifyActions.Add(CreateJsModifyAction_ZamModelViewerContructor());
             jsModifyActions.Add(CreateJsModifyAction_WebGlDrawFunction());
-            //jsModifyActions.Add(CreateJsModifyAction_TestTextReplace());
+            jsModifyActions.Add(CreateJsModifyAction_TestTextReplace());
 
             new JsModifier(webView, jsModifyActions);
         }
@@ -87,7 +87,7 @@ namespace WowModelExporterTester
             var jsModifyAction = new TextReplaceJsModifyAction(
                 "/modelviewer/viewer/viewer.min.js$",
                 "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);mat4.fromQuat(self.tmpMat,self.tmpQuat);mat4.transpose(self.tmpMat,self.tmpMat);",
-                "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);mat4.fromQuat(self.tmpMat,self.tmpQuat);"
+                "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);   quat.invert(self.tmpQuat, self.tmpQuat);    mat4.fromQuat(self.tmpMat,self.tmpQuat);    "
             );
 
             return jsModifyAction;

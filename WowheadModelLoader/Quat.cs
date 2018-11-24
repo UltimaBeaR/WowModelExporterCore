@@ -46,5 +46,17 @@ namespace WowheadModelLoader
                 scale0 * a.W + scale1 * b.W
             );
         }
+
+        public static Vec4 Invert(Vec4 a)
+        {
+            var dot = a.X * a.X + a.Y * a.Y + a.Z * a.Z + a.W * a.W;
+            var invDot = dot != 0 ? 1f / dot : 0f;
+            return new Vec4(
+                -a.X * invDot,
+                -a.Y * invDot,
+                -a.Z * invDot,
+                a.W * invDot
+            );
+        }
     }
 }

@@ -319,7 +319,7 @@ namespace WowheadModelLoader
                     // Буду смотреть на 0 кадр, надеюсь прокатит
                     var time = 0;
 
-                    BoneAnimationRotation = WhAnimatedQuat.GetValue(bone.Rotation, anim.Index, time);
+                    BoneAnimationRotation = Quat.Invert(WhAnimatedQuat.GetValue(bone.Rotation, anim.Index, time));
                 }
                 if (scaleUsed)
                 {
