@@ -43,7 +43,8 @@ namespace WowModelExporterCore
                 WhModelInfo.CreateForCharacter(race, gender), 0);
 
             WhDefferedList.Execute();
-            WhDefferedList.Execute("whenAllModelsLoaded");
+
+            characterModel.EmulateDraw(false);
 
             return characterModel;
         }
@@ -55,7 +56,8 @@ namespace WowModelExporterCore
                 opts.Model, 0);
 
             WhDefferedList.Execute();
-            WhDefferedList.Execute("whenAllModelsLoaded");
+
+            characterModel.EmulateDraw(false);
 
             return characterModel;
         }

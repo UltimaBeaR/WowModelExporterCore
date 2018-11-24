@@ -103,14 +103,15 @@ namespace WowheadModelLoader
             for (int i = 0; i < NumGeosets; i++)
                 Geosets[i] = (ushort)(i * 100 + GeosetDefaults[i]);
 
-            //self.time = 0;
-            //self.frame = 0;
+            Time = 0;
+            Frame = 0;
 
             StartAnimation = null;
             CurrentAnimation = null;
             AnimStartTime = 0;
 
-            //self.animPaused = false;
+            AnimPaused = false;
+
             //self.matrix = mat4.create();
             //self.vbData = null;
             //self.vb = null;
@@ -177,8 +178,6 @@ namespace WowheadModelLoader
 
             if (!skipLoad)
                 Load();
-
-            WhDefferedList.Add(() => SetupWhenLoaded(), "whenAllModelsLoaded");
         }
 
         public WhModelInfo Model { get; set; }
@@ -235,11 +234,15 @@ namespace WowheadModelLoader
         public ushort[] GeosetDefaults { get; set; }
         public int CreatureGeosetData { get; set; }
 
+        public int Time { get; set; }
+        public int Frame { get; set; }
+
         public WhAnimation StartAnimation { get; set; }
         public WhAnimation CurrentAnimation { get; set; }
 
-        // ToDo: не уверен что тут int а не float например, т.к. до сих пор только 0 присваивался
         public int AnimStartTime { get; set; }
+
+        public bool AnimPaused { get; set; }
 
         public WhVertex[] Vertices { get; set; }
         public ushort[] Indices { get; set; }
@@ -281,52 +284,116 @@ namespace WowheadModelLoader
         public int Bone { get; set; }
         public WhAttachment Attachment { get; set; }
 
-        // Сам добавил. если эта модель - аттачмент, то будет не null (будет прописана кость из аттачмента)
-        public int? AttachmentBone { get; set; }
-
-        public Vec4 BoneAnimationRotation { get; set; } = Quat.Create();
-        // Добавил сам (по дефолту скейл 1)
-        public Vec3 BoneAnimationScale { get; set; } = new Vec3(1, 1, 1);
-
-        // Сам сделал. Модифицировал на основе ZamModelViewer.Wow.Bone.update(), тут как минимум идет апдейт скейла итемов (плечи, пояс), который записан в анимации, но не в самих итемах
         public void Update()
         {
-            // ToDo: потом переделать - загнать это все таки в кость, как и было в оригинале. просчитывать всю эту фигню для каждой кости. дальше посмотреть где этот апдейт вызывается
-            // и по аналогии это все вызвать после загрузки один раз.
-            // или даже можно реализовать что то типа анимации, чтобы устанавливать состояние анимации и типа устанавливать после загрузки 1 кадр анимации, тогда как раз
-            // просчитается это все для костей.
-            // ДАЛЕЕ для модели, которая приатачена к кости сделать проперти которая будет получать из кости все эти значения скейла и тд
-            // а дальше уже при конверте скейлить на эти значения приатаченные объекты
-
-            if (Animations == null)
+            if (!Loaded || TexUnits == null)
                 return;
 
-            var anim = CurrentAnimation;
-            if (anim == null)
-                return;
+            Frame++;
 
-            if (AttachmentBone != null)
+            Time = Opts.CurrentTime;
+
+            if (CurrentAnimation != null)
             {
-                var bone = Parent.Bones[AttachmentBone.Value];
-
-                var billboard = (bone.Flags & 8) != 0;
-                var transUsed = WhAnimatedVec3.IsUsed(bone.Translation, anim.Index);
-                var rotUsed = WhAnimatedQuat.IsUsed(bone.Rotation, anim.Index);
-                var scaleUsed = WhAnimatedVec3.IsUsed(bone.Scale, anim.Index);
-
-                if (rotUsed)
+                if (AnimStartTime == 0)
+                    AnimStartTime = Time;
+                if (Time - AnimStartTime >= CurrentAnimation.Length)
                 {
-                    // Буду смотреть на 0 кадр, надеюсь прокатит
-                    var time = 0;
-
-                    BoneAnimationRotation = Quat.Invert(WhAnimatedQuat.GetValue(bone.Rotation, anim.Index, time));
+                    var nextAnim = CurrentAnimation.Next;
+                    if (CurrentAnimation.Id != 0 && nextAnim != -1)
+                    {
+                        CurrentAnimation = Animations[nextAnim];
+                        AnimStartTime = Time;
+                    }
+                    else
+                    {
+                        CurrentAnimation = StartAnimation;
+                        AnimStartTime = Time;
+                    }
                 }
-                if (scaleUsed)
-                {
-                    // Буду смотреть на 0 кадр, надеюсь прокатит
-                    var time = 0;
+            }
 
-                    BoneAnimationScale = WhAnimatedVec3.GetValue(bone.Scale, anim.Index, time);
+            if (Race == WhRace.GOBLIN && Gender == WhGender.MALE && CurrentAnimation != null && CurrentAnimation.Name.StartsWith("Emote"))
+            {
+                SortedTexUnits[0].Show = false;
+                SortedTexUnits[6].Show = false;
+            }
+
+            var numUnits = TexUnits.Length;
+
+            for (int i = 0; i < numUnits; i++)
+            {
+                var u = TexUnits[i];
+                if (!u.Show)
+                    continue;
+
+                var count = u.Mesh.IndexCount;
+                var start = u.Mesh.IndexStart;
+
+                for (int j = 0; j < count; ++j)
+                    Vertices[Indices[start + j]].Frame = Frame;
+            }
+
+            var numBones = Bones.Length;
+
+            var animTime = Time - AnimStartTime;
+
+            //vb = self.vbData;
+
+            if (Bones != null && Animations != null)
+            {
+                for (int i = 0; i < numBones; i++)
+                    Bones[i].Updated = false;
+
+                for (int i = 0; i < numBones; i++)
+                    Bones[i].Update(animTime);
+
+                if (Vertices != null)
+                {
+                    var numVerts = Vertices.Length;
+
+                    //v, b, w, idx, tmpVec3 = self.tmpVec3, tmpVec4 = self.tmpVec4;
+
+                    for (int i = 0; i < numVerts; i++)
+                    {
+                        var v = Vertices[i];
+                        if (v.Frame != Frame)
+                            continue;
+
+                        var vertexSizeFloat = WhGlobal.VertexSize32;
+                        var idx = i * vertexSizeFloat;
+
+                        //vb[idx] = vb[idx + 1] = vb[idx + 2] = vb[idx + 3] = vb[idx + 4] = vb[idx + 5] = 0;
+                        //for (j = 0; j < 4; ++j)
+                        //{
+                        //    w = v.weights[j] / 255;
+                        //    if (w > 0)
+                        //    {
+                        //        b = self.bones[v.bones[j]];
+                        //        vec3.transformMat4(tmpVec3, v.position, b.matrix);
+                        //        vec4.transformMat4(tmpVec4, v.normal, b.matrix);
+                        //        vb[idx + 0] += tmpVec3[0] * w;
+                        //        vb[idx + 1] += tmpVec3[1] * w;
+                        //        vb[idx + 2] += tmpVec3[2] * w;
+                        //        vb[idx + 3] += tmpVec4[0] * w;
+                        //        vb[idx + 4] += tmpVec4[1] * w;
+                        //        vb[idx + 5] += tmpVec4[2] * w
+                        //    }
+                        //}
+                        //v.transPosition[0] = vb[idx + 0];
+                        //v.transPosition[1] = vb[idx + 1];
+                        //v.transPosition[2] = vb[idx + 2];
+                        //v.transNormal[0] = vb[idx + 3];
+                        //v.transNormal[1] = vb[idx + 4];
+                        //v.transNormal[2] = vb[idx + 5]
+                    }
+
+                    //self.updateBuffers(false);
+                    //if (!self.animBounds)
+                    //{
+                    //    self.animBounds = true;
+                    //    self.updateBounds()
+                    //}
                 }
             }
         }
@@ -1249,15 +1316,152 @@ namespace WowheadModelLoader
                 SpecialTextures[6] = new WhTexture(this, 6, hairFeature.textures[0]);
         }
 
-        // этот метод я добавил сам. то что тут делается в оригинале происходит на отрисовке (draw()), но я делаю это тут один раз после создания модели
-        private void SetupWhenLoaded()
+        // этот метод я добавил сам. то что тут делается в оригинале происходит на отрисовке, но я делаю это тут один раз после создания модели
+        // По сути это метод ZamModelViewer.Wow.Model.prototype.draw = function(flipWinding)
+        public void EmulateDraw(bool flipWinding)
         {
+            // Код из оригинального draw() частично тут, частично в WowObjectBuilder.BuildFromCharacterWhModel
+            // тут происходит обновление состояния (апдейты всякие, которые они засунули в draw), в билдере же происходит уже экспорт на основе этого состояния
+
+            if (!Loaded)
+                return;
+
+            Update();
+
             if (NeedsCompositing)
                 CompositeTextures();
 
-            // Эта хрень (апдейт костей по анимации, тут это просчет скейла и т.д оттуда)
-            // тоже вызывается для костей когда-то во время рендера, так что тоже пусть тут будет. не уверен правда в каком порядке относительно основного
-            Update();
+            if (HornsModel != null)
+            {
+                var hornsModel = HornsModel;
+                var boneMap = new Dictionary<uint, int>();
+                for (var i = 0; i < Bones.Length; i++)
+                {
+                    boneMap[Bones[i].Id] = i;
+                }
+
+                var ibones = hornsModel.Bones;
+                if (ibones != null)
+                {
+                    for (var i = 0; i < ibones.Length; i++)
+                    {
+                        var bone = ibones[i];
+                        if(!boneMap.TryGetValue(bone.Id, out var pi))
+                            continue;
+
+                        //var dst = ibones[i].matrix;
+                        //var src = self.bones[pi].matrix;
+
+                        ibones[i].SkipUpdate = true;
+
+                        //mat4.copy(dst, src)
+                    }
+
+                    //mat4.identity(self.tmpMat);
+                    //hornsModel.setMatrix(self.matrix, self.tmpMat);
+                    hornsModel.Update();
+                    //hornsModel.draw(false)
+                }
+            }
+
+            foreach (var item in Items.Values)
+            {
+                if (item == null || item.Models == null)
+                    continue;
+
+                for (int j = 0; j < item.Models.Count; j++)
+                {
+                    if (item.Models[j] != null && item.Models[j].Model != null && item.Models[j].Bone > -1 && item.Models[j].Bone < Bones.Length)
+                    {
+                        var winding = false;
+                        var reversed = item.Models[j].Model.Model.Type == WhType.ITEM && WhGlobal.ReversedItems.GetOrDefault(item.Models[j].Model.Model.Id);
+                        var upsideDown = WhGlobal.ReversedModels.GetOrDefault(item.Models[j].Model.Model.Id);
+
+                        //mat4.identity(self.tmpMat);
+
+                        if (upsideDown)
+                        {
+                            //vec3.set(self.tmpVec, 1, 1, -1);
+                            //mat4.scale(self.tmpMat, self.tmpMat, self.tmpVec);
+
+                            winding = true;
+                        }
+                        else if (reversed && item.Slot != WhSlot.LEFTHAND || !reversed && item.Slot == WhSlot.LEFTHAND)
+                        {
+                            //vec3.set(self.tmpVec, 1, -1, 1);
+                            //mat4.scale(self.tmpMat, self.tmpMat, self.tmpVec);
+
+                            winding = true;
+                        }
+
+                        if (item.Slot == (WhSlot)27)
+                        {
+                            //var scale = item.models[j].model.meta.Scale;
+                            //vec3.set(self.tmpVec, scale, scale, scale);
+                            //mat4.scale(self.tmpMat, self.tmpMat, self.tmpVec)
+                        }
+
+                        //item.models[j].model.setMatrix(self.matrix, self.bones[item.models[j].bone].matrix, item.models[j].attachment.position, self.tmpMat);
+
+                        item.Models[j].Model.Update();
+                        item.Models[j].Model.EmulateDraw(winding);
+
+                        if (item.Visual != null && item.Visual.Models != null && item.Models[j].Model.Loaded)
+                        {
+                            for (var k = 0; k < item.Visual.Models.Length; k++)
+                            {
+                                var visual = item.Visual.Models[k];
+                                if (visual != null)
+                                {
+                                    //mat4.identity(self.tmpMat);
+                                    //mat4.rotateY(self.tmpMat, self.tmpMat, Math.PI / 2);
+                                    //var transPos = visual.model.particleEmitters[0].position;
+                                    //vec3.set(self.tmpVec, -transPos[0], -transPos[1], -transPos[2]);
+                                    //mat4.translate(self.tmpMat, self.tmpMat, self.tmpVec);
+                                    //visual.model.setMatrix(self.matrix, self.bones[item.models[j].bone].matrix, visual.attachment.position, self.tmpMat);
+
+                                    item.Visual.Models[k].Model.Update();
+                                    item.Visual.Models[k].Model.EmulateDraw(winding);
+                                }
+                            }
+                        }
+                    }
+                    else if (item.Models[j] != null && item.Models[j].Model != null && item.Models[j].Bone == -1)
+                    {
+                        var boneMap = new Dictionary<uint, int>();
+
+                        for (var i = 0; i < Bones.Length; i++)
+                        {
+                            boneMap[Bones[i].Id] = i;
+                        }
+
+                        var ibones = item.Models[j].Model.Bones;
+
+                        if (ibones != null)
+                        {
+                            for (var i = 0; i < ibones.Length; i++)
+                            {
+                                var bone = ibones[i];
+                                if (!boneMap.TryGetValue(bone.Id, out var pi))
+                                    continue;
+
+                                //var dst = ibones[i].matrix;
+                                //var src = self.bones[pi].matrix;
+
+                                ibones[i].SkipUpdate = true;
+
+                                //mat4.copy(dst, src);
+                            }
+
+                            //mat4.identity(self.tmpMat);
+                            //item.models[j].model.setMatrix(self.matrix, self.tmpMat);
+
+                            item.Models[j].Model.Update();
+                            item.Models[j].Model.EmulateDraw(false);
+                        }
+                    }
+                }
+            }
         }
 
         public void SetGeometryVisibleCustom(WhJsonHairGeoset data)
@@ -1688,9 +1892,6 @@ namespace WowheadModelLoader
                         var attach = Attachments[slotAttachments[i]];
                         item.Models[i].Bone = attach.Bone;
                         item.Models[i].Attachment = attach;
-
-                        // сам добавил
-                        item.Models[i].Model.AttachmentBone = attach.Bone;
 
                         if (item.Visual != null && item.Visual.Models != null)
                         {

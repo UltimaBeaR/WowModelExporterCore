@@ -7,6 +7,8 @@ namespace WowheadModelLoader
     /// </summary>
     public static class WhGlobal
     {
+        public static int VertexSize32 => 10;
+
         public static readonly IReadOnlyDictionary<WhCharVariationType, int[]> CharVariationMap =
             new Dictionary<WhCharVariationType, int[]>()
             {
@@ -178,6 +180,17 @@ namespace WowheadModelLoader
             { "42147", true },
             { "44808", true },
             { "45271", true }
+        };
+
+        public static IReadOnlyDictionary<string, bool> ReversedItems = new Dictionary<string, bool>()
+        {
+            { "139260", true },
+            { "45146", true }
+        };
+
+        public static IReadOnlyDictionary<string, bool> ReversedModels = new Dictionary<string, bool>()
+        {
+            { "147259", true }
         };
     }
 }

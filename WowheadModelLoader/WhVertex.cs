@@ -14,9 +14,11 @@ namespace WowheadModelLoader
             V2 = r.ReadSingle();
             Weights = new ByteVec4(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte());
             Bones = new ByteVec4(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte());
-            
+
             //self.transPosition = vec3.clone(self.position);
             //self.transNormal = vec4.clone(self.normal)
+
+            Frame = 0;
         }
 
         public Vec3 Position { get; set; }
@@ -27,5 +29,7 @@ namespace WowheadModelLoader
         public float V2 { get; set; }
         public ByteVec4 Weights { get; set; }
         public ByteVec4 Bones { get; set; }
+
+        public int Frame { get; set; }
     }
 }

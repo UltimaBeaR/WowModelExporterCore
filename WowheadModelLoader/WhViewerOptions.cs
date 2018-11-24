@@ -5,6 +5,9 @@ namespace WowheadModelLoader
 {
     public class WhViewerOptions
     {
+        // Это я добавил. Это должно быть в rendered.time, но так как я передаю в модели только этот объект, я решил записать это сюда.
+        public int CurrentTime { get; set; }
+
         public int Type { get; set; }
         public string ContentPath { get; set; }
 

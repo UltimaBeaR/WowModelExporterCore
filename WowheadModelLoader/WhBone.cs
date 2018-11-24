@@ -61,6 +61,120 @@ namespace WowheadModelLoader
         public bool Hidden { get; set; }
         public bool Updated { get; set; }
 
-        // ToDo: есть еще методы update() и hide() не уверен что оно мне надо, пока не буду делать, вроде update() нужен для изменения состояния анимации
+        public bool SkipUpdate { get; set; }
+
+        // LastUpdated* переменные сделал я. Это аналог оригинальной матрицы кости, но разбитой по компонентам.
+        // они заполняются после вызова Update(time) то есть во время проигрывания текущей анимации
+
+        public Vec3 LastUpdatedTranslation { get; set; }
+        public Vec4 LastUpdatedRotation { get; set; }
+        public Vec3 LastUpdatedScale { get; set; }
+
+        public void Hide()
+        {
+            Hidden = true;
+
+            //for (var i = 0; i < 16; ++i)
+            //    self.matrix[i] = 0
+        }
+
+        public void Update(int time)
+        {
+            if (Hidden)
+            {
+                Hide();
+                return;
+            }
+
+            if (Updated || SkipUpdate)
+                return;
+
+            Updated = true;
+
+            if (Model == null || Model.Animations == null || Model.AnimPaused)
+                return;
+
+            //mat4.identity(self.matrix);
+
+            var anim = Model.CurrentAnimation;
+
+            if (anim == null)
+                return;
+
+            var billboard = (Flags & 8) != 0;
+            var transUsed = WhAnimatedVec3.IsUsed(Translation, anim.Index);
+            var rotUsed = WhAnimatedQuat.IsUsed(Rotation, anim.Index);
+            var scaleUsed = WhAnimatedVec3.IsUsed(Scale, anim.Index);
+
+            if (transUsed || rotUsed || scaleUsed || billboard)
+            {
+                //mat4.translate(self.matrix, self.matrix, self.pivot);
+
+                if (transUsed)
+                {
+                    // Запоминаю текущий translation вместо модификации матрицы (как в оригинале)
+
+                    LastUpdatedTranslation = WhAnimatedVec3.GetValue(Translation, anim.Index, time);
+
+                    //Wow.AnimatedVec3.getValue(self.translation, anim.index, time, self.tmpVec);
+                    //mat4.translate(self.matrix, self.matrix, self.tmpVec)
+                }
+
+                if (rotUsed)
+                {
+                    // Запоминаю текущий rotation вместо модификации матрицы (как в оригинале)
+
+                    // mat4.fromQuat + mat4.transpose (создать матрицу из квартерниона и инвертировать ее) это то же самое что инверт квартерниона, а затем создание матрицы из полученного квартерниона
+                    // но так как я матрицы не использую, я просто инвертирую квартернион и сохраняю его
+                    LastUpdatedRotation = Quat.Invert(WhAnimatedQuat.GetValue(Rotation, anim.Index, time));
+
+                    //Wow.AnimatedQuat.getValue(self.rotation, anim.index, time, self.tmpQuat);
+                    //mat4.fromQuat(self.tmpMat, self.tmpQuat);
+                    //mat4.transpose(self.tmpMat, self.tmpMat);
+                    //mat4.multiply(self.matrix, self.matrix, self.tmpMat)
+                }
+
+                if (scaleUsed)
+                {
+                    // Запоминаю текущий scale вместо модификации матрицы (как в оригинале)
+
+                    LastUpdatedScale = WhAnimatedVec3.GetValue(Scale, anim.Index, time);
+
+                    //Wow.AnimatedVec3.getValue(self.scale, anim.index, time, self.tmpVec);
+                    //mat4.scale(self.matrix, self.matrix, self.tmpVec)
+                }
+
+                if (billboard)
+                {
+                    //var yRot = -self.model.renderer.zenith + Math.PI / 2;
+                    //var zRot;
+                    //if (self.model.model.type == Wow.Types.ITEM)
+                    //{
+                    //    zRot = self.model.renderer.azimuth - Math.PI
+                    //    }
+                    //else
+                    //{
+                    //    zRot = self.model.renderer.azimuth - Math.PI * 1.5
+                    //  }
+                    //mat4.identity(self.matrix);
+                    //mat4.translate(self.matrix, self.matrix, self.pivot);
+                    //mat4.rotateZ(self.matrix, self.matrix, zRot);
+                    //mat4.rotateY(self.matrix, self.matrix, yRot)
+                }
+
+                //mat4.translate(self.matrix, self.matrix, vec3.negate(self.tmpVec, self.pivot))
+            }
+
+            if (Parent > -1)
+            {
+                Model.Bones[Parent].Update(time);
+
+                // По сути это значит что translation/rotation/scale которые в этой кости вычеслены будут являться локальными и чтобы получить глобальные,
+                // нужно учесть еще из parent кости тоже
+                //mat4.multiply(self.matrix, self.model.bones[self.parent].matrix, self.matrix)
+            }
+
+            //vec3.transformMat4(self.transformedPivot, self.pivot, self.matrix)
+        }
     }
 }

@@ -77,6 +77,7 @@ namespace WowModelExporterCore
                     if (itemObject.Parent != null && whItemModel.Attachment.Bone >= 0)
                     {
                         var parentAttachmentBone = itemObject.Parent.Bones[whItemModel.Attachment.Bone];
+                        var whParentAttachmentBone = whItemModel.Model.Parent.Bones[whItemModel.Attachment.Bone];
 
                         // записываем объект этого итема в кость, к которой крепимся(у родительского объекта)
                         parentAttachmentBone.AttachedWowObjects.Add(itemObject);
@@ -89,18 +90,27 @@ namespace WowModelExporterCore
 
                         foreach (var vertex in itemObject.Mesh.Vertices)
                         {
-                            // ToDo: понять че за хрень с поворотом (поворачиваются в другую сторону плечи)
+                            // ToDo: тестил только поворот и скейл, возможно если придет транслейт, то будут глюки, так как тут может что-то зависеть от порядка применения
+                            // трансформаций (вроде сделал в том же порядке что применяются матрицы в костях в оригинале)
+                            // также возможны глюки если у костей будут родительские кости с ненулевыми матрицами
 
-                            // Поворачиваем (позицию и нормаль)
-                            vertex.WhPosition = Vec3.TransformQuat(vertex.WhPosition, whItemModel.Model.BoneAnimationRotation);
-                            vertex.WhNormal = Vec3.TransformQuat(vertex.WhNormal, whItemModel.Model.BoneAnimationRotation);
-
-                            // Скейлим на скейл, который был записан в анимации кости
-                            // Нормаль вроде можно не скейлить - ниче не изменится
+                            // Смещаем
                             vertex.WhPosition = new Vec3(
-                                vertex.WhPosition.X * whItemModel.Model.BoneAnimationScale.X,
-                                vertex.WhPosition.Y * whItemModel.Model.BoneAnimationScale.Y,
-                                vertex.WhPosition.Z * whItemModel.Model.BoneAnimationScale.Z);
+                                vertex.WhPosition.X + whParentAttachmentBone.LastUpdatedTranslation.X,
+                                vertex.WhPosition.Y + whParentAttachmentBone.LastUpdatedTranslation.Y,
+                                vertex.WhPosition.Z + whParentAttachmentBone.LastUpdatedTranslation.Z);
+
+                            // Поворачиваем
+                            vertex.WhPosition = Vec3.TransformQuat(vertex.WhPosition, whParentAttachmentBone.LastUpdatedRotation);
+
+                            // Также поворачиваем нормаль (для транслейта и скейла этого не надо)
+                            vertex.WhNormal = Vec3.TransformQuat(vertex.WhNormal, whParentAttachmentBone.LastUpdatedRotation);
+
+                            // Скейлим
+                            vertex.WhPosition = new Vec3(
+                                vertex.WhPosition.X * whParentAttachmentBone.LastUpdatedScale.X,
+                                vertex.WhPosition.Y * whParentAttachmentBone.LastUpdatedScale.Y,
+                                vertex.WhPosition.Z * whParentAttachmentBone.LastUpdatedScale.Z);
 
                             vertex.BoneIndexes = eachVertexItemBoneIndexes;
                             vertex.BoneWeights = eachVertexItemBoneWeights;
