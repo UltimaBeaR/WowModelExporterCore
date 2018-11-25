@@ -38,14 +38,21 @@ namespace WowheadModelLoader
             return JsonConvert.DeserializeObject<WhJsonMeta>(json);
         }
 
-        public static Bitmap LoadTexture(uint file)
+        public static TextureImage LoadTexture(uint file)
         {
+            TextureImage img;
+
             var relativeUrl = $"textures/{file}.png";
+
+            if (_textureImageByUrlCache.TryGetValue(relativeUrl, out img))
+                return img;
+
             var url = GetModelViewerUrl(relativeUrl);
             var binary = DataLoaderBase.LoadBinary(url, ".png");
 
-            using (var ms = new MemoryStream(binary))
-                return (Bitmap)Image.FromStream(ms);
+            img = TextureImage.FromByteArray(binary);
+            _textureImageByUrlCache.Add(relativeUrl, img);
+            return img;
         }
 
         public static WhJsonCustomizationData LoadMetaCharacterCustomization(WhRace race, WhGender gender)
@@ -84,6 +91,8 @@ namespace WowheadModelLoader
         {
             return new Uri(_modelViewerUrl, relativeUrl).ToString();
         }
+
+        private static Dictionary<string, TextureImage> _textureImageByUrlCache = new Dictionary<string, TextureImage>();
 
         private static readonly Uri _wowheadUrl = new Uri("https://www.wowhead.com");
         private static readonly Uri _modelViewerUrl = new Uri("https://wow.zamimg.com/modelviewer/");

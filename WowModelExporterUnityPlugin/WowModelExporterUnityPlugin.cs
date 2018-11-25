@@ -232,7 +232,7 @@ namespace WowModelExporterUnityPlugin
                 // Smoothness
                 material.SetFloat("_Glossiness", 0);
 
-                material.SetTexture("_MainTex", CreateTextureFromBitmap(whMaterial.MainImage));
+                material.SetTexture("_MainTex", CreateTextureFromBitmap(whMaterial.MainImage.Bitmap));
 
                 materials[submeshIdx] = material;
             }

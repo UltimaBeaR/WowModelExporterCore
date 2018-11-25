@@ -217,7 +217,7 @@ namespace WowModelExporterCore
 
             var whTextures = whTexUnit.GetTextures();
 
-            var images = new Bitmap[]
+            var images = new TextureImage[]
             {
                 GetImageFromWhTextureInfo(whTextures["Texture1"]),
                 GetImageFromWhTextureInfo(whTextures["Texture2"]),
@@ -235,7 +235,7 @@ namespace WowModelExporterCore
             return material;
         }
 
-        private Bitmap GetImageFromWhTextureInfo(WhTexUnit.TextureInfo whTextureInfo)
+        private TextureImage GetImageFromWhTextureInfo(WhTexUnit.TextureInfo whTextureInfo)
         {
             if (whTextureInfo.Img != null)
                 return whTextureInfo.Img;

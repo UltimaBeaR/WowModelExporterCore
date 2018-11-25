@@ -218,7 +218,7 @@ namespace WowheadModelLoader
 
         public Dictionary<int, WhTexture> TextureOverrides { get; set; }
 
-        public Bitmap CompositeTexture { get; set; }
+        public TextureImage CompositeTexture { get; set; }
 
         public WhTexture NpcTexture { get; set; }
         public Dictionary<int, WhTexture> SpecialTextures { get; set; }
@@ -1950,14 +1950,20 @@ namespace WowheadModelLoader
                 return;
 
             if (CompositeTexture == null)
-                CompositeTexture = new Bitmap(SpecialTextures[1].Img.Width, SpecialTextures[1].Img.Height);
-
-            using (var graphics = Graphics.FromImage(CompositeTexture))
             {
-                graphics.DrawImage(SpecialTextures[1].Img, new PointF(0, 0));
+                CompositeTexture = new TextureImage()
+                {
+                    Bitmap = new Bitmap(SpecialTextures[1].Img.Bitmap.Width, SpecialTextures[1].Img.Bitmap.Height)
+                };
+            }
 
-                var w = CompositeTexture.Width;
-                var h = CompositeTexture.Height;
+            using (CompositeTexture.ChangeBitmap())
+            using (var graphics = Graphics.FromImage(CompositeTexture.Bitmap))
+            {
+                graphics.DrawImage(SpecialTextures[1].Img.Bitmap, new PointF(0, 0));
+
+                var w = CompositeTexture.Bitmap.Width;
+                var h = CompositeTexture.Bitmap.Height;
                 var regions = WhRegionOldNew.Old;
 
                 if (w != h)
@@ -1970,7 +1976,7 @@ namespace WowheadModelLoader
                         if (!BakedTextures[WhRegion.FaceLower][i].Ready())
                             return;
 
-                        DrawImage(graphics, BakedTextures[WhRegion.FaceLower][i].Img, w, h, regions[WhRegion.FaceLower]);
+                        DrawImage(graphics, BakedTextures[WhRegion.FaceLower][i].Img.Bitmap, w, h, regions[WhRegion.FaceLower]);
                     }
 
                     if (BakedTextures[WhRegion.FaceUpper].ContainsKey(i))
@@ -1978,7 +1984,7 @@ namespace WowheadModelLoader
                         if (!BakedTextures[WhRegion.FaceUpper][i].Ready())
                             return;
 
-                        DrawImage(graphics, BakedTextures[WhRegion.FaceUpper][i].Img, w, h, regions[WhRegion.FaceUpper]);
+                        DrawImage(graphics, BakedTextures[WhRegion.FaceUpper][i].Img.Bitmap, w, h, regions[WhRegion.FaceUpper]);
                     }
                 }
 
@@ -2000,7 +2006,7 @@ namespace WowheadModelLoader
                     if (!BakedTextures[WhRegion.TorsoUpper][1].Ready())
                         return;
 
-                    DrawImage(graphics, BakedTextures[WhRegion.TorsoUpper][1].Img, w, h, regions[WhRegion.TorsoUpper]);
+                    DrawImage(graphics, BakedTextures[WhRegion.TorsoUpper][1].Img.Bitmap, w, h, regions[WhRegion.TorsoUpper]);
                 }
 
                 if (drawPanties && BakedTextures[WhRegion.LegUpper].ContainsKey(1))
@@ -2008,7 +2014,7 @@ namespace WowheadModelLoader
                     if (!BakedTextures[WhRegion.LegUpper][1].Ready())
                         return;
 
-                    DrawImage(graphics, BakedTextures[WhRegion.LegUpper][1].Img, w, h, regions[WhRegion.LegUpper]);
+                    DrawImage(graphics, BakedTextures[WhRegion.LegUpper][1].Img.Bitmap, w, h, regions[WhRegion.LegUpper]);
                 }
 
                 //if (self.TattoosIndex > 0) {
@@ -2039,7 +2045,7 @@ namespace WowheadModelLoader
                             if ((Meta.RaceFlags & 2) != 0 && t.Region == WhRegion.Foot)
                                 continue;
 
-                            DrawImage(graphics, t.Texture.Img, w, h, regions[t.Region]);
+                            DrawImage(graphics, t.Texture.Img.Bitmap, w, h, regions[t.Region]);
                         }
                     }
                 }

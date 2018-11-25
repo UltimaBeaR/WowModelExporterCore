@@ -184,22 +184,22 @@ namespace WowheadModelLoader
             var textures = new Dictionary<string, TextureInfo>() {
                 { "Texture1", new TextureInfo {
                     Texture = texture1 as WhTexture,
-                    Img = texture1 as Bitmap,
+                    Img = texture1 as TextureImage,
                     Location = 0
                 } },
                 { "Texture2", new TextureInfo {
                     Texture = texture2 as WhTexture,
-                    Img = texture2 as Bitmap,
+                    Img = texture2 as TextureImage,
                     Location = 1
                 }},
                 { "Texture3", new TextureInfo {
                     Texture = texture3 as WhTexture,
-                    Img = texture3 as Bitmap,
+                    Img = texture3 as TextureImage,
                     Location= 2
                 }},
                 { "Texture4", new TextureInfo {
                     Texture = texture4 as WhTexture,
-                    Img = texture4 as Bitmap,
+                    Img = texture4 as TextureImage,
                     Location= 3
                 }}
             };
@@ -219,7 +219,7 @@ namespace WowheadModelLoader
             // Всегда будет что-то одно либо Img, либо Texture, оба одновременно заданными быть не могут
 
             public WhTexture Texture { get; set; }
-            public Bitmap Img { get; set; }
+            public TextureImage Img { get; set; }
 
             public int Location { get; set; }
             public string Uniform { get; set; }

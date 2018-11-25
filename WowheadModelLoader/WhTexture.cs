@@ -25,7 +25,7 @@ namespace WowheadModelLoader
 
         public WhModel Model { get; set; }
         public int Index { get; set; }
-        public Bitmap Img { get; set; }
+        public TextureImage Img { get; set; }
         public bool ImgHasAlpha { get; set; }
         public bool Loaded { get; set; }
 
@@ -43,11 +43,11 @@ namespace WowheadModelLoader
         private bool CheckIfImgHasAlpha()
         {
             // ToDo: это очень медленно, чтобы было быстрее нужно грузить в виде сырых пикселей (причем не png а битмапа обычного) и проверять на прозрачность пиксели
-            for (int xPixel = 0; xPixel <= (Img.Width - 1); xPixel++)
+            for (int xPixel = 0; xPixel <= (Img.Bitmap.Width - 1); xPixel++)
             {
-                for (int yPixel = 0; yPixel <= (Img.Height - 1); yPixel++)
+                for (int yPixel = 0; yPixel <= (Img.Bitmap.Height - 1); yPixel++)
                 {
-                    if (Img.GetPixel(xPixel, yPixel).A != 255)
+                    if (Img.Bitmap.GetPixel(xPixel, yPixel).A != 255)
                         return true;
                 }
             }
