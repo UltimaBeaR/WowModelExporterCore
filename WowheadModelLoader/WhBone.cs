@@ -66,9 +66,9 @@ namespace WowheadModelLoader
         // LastUpdated* переменные сделал я. Это аналог оригинальной матрицы кости, но разбитой по компонентам.
         // они заполняются после вызова Update(time) то есть во время проигрывания текущей анимации
 
-        public Vec3 LastUpdatedTranslation { get; set; }
-        public Vec4 LastUpdatedRotation { get; set; }
-        public Vec3 LastUpdatedScale { get; set; }
+        public Vec3? LastUpdatedTranslation { get; set; }
+        public Vec4? LastUpdatedRotation { get; set; }
+        public Vec3? LastUpdatedScale { get; set; }
 
         public void Hide()
         {
