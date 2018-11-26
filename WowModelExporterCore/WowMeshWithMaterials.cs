@@ -47,5 +47,39 @@ namespace WowModelExporterCore
                 }
             }
         }
+
+        /// <summary>
+        /// Удаляет вершины, которые не используются ни в одном face(треугольнике)
+        /// </summary>
+        public void RemoveUnusedVertices()
+        {
+            // Ключ - старый (до перестроения массива вершин) индекс вершины, значение - новый (после перестроения массива вершин) индекс вершины
+            var oldToNewIndices = new Dictionary<int, int>(Vertices.Length);
+
+            // Заполняем старые значения (в ключах получатся все исползуемые индексы)
+            foreach (var submesh in Submeshes)
+            {
+                foreach (var vertexIndex in submesh.Triangles)
+                    oldToNewIndices[vertexIndex] = -1;
+            }
+
+            var newVertices = new List<WowVertex>(oldToNewIndices.Count);
+            for (int vertexIndex = 0; vertexIndex < Vertices.Length; vertexIndex++)
+            {
+                if (oldToNewIndices.ContainsKey(vertexIndex))
+                {
+                    oldToNewIndices[vertexIndex] = newVertices.Count;
+                    newVertices.Add(Vertices[vertexIndex]);
+                }
+            }
+
+            foreach (var submesh in Submeshes)
+            {
+                for (int i = 0; i < submesh.Triangles.Length; i++)
+                    submesh.Triangles[i] = (ushort)oldToNewIndices[submesh.Triangles[i]];
+            }
+
+            Vertices = newVertices.ToArray();
+        }
     }
 }

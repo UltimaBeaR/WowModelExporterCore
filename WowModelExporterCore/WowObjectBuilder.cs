@@ -154,6 +154,8 @@ namespace WowModelExporterCore
                 mesh.Submeshes.Add(submesh);
             }
 
+            mesh.RemoveUnusedVertices();
+
             return mesh;
         }
 
