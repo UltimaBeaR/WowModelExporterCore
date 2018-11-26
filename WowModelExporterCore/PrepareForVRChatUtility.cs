@@ -27,7 +27,7 @@ namespace WowModelExporterCore
                     if (Array.IndexOf(normalMappedBoneNames, boneToRemove.GetName()) >= 0)
                         return false;
 
-                    // неу удаляем кость, если для нее есть прикрепленные объекты
+                    // не удаляем кость, если для нее есть прикрепленные объекты
                     if (boneToRemove.AttachedWowObjects.Count > 0)
                         return false;
 
@@ -56,12 +56,12 @@ namespace WowModelExporterCore
             // Удаляем нижнюю челюсть, если надо (чтобы vrchat не делал автоматическую анимацию речи через эту кость - оно работает глючно)
             if (removeJaw)
                 wowObject.RemoveBonesByNames(new[] { "Jaw" });
+
+            wowObject.OptimizeBones();
         }
 
         private static readonly Dictionary<string, string> _normalToHumanoidBoneNamesMapping = new Dictionary<string, string>()
         {
-            { "ROOT", "ROOT" },
-
             { "body", "Hips" },
 
             { "leg_upper.L", "LeftUpperLeg" },

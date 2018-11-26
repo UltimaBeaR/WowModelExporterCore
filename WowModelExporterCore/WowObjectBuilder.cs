@@ -19,6 +19,7 @@ namespace WowModelExporterCore
 
             characterObject.Mesh = MakeMeshFromWhModel(whCharacterModel);
             characterObject.Bones = MakeBoneHierarchyFromWhModel(whCharacterModel);
+            characterObject.OptimizeBones();
             TranslateBonePositionsFromGlobalToLocal(characterObject);
 
             // Рога

@@ -87,6 +87,11 @@ namespace WowModelExporterCore
             return _name ?? (_boneNames.TryGetValue(Id, out var val) ? val : null);
         }
 
+        public override string ToString()
+        {
+            return GetName() ?? $"[bone id: {Id}]";
+        }
+
         private string _name;
 
         private static readonly Dictionary<uint, string> _boneNames = new Dictionary<uint, string>()

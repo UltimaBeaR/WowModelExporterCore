@@ -214,7 +214,10 @@ namespace WowModelExporterUnityPlugin
                     if (boneTransform == null)
                         return Matrix4x4.identity;
 
-                    return boneTransform.worldToLocalMatrix * rootTransorm.localToWorldMatrix;
+                    // Хз че тут не так, но если так делать и рутовая кость не в 0ле, то глючит
+                    // return boneTransform.worldToLocalMatrix * rootTransorm.localToWorldMatrix;
+
+                    return boneTransform.worldToLocalMatrix;
                 })
                 .ToArray();
         }

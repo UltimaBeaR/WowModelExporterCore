@@ -60,10 +60,7 @@ namespace WowModelExporterCore
         /// </summary>
         public bool RemoveBone(WowBone boneToRemove)
         {
-            // ToDo: какая то хрень происходит после удаления костей, перс скейлится. если оставить root кость то все хорошо.
-            // я думаю это из за удаления с null родителем, веса перехерачиваются, надо посмотреть...
-
-            if (boneToRemove == null || boneToRemove.ParentBone == null && boneToRemove.ChildBones.Count > 1)
+            if (boneToRemove == null || (boneToRemove.ParentBone == null && boneToRemove.ChildBones.Count > 1))
                 return false;
 
             int boneIndex = boneToRemove.Index;
@@ -71,6 +68,14 @@ namespace WowModelExporterCore
             Vec4 boneWeights;
             bool changed;
 
+            // В случае если удаляем корневую кость (boneToRemove.ParentBone == null) то либо у нее не будет child костей вообще либо будет одна (проверяется выше)
+            var boneToRemoveSingleChild = boneToRemove.ChildBones.Count == 1 ? boneToRemove.ChildBones[0] : null;
+
+            // ToDo: возможно надо будет менять не только вершины этого объекта но и всякие приатаченные объекты,
+            // которые также могут быть завязаны на эти кости (надо видимо будет хранить в объекте список мешей которые привязаны
+            // к костям этим либо вообще отдельно скелет хранить и в нем уже список мешей/wowobject-ов)
+
+            // Меняем веса у вершин в соответствии с новой иерархией костей
             foreach (var vertex in Mesh.Vertices)
             {
                 boneIndexes = vertex.BoneIndexes;
@@ -83,6 +88,8 @@ namespace WowModelExporterCore
                     {
                         if (boneToRemove.ParentBone != null)
                             boneIndexes[i] = boneToRemove.ParentBone.Index;
+                        else if (boneToRemoveSingleChild != null)
+                            boneIndexes[i] = boneToRemoveSingleChild.Index;
                         else
                         {
                             boneIndexes[i] = 0;
@@ -99,14 +106,13 @@ namespace WowModelExporterCore
 
                     vertex.BoneIndexes = boneIndexes;
                     vertex.BoneWeights = boneWeights;
-
-                    // ToDo: убрать дубликаты индексов в вершине и объеденить веса (необязательно, но желательно)
                 }
             }
 
             // ToDo: сейчас я не перестраиваю массив костей после удаления. Поидее надо удалить null элементы из него и перепрописать индексы для всех вершин на измененные.
             // возможно стоит сделать для этого действия отдельный метод чтобы вызывать его вручную после пачки удалений, т.к. эта операция может быть долгой
 
+            // Удаляем кость из списка костей и перебрасываем ее children на родителя удаляемой кости
             for (int i = 0; i < Bones.Length; i++)
             {
                 if (Bones[i] == boneToRemove)
@@ -125,7 +131,42 @@ namespace WowModelExporterCore
                 }
             }
 
-            throw new System.InvalidOperationException("Похоже что идет удаление кости, которой не существет в массиве костей");
+            throw new InvalidOperationException("Похоже что идет удаление кости, которой не существет в массиве костей");
+        }
+
+        public void OptimizeBones()
+        {
+            // Для всех вершин мержу веса костей в одно значение если есть 2 (и более) одинаковые кости в вершине
+            // далее нормализирую веса в каждой вершине. Индексы костей при этом сортируются в порядке возрастания (в конце идут неиспользуемые кости с индексом и весом 0)
+
+            var indexedWeights = new Dictionary<byte, float>();
+            foreach (var vertex in Mesh.Vertices)
+            {
+                int i;
+
+                indexedWeights.Clear();
+                for (i = 0; i < 4; i++)
+                    indexedWeights[vertex.BoneIndexes[i]] = 0f;
+
+                for (i = 0; i < 4; i++)
+                    indexedWeights[vertex.BoneIndexes[i]] += vertex.BoneWeights[i];
+
+                var newIndexes = new ByteVec4();
+                var newWeights = new Vec4();
+
+                i = 0;
+                foreach (var indexedWeight in indexedWeights.OrderBy(x => x.Key))
+                {
+                    newIndexes[i] = indexedWeight.Key;
+                    newWeights[i] = indexedWeight.Value;
+                    i++;
+                }
+
+                newWeights.NormalizeSum();
+
+                vertex.BoneIndexes = newIndexes;
+                vertex.BoneWeights = newWeights;
+            }
         }
     }
 }
