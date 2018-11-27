@@ -37,6 +37,7 @@
             this.browserContentPanel = new System.Windows.Forms.Panel();
             this.addressPanel = new System.Windows.Forms.Panel();
             this.urlButtonsPanel = new System.Windows.Forms.Panel();
+            this.openCacheDirectoryButton = new System.Windows.Forms.Button();
             this.consoleLogModelsButton = new System.Windows.Forms.Button();
             this.navigateToCharacterSearchButton = new System.Windows.Forms.Button();
             this.exportButton = new System.Windows.Forms.Button();
@@ -49,7 +50,8 @@
             this.utilityTab = new System.Windows.Forms.TabPage();
             this.browserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDevToolsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openCacheDirectoryButton = new System.Windows.Forms.Button();
+            this.drawOnlySelectedSumeshCheckbox = new System.Windows.Forms.CheckBox();
+            this.submeshIndexTextbox = new System.Windows.Forms.TextBox();
             this.tabs.SuspendLayout();
             this.browserTab.SuspendLayout();
             this.browserContentPanel.SuspendLayout();
@@ -140,6 +142,8 @@
             // 
             this.urlButtonsPanel.BackColor = System.Drawing.Color.Transparent;
             this.urlButtonsPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.urlButtonsPanel.Controls.Add(this.submeshIndexTextbox);
+            this.urlButtonsPanel.Controls.Add(this.drawOnlySelectedSumeshCheckbox);
             this.urlButtonsPanel.Controls.Add(this.openCacheDirectoryButton);
             this.urlButtonsPanel.Controls.Add(this.consoleLogModelsButton);
             this.urlButtonsPanel.Controls.Add(this.navigateToCharacterSearchButton);
@@ -151,9 +155,19 @@
             this.urlButtonsPanel.Size = new System.Drawing.Size(786, 37);
             this.urlButtonsPanel.TabIndex = 1;
             // 
+            // openCacheDirectoryButton
+            // 
+            this.openCacheDirectoryButton.Location = new System.Drawing.Point(675, 5);
+            this.openCacheDirectoryButton.Name = "openCacheDirectoryButton";
+            this.openCacheDirectoryButton.Size = new System.Drawing.Size(92, 23);
+            this.openCacheDirectoryButton.TabIndex = 4;
+            this.openCacheDirectoryButton.Text = "open cache dir";
+            this.openCacheDirectoryButton.UseVisualStyleBackColor = true;
+            this.openCacheDirectoryButton.Click += new System.EventHandler(this.openCacheDirectoryButton_Click);
+            // 
             // consoleLogModelsButton
             // 
-            this.consoleLogModelsButton.Location = new System.Drawing.Point(398, 5);
+            this.consoleLogModelsButton.Location = new System.Drawing.Point(540, 5);
             this.consoleLogModelsButton.Name = "consoleLogModelsButton";
             this.consoleLogModelsButton.Size = new System.Drawing.Size(129, 23);
             this.consoleLogModelsButton.TabIndex = 3;
@@ -264,15 +278,24 @@
             this.showDevToolsTabToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showDevToolsTabToolStripMenuItem.Text = "Show dev tools tab";
             // 
-            // openCacheDirectoryButton
+            // drawOnlySelectedSumeshCheckbox
             // 
-            this.openCacheDirectoryButton.Location = new System.Drawing.Point(533, 5);
-            this.openCacheDirectoryButton.Name = "openCacheDirectoryButton";
-            this.openCacheDirectoryButton.Size = new System.Drawing.Size(92, 23);
-            this.openCacheDirectoryButton.TabIndex = 4;
-            this.openCacheDirectoryButton.Text = "open cache dir";
-            this.openCacheDirectoryButton.UseVisualStyleBackColor = true;
-            this.openCacheDirectoryButton.Click += new System.EventHandler(this.openCacheDirectoryButton_Click);
+            this.drawOnlySelectedSumeshCheckbox.AutoSize = true;
+            this.drawOnlySelectedSumeshCheckbox.Location = new System.Drawing.Point(352, 9);
+            this.drawOnlySelectedSumeshCheckbox.Name = "drawOnlySelectedSumeshCheckbox";
+            this.drawOnlySelectedSumeshCheckbox.Size = new System.Drawing.Size(118, 17);
+            this.drawOnlySelectedSumeshCheckbox.TabIndex = 5;
+            this.drawOnlySelectedSumeshCheckbox.Text = "only submesh index";
+            this.drawOnlySelectedSumeshCheckbox.UseVisualStyleBackColor = true;
+            this.drawOnlySelectedSumeshCheckbox.CheckedChanged += new System.EventHandler(this.drawOnlySelectedSumeshCheckbox_CheckedChanged);
+            // 
+            // submeshIndexTextbox
+            // 
+            this.submeshIndexTextbox.Location = new System.Drawing.Point(476, 6);
+            this.submeshIndexTextbox.Name = "submeshIndexTextbox";
+            this.submeshIndexTextbox.Size = new System.Drawing.Size(46, 20);
+            this.submeshIndexTextbox.TabIndex = 6;
+            this.submeshIndexTextbox.TextChanged += new System.EventHandler(this.submeshIndexTextbox_TextChanged);
             // 
             // Form1
             // 
@@ -288,6 +311,7 @@
             this.addressPanel.ResumeLayout(false);
             this.addressPanel.PerformLayout();
             this.urlButtonsPanel.ResumeLayout(false);
+            this.urlButtonsPanel.PerformLayout();
             this.devToolsTab.ResumeLayout(false);
             this.devToolsHeader.ResumeLayout(false);
             this.devToolsHeader.PerformLayout();
@@ -321,6 +345,8 @@
         private System.Windows.Forms.Panel devToolsHeader;
         private System.Windows.Forms.CheckBox showDevToolsCheckbox;
         private System.Windows.Forms.Button openCacheDirectoryButton;
+        private System.Windows.Forms.TextBox submeshIndexTextbox;
+        private System.Windows.Forms.CheckBox drawOnlySelectedSumeshCheckbox;
     }
 }
 

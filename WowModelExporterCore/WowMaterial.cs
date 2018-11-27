@@ -15,11 +15,18 @@ namespace WowModelExporterCore
         public TextureImage Image3 { get; set; }
         public TextureImage Image4 { get; set; }
 
-        //public enum Kind
-        //{
-        //    Opaque,
-        //    Cutout,
-        //    Transparent
-        //}
+        /// <summary>
+        /// Рисовать ли с двух сторон (лицевая и обратная стороны). Если false то только с лицевой.
+        /// </summary>
+        public bool BothSides { get; set; }
+
+        public MaterialType Type { get; set; }
+
+        public enum MaterialType
+        {
+            Opaque,
+            Cutout,
+            Transparent
+        }
     }
 }

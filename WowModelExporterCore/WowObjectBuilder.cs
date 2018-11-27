@@ -216,7 +216,11 @@ namespace WowModelExporterCore
 
         private WowMaterial MakeMaterialFromWhTexUnit(WhTexUnit whTexUnit)
         {
-            var material = new WowMaterial();
+            var material = new WowMaterial()
+            {
+                BothSides = !whTexUnit.Cull,
+                Type = GetMaterialTypeFromBlendFlag(whTexUnit.RenderFlag.Blend)
+            };
 
             var whTextures = whTexUnit.GetTextures();
 
@@ -236,6 +240,20 @@ namespace WowModelExporterCore
             material.Image4 = images[3];
 
             return material;
+        }
+
+        private static WowMaterial.MaterialType GetMaterialTypeFromBlendFlag(ushort renderFlagBlend)
+        {
+            // ToDo: посмотрел по примерам как че отображается. Вообще есть в TexUnit setBlendMode() который ставит режим наложения в зависимости от этого флага.
+            // так же этот флаг передается в шейдер в атрибутах
+
+            switch (renderFlagBlend)
+            {
+                default:
+                case 0: return WowMaterial.MaterialType.Opaque;
+                case 1: return WowMaterial.MaterialType.Cutout;
+                case 2: return WowMaterial.MaterialType.Transparent;
+            }
         }
 
         private TextureImage GetImageFromWhTextureInfo(WhTexUnit.TextureInfo whTextureInfo)

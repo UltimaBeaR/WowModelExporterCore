@@ -4,10 +4,10 @@ namespace WebViewJsModifier
 {
     public abstract class JsModifyAction
     {
-        public JsModifyAction(string urlMatchPattern, string searchString)
+        public JsModifyAction(string urlMatchPattern, string[] searchStrings)
         {
             UrlMatchPattern = urlMatchPattern;
-            SearchString = searchString;
+            SearchStrings = searchStrings;
         }
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace WebViewJsModifier
         /// <summary>
         /// Строка, в исходном файле по которой идет поиск
         /// </summary>
-        public string SearchString { get; private set; }
+        public string[] SearchStrings { get; private set; }
     }
 
     /// <summary>
@@ -27,12 +27,14 @@ namespace WebViewJsModifier
     /// </summary>
     public class TextReplaceJsModifyAction : JsModifyAction
     {
-        public TextReplaceJsModifyAction(string urlMatchPattern, string searchString, string replacementString)
-            : base(urlMatchPattern, searchString)
+        public TextReplaceJsModifyAction(string urlMatchPattern, string[] searchStrings, string searchStringToReplace, string replacementString)
+            : base(urlMatchPattern, searchStrings)
         {
+            SearchStringToReplace = searchStringToReplace;
             ReplacementString = replacementString;
         }
 
+        public string SearchStringToReplace { get; private set; }
         public string ReplacementString { get; private set; }
     }
 
@@ -41,8 +43,8 @@ namespace WebViewJsModifier
     /// </summary>
     public class InterceptDataJsModifyAction : JsModifyAction
     {
-        public InterceptDataJsModifyAction(string urlMatchPattern, string searchString, string dataToIntercept, bool isCircularData = false)
-            : base(urlMatchPattern, searchString)
+        public InterceptDataJsModifyAction(string urlMatchPattern, string[] searchStrings, string dataToIntercept, bool isCircularData = false)
+            : base(urlMatchPattern, searchStrings)
         {
             DataToIntercept = dataToIntercept;
             IsCircularData = isCircularData;

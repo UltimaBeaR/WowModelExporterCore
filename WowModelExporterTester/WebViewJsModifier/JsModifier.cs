@@ -15,7 +15,7 @@ namespace WebViewJsModifier
             _jsModifyActionsPerUrlMatchPattern = new Dictionary<string, List<JsModifyAction>>();
             foreach (var jsModifyAction in jsModifyActions)
             {
-                if (jsModifyAction == null || (jsModifyAction.UrlMatchPattern == null || jsModifyAction.SearchString == null))
+                if (jsModifyAction == null || jsModifyAction.UrlMatchPattern == null)
                     continue;
 
                 List<JsModifyAction> jsModifyActionsForCurrentUrlMatchPattern;
@@ -89,30 +89,57 @@ namespace WebViewJsModifier
                     {
                         foreach (var jsModifyAction in jsModifyActionsForUrlMatchPattern.Value)
                         {
+                            int foundIdx = 0;
+                            if (jsModifyAction.SearchStrings != null && jsModifyAction.SearchStrings.Length > 0)
+                            {
+                                foreach (var searchString in jsModifyAction.SearchStrings)
+                                {
+                                    if (searchString == null)
+                                        continue;
+
+                                    foundIdx = remoteFile.IndexOf(searchString, foundIdx);
+                                    if (foundIdx < 0)
+                                        break;
+
+                                    foundIdx += searchString.Length;
+                                }
+                            }
+
+                            if (foundIdx < 0)
+                                break;
+
                             if (jsModifyAction is InterceptDataJsModifyAction)
                             {
                                 var interceptDataAction = jsModifyAction as InterceptDataJsModifyAction;
 
-                                var codeInjectionIdxInRemoteFile = remoteFile.IndexOf(jsModifyAction.SearchString) + jsModifyAction.SearchString.Length;
-
-                                if (codeInjectionIdxInRemoteFile != -1)
-                                {
-                                    var interceptDataListIdx = _modifier._interceptDataList.Count;
-                                    _modifier._interceptDataList.Add(interceptDataAction);
-                                    remoteFile = remoteFile.Insert(codeInjectionIdxInRemoteFile, GetCodeForInterceptDataAction(interceptDataAction, interceptDataListIdx));
-                                }
+                                var interceptDataListIdx = _modifier._interceptDataList.Count;
+                                _modifier._interceptDataList.Add(interceptDataAction);
+                                remoteFile = remoteFile.Insert(foundIdx, GetCodeForInterceptDataAction(interceptDataAction, interceptDataListIdx));
                             }
                             else if (jsModifyAction is TextReplaceJsModifyAction)
                             {
                                 var textReplaceAction = jsModifyAction as TextReplaceJsModifyAction;
 
-                                remoteFile = remoteFile.Replace(textReplaceAction.SearchString, textReplaceAction.ReplacementString);
+                                var before = remoteFile.Substring(0, foundIdx);
+                                var after = remoteFile.Substring(foundIdx);
+
+                                remoteFile = before + ReplaceFirst(after, textReplaceAction.SearchStringToReplace, textReplaceAction.ReplacementString);
                             }
                         }
                     }
                 }
 
                 response.Write(remoteFile);
+            }
+
+            private static string ReplaceFirst(string text, string search, string replace)
+            {
+                int pos = text.IndexOf(search);
+                if (pos < 0)
+                {
+                    return text;
+                }
+                return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
             }
 
             private string GetCodeForInterceptDataAction(InterceptDataJsModifyAction interceptDataAction, int interceptDataListIdx)

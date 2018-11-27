@@ -44,6 +44,7 @@ namespace WowModelExporterTester
             jsModifyActions.Add(CreateJsModifyAction_ZamModelViewerContructor());
             jsModifyActions.Add(CreateJsModifyAction_WebGlDrawFunction());
             jsModifyActions.Add(CreateJsModifyAction_TestTextReplace());
+            jsModifyActions.Add(CreateJsModifyAction_RenderTexUnitsByMeshIndex());
 
             new JsModifier(webView, jsModifyActions);
         }
@@ -52,7 +53,7 @@ namespace WowModelExporterTester
         {
             var jsModifyAction = new InterceptDataJsModifyAction(
                 "/modelviewer/viewer/viewer.min.js$",
-                "function ZamModelViewer(opts){",
+                new[] { "function ZamModelViewer(opts){" },
                 "opts"
             );
 
@@ -68,7 +69,7 @@ namespace WowModelExporterTester
         {
             var jsModifyAction = new InterceptDataJsModifyAction(
                 "/modelviewer/viewer/viewer.min.js$",
-                "draw:function(){var self=this,gl=self.context,i;var time=self.getTime();self.delta=(time-self.time)*.001;self.time=time;self.updateCamera();gl.viewport(0,0,self.width,self.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);",
+                new[] { "draw:function(){var self=this,gl=self.context,i;var time=self.getTime();self.delta=(time-self.time)*.001;self.time=time;self.updateCamera();gl.viewport(0,0,self.width,self.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);" },
                 @"(function () {
                     console.log(self.models);
                     return null;
@@ -87,8 +88,21 @@ namespace WowModelExporterTester
         {
             var jsModifyAction = new TextReplaceJsModifyAction(
                 "/modelviewer/viewer/viewer.min.js$",
-                "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);mat4.fromQuat(self.tmpMat,self.tmpQuat);mat4.transpose(self.tmpMat,self.tmpMat);",
-                "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);   quat.invert(self.tmpQuat, self.tmpQuat);    mat4.fromQuat(self.tmpMat,self.tmpQuat);    "
+                new[] { "Wow.AnimatedQuat.getValue(self.rotation,anim.index,time,self.tmpQuat);" },
+                "mat4.fromQuat(self.tmpMat,self.tmpQuat);mat4.transpose(self.tmpMat,self.tmpMat);",
+                "quat.invert(self.tmpQuat, self.tmpQuat);    mat4.fromQuat(self.tmpMat,self.tmpQuat);"
+            );
+
+            return jsModifyAction;
+        }
+
+        private TextReplaceJsModifyAction CreateJsModifyAction_RenderTexUnitsByMeshIndex()
+        {
+            var jsModifyAction = new TextReplaceJsModifyAction(
+                "/modelviewer/viewer/viewer.min.js$",
+                new[] { "ZamModelViewer.Wow.TexUnit=function(r)", "draw:function(){" },
+                "",
+                "if (window.g___visibleMeshIndex != undefined && this.meshIndex != window.g___visibleMeshIndex) return;"
             );
 
             return jsModifyAction;
@@ -217,6 +231,24 @@ namespace WowModelExporterTester
         private void openCacheDirectoryButton_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start("explorer.exe", DataLoaderBase.CacheDirectory);
+        }
+
+        private void drawOnlySelectedSumeshCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateVisibleMesh();
+        }
+
+        private void submeshIndexTextbox_TextChanged(object sender, EventArgs e)
+        {
+            UpdateVisibleMesh();
+        }
+
+        private void UpdateVisibleMesh()
+        {
+            if (drawOnlySelectedSumeshCheckbox.Checked)
+                webView.EvalScript("window.g___visibleMeshIndex = " + submeshIndexTextbox.Text + ";");
+            else
+                webView.EvalScript("window.g___visibleMeshIndex = undefined;");
         }
     }
 }
