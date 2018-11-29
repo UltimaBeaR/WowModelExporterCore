@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="StandardShaderUtils.cs" />
+    <Compile Include="CharacterBuilder.cs" />
     <Compile Include="WowModelExporterUnityPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
