@@ -332,3 +332,6 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# НЕ применяем заданные в этом файле правила для Unity3d проектов. у них внутри свой gitignore
+!Unity3d/**

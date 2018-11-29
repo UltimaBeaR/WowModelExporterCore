@@ -15,13 +15,13 @@ namespace WowModelExporterUnityPlugin
             _exporter = new WowModelExporter();
         }
 
-        public void Build(WhRace race, WhGender gender)
+        public GameObject Build(WhRace race, WhGender gender)
         {
             var characterWowObject = _exporter.LoadCharacter(race, gender, null);
-            CreateCharacterGameObjects(characterWowObject, race.ToString(), gender.ToString());
+            return CreateCharacterGameObjects(characterWowObject, race.ToString(), gender.ToString());
         }
 
-        private void CreateCharacterGameObjects(WowObject characterWowObject, string race, string gender)
+        private GameObject CreateCharacterGameObjects(WowObject characterWowObject, string race, string gender)
         {
             //PrepareForVRChatUtility.PrepareObject(characterWowObject, true, true);
 
@@ -29,6 +29,8 @@ namespace WowModelExporterUnityPlugin
             containerGo.transform.position = Vector3.zero;
 
             var characterGo = CreateGameObjectForCharacterWowObject("character", containerGo.transform, characterWowObject, out var rootBoneGo);
+
+            return characterGo;
         }
 
         private GameObject CreateGameObjectForCharacterWowObject(string name, Transform parent, WowObject characterWowObject, out GameObject rootBoneGo)

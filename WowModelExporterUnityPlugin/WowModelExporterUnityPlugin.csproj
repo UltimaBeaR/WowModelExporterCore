@@ -65,7 +65,7 @@
     <PostBuildEvent>-- Пути, откуда и куда копировать дллки (из bin папки в папку с плагинами проекта в юнити)
 
 set "fromDir=$(TargetDir)"
-set "toDir=$(SolutionDir)..\WowModelExporter\Assets\Plugins\"
+set "toDir=$(SolutionDir)Unity3d\VisemeEditor\Assets\Plugins\"
 
 -- Dll файлы, которые нужно скопировать (Сам плагин и все его зависимости)
 
