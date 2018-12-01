@@ -161,69 +161,69 @@ namespace WowModelExporterCore
             { 3191706695,   "neck_upper" },
             { 130111906,    "head" },
 
-            { 2356232324,   "teeth_upper" },
+            { 2356232324,   "face_teeth_upper" },
 
-            { 3391925095,   "nose_tip" },
+            { 3391925095,   "face_nose_tip" },
 
-            { 3778922811,   "nose_cheek.L" },
-            { 319601099,    "nose.L" },
+            { 3778922811,   "face_nose_cheek.L" },
+            { 319601099,    "face_nose.L" },
 
-            { 2235519192,   "nose_cheek.R" },
-            { 2050857682,   "nose.R" },
+            { 2235519192,   "face_nose_cheek.R" },
+            { 2050857682,   "face_nose.R" },
 
-            { 3228034019,   "eyebrow_middle" },
+            { 3228034019,   "face_eyebrow_middle" },
 
-            { 4148793443,   "eyebrow_to_middle_1.L" },
-            { 2152636661,   "eyebrow_to_middle_2.L" },
-            { 424145231,    "eyebrow_to_middle_3.L" },
+            { 4148793443,   "face_eyebrow_to_middle_1.L" },
+            { 2152636661,   "face_eyebrow_to_middle_2.L" },
+            { 424145231,    "face_eyebrow_to_middle_3.L" },
 
-            { 2658710394,   "eyebrow_to_middle_1.R" },
-            { 3917448172,   "eyebrow_to_middle_2.R" },
-            { 1886835286,   "eyebrow_to_middle_3.R" },
+            { 2658710394,   "face_eyebrow_to_middle_1.R" },
+            { 3917448172,   "face_eyebrow_to_middle_2.R" },
+            { 1886835286,   "face_eyebrow_to_middle_3.R" },
 
-            { 1764558272,   "forehead.L" },
+            { 1764558272,   "face_forehead.L" },
 
-            { 1844953,      "forehead.R" },
+            { 1844953,      "face_forehead.R" },
             
-            { 770235359,    "cheek_upper.L" },
-            { 3034679909,   "cheek_lower.L" },
-            { 1525672777,   "cheek_lower_side.L" },
+            { 770235359,    "face_cheek_upper.L" },
+            { 3034679909,   "face_cheek_lower.L" },
+            { 1525672777,   "face_cheek_lower_side.L" },
             
-            { 1240089148,   "cheek_upper.R" },
-            { 3504542598,   "cheek_lower.R" },
-            { 1055748778,   "cheek_lower_side.R" },
+            { 1240089148,   "face_cheek_upper.R" },
+            { 3504542598,   "face_cheek_lower.R" },
+            { 1055748778,   "face_cheek_lower_side.R" },
 
-            { 398530341,    "lip_upper_to_middle_1.L" },
-            { 1623599027,   "lip_upper_to_middle_2.L" },
-            { 4191122953,   "lip_upper_to_middle_3.L" },
+            { 398530341,    "face_lip_upper_to_middle_1.L" },
+            { 1623599027,   "face_lip_upper_to_middle_2.L" },
+            { 4191122953,   "face_lip_upper_to_middle_3.L" },
 
-            { 3946969320,   "lip_upper_to_middle_1.R" },
-            { 2621884542,   "lip_upper_to_middle_2.R" },
-            { 89102788,     "lip_upper_to_middle_3.R" },
+            { 3946969320,   "face_lip_upper_to_middle_1.R" },
+            { 2621884542,   "face_lip_upper_to_middle_2.R" },
+            { 89102788,     "face_lip_upper_to_middle_3.R" },
 
-            { 3498022390,   "eye.L" },
+            { 3498022390,   "face_eye.L" },
 
-            { 3885920869,   "eye.R" },
+            { 3885920869,   "face_eye.R" },
 
-            { 211345957,    "eyelid_upper.L" },
-            { 2509353887,   "eyelid_lower.L" },
+            { 211345957,    "face_eyelid_upper.L" },
+            { 2509353887,   "face_eyelid_lower.L" },
 
-            { 905925502,    "eyelid_upper.R" },
-            { 2901803716,   "eyelid_lower.R" },
+            { 905925502,    "face_eyelid_upper.R" },
+            { 2901803716,   "face_eyelid_lower.R" },
 
-            { 818638717,    "jaw" },
+            { 818638717,    "face_jaw" },
 
-            { 193042082,    "teeth_lower" },
+            { 193042082,    "face_teeth_lower" },
 
-            { 1563338754,   "chin" },
+            { 1563338754,   "face_chin" },
 
-            { 3731153341,   "lip_lower_to_middle_1.L" },
-            { 2841891115,   "lip_lower_to_middle_2.L" },
-            { 812286097,    "lip_lower_to_middle_3.L" },
+            { 3731153341,   "face_lip_lower_to_middle_1.L" },
+            { 2841891115,   "face_lip_lower_to_middle_2.L" },
+            { 812286097,    "face_lip_lower_to_middle_3.L" },
 
-            { 585371248,    "lip_lower_to_middle_1.R" },
-            { 1440956134,   "lip_lower_to_middle_2.R" },
-            { 3437915996,   "lip_lower_to_middle_3.R" },
+            { 585371248,    "face_lip_lower_to_middle_1.R" },
+            { 1440956134,   "face_lip_lower_to_middle_2.R" },
+            { 3437915996,   "face_lip_lower_to_middle_3.R" },
 
             { 2526474064,   "attachment_head" },
             { 28063340,     "attachment_shoulder.L" },

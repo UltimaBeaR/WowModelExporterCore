@@ -10,10 +10,11 @@ public class MainController : MonoBehaviour
         {
             _characterGo = new CharacterBuilder().Build(WowheadModelLoader.WhRace.HUMAN, WowheadModelLoader.WhGender.MALE);
 
-            var jaw = GameObject.Find("jaw");
+            _characterGo.transform.Rotate(new Vector3(0, 180, 0));
+
+            var jaw = GameObject.Find("face_jaw");
             var collider = jaw.AddComponent<SphereCollider>();
             collider.radius = 0.1f;
-            
         }
     }
 

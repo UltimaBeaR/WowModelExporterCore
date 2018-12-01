@@ -30,7 +30,7 @@ namespace WowModelExporterUnityPlugin
 
             var characterGo = CreateGameObjectForCharacterWowObject("character", containerGo.transform, characterWowObject, out var rootBoneGo);
 
-            return characterGo;
+            return containerGo;
         }
 
         private GameObject CreateGameObjectForCharacterWowObject(string name, Transform parent, WowObject characterWowObject, out GameObject rootBoneGo)
