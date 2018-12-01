@@ -8,8 +8,12 @@ using WowModelExporterUnityPlugin;
 
 public class MainController : MonoBehaviour
 {
+    public Shader StandardShader;
     public Canvas Canvas;
     public GameObject ListboxItemPrefab;
+    public GameObject ListboxItemLeftRightPrefab;
+
+    public TransformGizmo TransformGizmo;
 
     void Start()
     {
@@ -27,6 +31,11 @@ public class MainController : MonoBehaviour
         _bonesListboxContent = GetSelfOrChildByName(GetSelfOrChildByName(Canvas.transform, "BonesListbox"), "Content").GetComponent<RectTransform>();
     }
 
+    void Awake()
+    {
+        //TransformGizmo = GetComponent<TransformGizmo>();
+    }
+
     public void LoadCharacterButtonClickHandler()
     {
         if (_characterRoot != null)
@@ -38,15 +47,12 @@ public class MainController : MonoBehaviour
         Enum.TryParse(_raceDropdown.options[_raceDropdown.value].text, out race);
         var gender = _genderToggle.isOn ? WowheadModelLoader.WhGender.MALE : WowheadModelLoader.WhGender.FEMALE;
 
-        _characterRoot = new CharacterBuilder().Build(race, gender);
+        _characterRoot = new CharacterBuilder(StandardShader).Build(race, gender);
+
         _characterRoot.transform.Rotate(new Vector3(0, 180, 0));
         _characterBonesRoot = GetSelfOrChildByName(_characterRoot.transform, "ROOT").gameObject;
 
         SetBoneListboxItems();
-
-        var jaw = GetSelfOrChildByName(_characterRoot.transform, "face_jaw");
-        var collider = jaw.gameObject.AddComponent<SphereCollider>();
-        collider.radius = 0.1f;
     }
 
     public void TranslateRotateButtonClickHandler()
@@ -59,11 +65,56 @@ public class MainController : MonoBehaviour
     {
         ClearListboxItems(_bonesListboxContent);
 
-        var bones = EnumerateSelfAndChildren(_characterBonesRoot.transform).Where(x => x.name.StartsWith("face_"));
+        var bones = EnumerateSelfAndChildren(_characterBonesRoot.transform).Where(x => x.name.StartsWith("face_")).ToArray();
+
+        var bonesDict = new Dictionary<string, Transform[]>();
 
         foreach (var bone in bones)
         {
-            AddNewListboxItem(_bonesListboxContent, bone.name, x => { });
+            bool? isLeft = bone.name.EndsWith(".L") ? true : (bone.name.EndsWith(".R") ? false : (bool?)null);
+
+            var name = bone.name.Remove(0, "face_".Length).Replace('_', ' ');
+
+            if (isLeft == true || isLeft == false)
+                name = name.Remove(name.Length - 2, 2);
+
+            if (!isLeft.HasValue)
+            {
+                bonesDict[name] = new Transform[] { bone };
+            }
+            else
+            {
+                if (!bonesDict.ContainsKey(name))
+                    bonesDict[name] = new Transform[2];
+
+                var val = bonesDict[name];
+
+                val[isLeft.Value ? 0 : 1] = bone;
+            }
+        }
+
+        foreach (var bone in bonesDict.OrderBy(x => x.Key))
+        {
+            if (bone.Value.Length == 1)
+            {
+                AddNewListboxItem(_bonesListboxContent, bone.Key,
+                    () =>
+                    {
+                        TransformGizmo.AddTarget(bone.Value[0]);
+                    });
+            }
+            else
+            {
+                AddNewListboxItemLeftRight(_bonesListboxContent, bone.Key,
+                    () =>
+                    {
+                        TransformGizmo.AddTarget(bone.Value[0]);
+                    },
+                    () =>
+                    {
+                        TransformGizmo.AddTarget(bone.Value[1]);
+                    });
+            }
         }
     }
 
@@ -73,16 +124,30 @@ public class MainController : MonoBehaviour
             Destroy(child.gameObject);
     }
 
-    private void AddNewListboxItem(RectTransform listboxContent, string itemTitle, Action<string> clickHandler)
+    private void AddNewListboxItem(RectTransform listboxContent, string itemTitle, Action clickHandler)
     {
         var item = Instantiate(ListboxItemPrefab);
         item.transform.SetParent(listboxContent);
 
-        var text = GetSelfOrChildByName(item.transform, "Text").GetComponent<Text>();
+        var text = GetSelfOrChildByName(item.transform, "Caption").GetComponent<Text>();
         var button = item.GetComponent<Button>();
 
         text.text = itemTitle;
-        button.onClick.AddListener(new UnityEngine.Events.UnityAction(() => clickHandler(itemTitle)));
+        button.onClick.AddListener(new UnityEngine.Events.UnityAction(clickHandler));
+    }
+
+    private void AddNewListboxItemLeftRight(RectTransform listboxContent, string itemTitle, Action leftClickHandler, Action rightClickHandler)
+    {
+        var item = Instantiate(ListboxItemLeftRightPrefab);
+        item.transform.SetParent(listboxContent);
+
+        var text = GetSelfOrChildByName(item.transform, "Caption").GetComponent<Text>();
+        var leftButton = GetSelfOrChildByName(item.transform, "LButton").GetComponent<Button>();
+        var rightButton = GetSelfOrChildByName(item.transform, "RButton").GetComponent<Button>();
+
+        text.text = itemTitle;
+        leftButton.onClick.AddListener(new UnityEngine.Events.UnityAction(leftClickHandler));
+        rightButton.onClick.AddListener(new UnityEngine.Events.UnityAction(rightClickHandler));
     }
 
     private static Transform GetSelfOrChildByName(Transform transform, string name)

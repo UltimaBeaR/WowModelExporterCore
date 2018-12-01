@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -10,8 +9,10 @@ namespace WowModelExporterUnityPlugin
 {
     public class CharacterBuilder
     {
-        public CharacterBuilder()
+        public CharacterBuilder(Shader standardShader)
         {
+            _standardShader = standardShader;
+
             _exporter = new WowModelExporter();
         }
 
@@ -23,8 +24,6 @@ namespace WowModelExporterUnityPlugin
 
         private GameObject CreateCharacterGameObjects(WowObject characterWowObject, string race, string gender)
         {
-            //PrepareForVRChatUtility.PrepareObject(characterWowObject, true, true);
-
             var containerGo = new GameObject((race ?? "unknown_race") + " " + (gender ?? "unknown_gender"));
             containerGo.transform.position = Vector3.zero;
 
@@ -174,7 +173,7 @@ namespace WowModelExporterUnityPlugin
             {
                 var whMaterial = wowMesh.Submeshes[submeshIdx].Material;
 
-                var material = new Material(Shader.Find("Standard"));
+                var material = new Material(_standardShader);
                 
                 // Smoothness
                 material.SetFloat("_Glossiness", 0);
@@ -202,6 +201,8 @@ namespace WowModelExporterUnityPlugin
 
             return texture;
         }
+
+        private Shader _standardShader;
 
         private WowModelExporter _exporter;
     }

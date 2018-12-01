@@ -41,8 +41,8 @@ namespace RuntimeGizmos
 		public Color hoverColor = new Color(1, .75f, 0, 0.8f);
 
 		public float handleLength = .25f;
-		public float handleWidth = .003f;
-		public float triangleSize = .03f;
+		public float handleWidth = .001f;
+		public float triangleSize = .02f;
 		public float boxSize = .03f;
 		public int circleDetail = 40;
 		public float minSelectedDistanceCheck = .04f;
