@@ -5,19 +5,22 @@ public class MouseCameraControl : MonoBehaviour
 {
     public EventSystem EventSystem;
 
+    public Transform Target;
+
     private float zoomSpeed = 1.2f;
     private float moveSpeed = 0.01f;
     private float rotateSpeed = 8.0f;
 
-    private GameObject orbitVector;
+    private GameObject TemporaryCameraParent { get; set; }
     private Camera Camera { get; set; }
+    private Vector3 PivotPoint { get; set; }
+    private bool IsPanStarted { get; set; }
+    private bool IsZoomStarted { get; set; }
+    private bool IsPivotStarted { get; set; }
 
-    // Use this for initialization
     void Start()
     {
-        // Create a capsule (which will be the lookAt target and global orbit vector)
-        orbitVector = new GameObject();
-        orbitVector.transform.position = Vector3.zero;
+        TemporaryCameraParent = new GameObject();
     }
 
     void Awake()
@@ -29,59 +32,73 @@ public class MouseCameraControl : MonoBehaviour
     {
         var isMouseOverUI = EventSystem.IsPointerOverGameObject();
 
-        if (isMouseOverUI)
+        float wheelie = 0;
+
+        if (!isMouseOverUI)
+        {
+            if (Input.GetMouseButtonDown(0))
+                IsPivotStarted = true;
+            if (Input.GetMouseButtonDown(1))
+                IsZoomStarted = true;
+            if (Input.GetMouseButtonDown(2))
+                IsPanStarted = true;
+
+            wheelie = Input.GetAxis("Mouse ScrollWheel");
+        }
+
+        if (Input.GetMouseButtonUp(0))
+            IsPivotStarted = false;
+        if (Input.GetMouseButtonUp(1))
+            IsZoomStarted = false;
+        if (Input.GetMouseButtonUp(2))
+            IsPanStarted = false;
+
+        if (!IsPivotStarted && !IsZoomStarted && !IsPanStarted && wheelie == 0)
             return;
+
+        if (Target != null)
+        {
+            PivotPoint = Target.transform.position;
+        }
+        else
+        {
+            // Пересчитываем точку опоры только при начале pivot/zoom/pan действия (когда кнопка мыши только нажалась)
+            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
+                PivotPoint = Camera.transform.position + (Camera.transform.forward * 1f);
+        }
 
         var x = Input.GetAxis("Mouse X");
         var y = Input.GetAxis("Mouse Y");
 
-        var wheelie = Input.GetAxis("Mouse ScrollWheel");
-
-        if (wheelie < 0) // back
+        if (wheelie != 0f)
         {
-            var currentZoomSpeed = 100f;
-            Camera.transform.Translate(Vector3.forward * (wheelie * currentZoomSpeed));
-        }
-        if (wheelie > 0) // back
-        {
-            var currentZoomSpeed = 100f;
+            var currentZoomSpeed = 3f;
             Camera.transform.Translate(Vector3.forward * (wheelie * currentZoomSpeed));
         }
 
-        //Input.GetAxis("Mouse ScrollWheel") < 0) // back
         if (Input.GetKey(KeyCode.RightAlt) || Input.GetKey(KeyCode.LeftAlt))
         {
-            // Distance between camera and orbitVector. We'll need this in a few places
-            var distanceToOrbit = Vector3.Distance(Camera.transform.position, orbitVector.transform.position);
+            var distanceToOrbit = Vector3.Distance(Camera.transform.position, PivotPoint);
             
-            if (Input.GetMouseButton(1))
-            {
-                //RMB - ZOOM
-
-                // Refine the rotateSpeed based on distance to orbitVector
-                var currentZoomSpeed = Mathf.Clamp(zoomSpeed * (distanceToOrbit / 50), 0.1f, 2.0f);
-
-                // Move the camera in/out
-                Camera.transform.Translate(Vector3.forward * (x * currentZoomSpeed));
-
-                // If about to collide with the orbitVector, repulse the orbitVector slightly to keep it in front of us
-                if (Vector3.Distance(Camera.transform.position, orbitVector.transform.position) < 3)
-                {
-                    orbitVector.transform.Translate(Vector3.forward, Camera.transform);
-                }
-            }
-            else if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0))
             {
                 //LMB - PIVOT
 
-                // Refine the rotateSpeed based on distance to orbitVector
                 var currentRotateSpeed = Mathf.Clamp(rotateSpeed * (distanceToOrbit / 50), 1.0f, rotateSpeed);
 
-                // Temporarily parent the camera to orbitVector and rotate orbitVector as desired
-                Camera.transform.parent = orbitVector.transform;
-                orbitVector.transform.Rotate(Vector3.left * (y * currentRotateSpeed));
-                orbitVector.transform.Rotate(Vector3.up * (x * currentRotateSpeed), Space.World);
+                TemporaryCameraParent.transform.position = PivotPoint;
+                Camera.transform.parent = TemporaryCameraParent.transform;
+                TemporaryCameraParent.transform.Rotate(Vector3.left * (y * currentRotateSpeed));
+                TemporaryCameraParent.transform.Rotate(Vector3.up * (x * currentRotateSpeed), Space.World);
                 Camera.transform.parent = null;
+            }
+            else if (Input.GetMouseButton(1))
+            {
+                //RMB - ZOOM
+
+                var currentZoomSpeed = Mathf.Clamp(zoomSpeed * (distanceToOrbit / 50), 0.1f, 2.0f);
+
+                Camera.transform.Translate(Vector3.forward * (x * currentZoomSpeed));
             }
             else if (Input.GetMouseButton(2))
             {
@@ -91,17 +108,11 @@ public class MouseCameraControl : MonoBehaviour
 
                 speed = distanceToOrbit * speed;
 
-                // Calculate move speed
                 var translateX = Vector3.right * (x * speed) * -1;
                 var translateY = Vector3.up * (y * speed) * -1;
 
-                // Move the camera
                 Camera.transform.Translate(translateX);
                 Camera.transform.Translate(translateY);
-
-                // Move the orbitVector with the same values, along the camera's axes. In effect causing it to behave as if temporarily parented.
-                orbitVector.transform.Translate(translateX, Camera.transform);
-                orbitVector.transform.Translate(translateY, Camera.transform);
             }
         }
     }

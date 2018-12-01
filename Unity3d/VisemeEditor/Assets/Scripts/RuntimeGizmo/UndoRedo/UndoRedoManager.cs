@@ -1,8 +1,6 @@
-using System;
-
 namespace CommandUndoRedo
 {
-	public static class UndoRedoManager
+    public static class UndoRedoManager
 	{
 		static UndoRedo undoRedo = new UndoRedo();
 
