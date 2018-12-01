@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class MouseCameraControl : MonoBehaviour
 {
+    public EventSystem EventSystem;
+
     private float zoomSpeed = 1.2f;
     private float moveSpeed = 0.01f;
     private float rotateSpeed = 8.0f;
@@ -18,6 +21,11 @@ public class MouseCameraControl : MonoBehaviour
 
     void LateUpdate()
     {
+        var isMouseOverUI = EventSystem.IsPointerOverGameObject();
+
+        if (isMouseOverUI)
+            return;
+
         var x = Input.GetAxis("Mouse X");
         var y = Input.GetAxis("Mouse Y");
 
@@ -27,7 +35,6 @@ public class MouseCameraControl : MonoBehaviour
         {
             var currentZoomSpeed = 100f;
             transform.Translate(Vector3.forward * (wheelie * currentZoomSpeed));
-
         }
         if (wheelie > 0) // back
         {

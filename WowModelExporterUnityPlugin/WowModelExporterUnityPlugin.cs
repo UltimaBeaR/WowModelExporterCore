@@ -45,19 +45,6 @@ namespace WowModelExporterUnityPlugin
                 CreateGameObjectForWowObject("detail", characterGo.transform, childWowObject);
         }
 
-        public IEnumerable<Transform> GetSelfAndChildren(Transform transform)
-        {
-            yield return transform;
-
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                foreach (var deeperTransform in GetSelfAndChildren(transform.GetChild(i)))
-                    yield return deeperTransform;
-            }
-
-            yield break;
-        }
-
         private GameObject CreateGameObjectForWowObject(string name, Transform parent, WowObject wowObject)
         {
             var mesh = CreateMeshFromWowMeshWithMaterials(wowObject.Mesh);
