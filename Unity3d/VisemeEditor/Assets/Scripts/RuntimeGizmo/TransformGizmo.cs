@@ -96,6 +96,11 @@ namespace RuntimeGizmos
         static Material lineMaterial;
         static Material outlineMaterial;
 
+        public void ClearUndoRedo()
+        {
+            UndoRedoManager.Clear();
+        }
+
         public void AddTarget(Transform target, bool addCommand = true)
         {
             if (target != null)

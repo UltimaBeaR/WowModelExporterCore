@@ -73,6 +73,8 @@ namespace WowModelExporterCore
             return _data.Header.ManualData;
         }
 
+        public WowVrcFileData.BlendshapeData[] Blendshapes { get { return _data.Blendshapes; } set { _data.Blendshapes = value; } }
+
         private WowVrcFileData _data { get; set; }
     }
 
@@ -81,6 +83,8 @@ namespace WowModelExporterCore
         public string Version { get; set; }
 
         public HeaderData Header { get; set; }
+
+        public BlendshapeData[] Blendshapes { get; set; }
 
         public class HeaderData
         {
@@ -97,6 +101,22 @@ namespace WowModelExporterCore
                 public WhRace Race { get; set; }
                 public WhGender Gender { get; set; }
                 public string[] ItemIds { get; set; }
+            }
+        }
+
+        public class BlendshapeData
+        {
+            public string Name { get; set; }
+
+            public BoneData[] Bones { get; set; }
+
+            public class BoneData
+            {
+                public string Name { get; set; }
+
+                public Vec3 LocalPosition { get; set; }
+                public Vec4 LocalRotation { get; set; }
+                public Vec3 LocalScale { get; set; }
             }
         }
     }
