@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using WowModelExporterCore;
 using WowModelExporterUnityPlugin;
 
 public class MainController : MonoBehaviour
@@ -17,17 +18,6 @@ public class MainController : MonoBehaviour
 
     void Start()
     {
-        _raceDropdown = GetSelfOrChildByName(Canvas.transform, "RaceDropdown").GetComponent<Dropdown>();
-
-        _raceDropdown.AddOptions(
-            ((WowheadModelLoader.WhRace[])Enum.GetValues(typeof(WowheadModelLoader.WhRace)))
-            .Where(x => !x.ToString().StartsWith("Undefined"))
-            .Select(x => new Dropdown.OptionData(x.ToString()))
-            .ToList()
-        );
-
-        _genderToggle = GetSelfOrChildByName(Canvas.transform, "GenderToggle").GetComponent<Toggle>();
-
         _bonesListboxContent = GetSelfOrChildByName(GetSelfOrChildByName(Canvas.transform, "BonesListbox"), "Content").GetComponent<RectTransform>();
         _bonesToButtons = new Dictionary<Transform, Button>();
 
@@ -35,23 +25,33 @@ public class MainController : MonoBehaviour
         TransformGizmo.TargetRemoved += TransformGizmo_TargetRemoved;
     }
 
-    public void LoadCharacterButtonClickHandler()
+    public void OpenFileButtonClickHandler()
     {
+        var fileName = WowVrcFileDialogs.Open();
+
+        if (fileName == null)
+            return;
+
         if (_characterRoot != null)
-        {
             Destroy(_characterRoot);
-        }
 
-        WowheadModelLoader.WhRace race;
-        Enum.TryParse(_raceDropdown.options[_raceDropdown.value].text, out race);
-        var gender = _genderToggle.isOn ? WowheadModelLoader.WhGender.MALE : WowheadModelLoader.WhGender.FEMALE;
+        _openedFile = WowVrcFile.Open(fileName);
+        _openedFilePath = fileName;
 
-        _characterRoot = new CharacterBuilder(StandardShader).Build(race, gender);
+        _characterRoot = new CharacterBuilder(StandardShader).Build(_openedFile);
 
         _characterRoot.transform.Rotate(new Vector3(0, 180, 0));
         _characterBonesRoot = GetSelfOrChildByName(_characterRoot.transform, "ROOT").gameObject;
 
         SetBoneListboxItems();
+    }
+
+    public void SaveFileButtonClickHandler()
+    {
+        if (_openedFile == null)
+            return;
+
+        _openedFile.SaveTo(_openedFilePath);
     }
 
     public void TranslateRotateButtonClickHandler()
@@ -193,11 +193,12 @@ public class MainController : MonoBehaviour
         yield break;
     }
 
-    private Dropdown _raceDropdown;
-    private Toggle _genderToggle;
     private RectTransform _bonesListboxContent;
     private Dictionary<Transform, Button> _bonesToButtons;
 
     private GameObject _characterRoot;
     private GameObject _characterBonesRoot;
+
+    private string _openedFilePath;
+    private WowVrcFile _openedFile;
 }

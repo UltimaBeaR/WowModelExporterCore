@@ -8,8 +8,8 @@ public class MouseCameraControl : MonoBehaviour
     public Transform Target;
 
     private float zoomSpeed = 1.2f;
-    private float moveSpeed = 0.01f;
-    private float rotateSpeed = 8.0f;
+    private float moveSpeed = 0.015f;
+    private float rotateSpeed = 5.0f;
 
     private GameObject TemporaryCameraParent { get; set; }
     private Camera Camera { get; set; }
@@ -84,12 +84,12 @@ public class MouseCameraControl : MonoBehaviour
             {
                 //LMB - PIVOT
 
-                var currentRotateSpeed = Mathf.Clamp(rotateSpeed * (distanceToOrbit / 50), 1.0f, rotateSpeed);
+                //var currentRotateSpeed = Mathf.Clamp(rotateSpeed * (distanceToOrbit / 50), 1.0f, rotateSpeed);
 
                 TemporaryCameraParent.transform.position = PivotPoint;
                 Camera.transform.parent = TemporaryCameraParent.transform;
-                TemporaryCameraParent.transform.Rotate(Vector3.left * (y * currentRotateSpeed));
-                TemporaryCameraParent.transform.Rotate(Vector3.up * (x * currentRotateSpeed), Space.World);
+                TemporaryCameraParent.transform.Rotate(Vector3.left * (y * rotateSpeed));
+                TemporaryCameraParent.transform.Rotate(Vector3.up * (x * rotateSpeed), Space.World);
                 Camera.transform.parent = null;
             }
             else if (Input.GetMouseButton(1))

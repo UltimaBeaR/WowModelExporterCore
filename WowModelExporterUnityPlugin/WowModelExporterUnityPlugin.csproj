@@ -49,8 +49,13 @@
     <Compile Include="CharacterBuilder.cs" />
     <Compile Include="WowModelExporterUnityPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WowVrcFileDialogs.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ShellFileDialogs\ShellFileDialogs.csproj">
+      <Project>{31d12698-274a-422d-8a4a-59c651e6b1c2}</Project>
+      <Name>ShellFileDialogs</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WowheadModelLoader\WowheadModelLoader.csproj">
       <Project>{edaebb19-87ae-4549-9ce4-acb267779366}</Project>
       <Name>WowheadModelLoader</Name>
@@ -75,6 +80,7 @@ set "dlls[2]=WowheadModelLoader"
 set "dlls[3]=Newtonsoft.Json"
 set "dlls[4]=ICSharpCode.SharpZipLib"
 set "dlls[5]=Jint"
+set "dlls[6]=ShellFileDialogs"
 
 for /F "tokens=2 delims==" %25%25s in ('set dlls[') do (
     copy /Y "%25fromDir%25%25%25s.dll" "%25toDir%25%25%25s.dll"

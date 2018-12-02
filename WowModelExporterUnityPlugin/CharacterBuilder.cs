@@ -16,15 +16,29 @@ namespace WowModelExporterUnityPlugin
             _exporter = new WowModelExporter();
         }
 
-        public GameObject Build(WhRace race, WhGender gender)
+        public GameObject Build(WowVrcFile file)
         {
-            var characterWowObject = _exporter.LoadCharacter(race, gender, null);
-            return CreateCharacterGameObjects(characterWowObject, race.ToString(), gender.ToString());
+            WowObject characterWowObject;
+            var opts = file.GetOpts();
+            if (opts != null)
+            {
+                characterWowObject = _exporter.LoadCharacter(WhViewerOptions.FromJson(opts));
+            }
+            else
+            {
+                var manualHeader = file.GetManualHeader();
+                if (manualHeader == null)
+                    throw new System.InvalidOperationException();
+
+                characterWowObject = _exporter.LoadCharacter(manualHeader.Race, manualHeader.Gender, manualHeader.ItemIds);
+            }
+
+            return CreateCharacterGameObjects(characterWowObject);
         }
 
-        private GameObject CreateCharacterGameObjects(WowObject characterWowObject, string race, string gender)
+        private GameObject CreateCharacterGameObjects(WowObject characterWowObject)
         {
-            var containerGo = new GameObject((race ?? "unknown_race") + " " + (gender ?? "unknown_gender"));
+            var containerGo = new GameObject("character_container");
             containerGo.transform.position = Vector3.zero;
 
             var characterGo = CreateGameObjectForCharacterWowObject("character", containerGo.transform, characterWowObject, out var rootBoneGo);
