@@ -63,6 +63,10 @@ namespace WowModelExporterCore
                     if (whItemModel?.Model == null)
                         continue;
 
+                    // Был такой случай (чест)
+                    if (whItemModel.Attachment == null)
+                        continue;
+
                     var itemPosition = Vec3.ConvertPositionFromWh(whItemModel.Attachment.Position);
 
                     var itemObject = new WowObject()

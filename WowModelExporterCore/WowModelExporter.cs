@@ -12,9 +12,9 @@ namespace WowModelExporterCore
             return new WowObjectBuilder().BuildFromCharacterWhModel(whCharacterModel);
         }
 
-        public WowObject LoadCharacter(string optsJson)
+        public WowObject LoadCharacter(WhViewerOptions opts)
         {
-            var whCharacterModel = LoadWhCharacterModel(WhViewerOptions.FromJson(optsJson));
+            var whCharacterModel = LoadWhCharacterModel(opts);
 
             return new WowObjectBuilder().BuildFromCharacterWhModel(whCharacterModel);
         }

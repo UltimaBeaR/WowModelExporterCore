@@ -44,8 +44,11 @@ namespace WowheadModelLoader
 
         public static WhViewerOptions FromJson(string json)
         {
-            var whOpts = JsonConvert.DeserializeObject<WhOpts>(json);
+            return FromJson(JsonConvert.DeserializeObject<WhOpts>(json));
+        }
 
+        public static WhViewerOptions FromJson(WhOpts whOpts)
+        {
             var result = new WhViewerOptions()
             {
                 Container = whOpts.container,

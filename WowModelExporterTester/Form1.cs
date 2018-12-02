@@ -6,6 +6,7 @@ using WowModelExporterFbx;
 using System.Collections.Generic;
 using WebViewJsModifier;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Linq;
 
 namespace WowModelExporterTester
 {
@@ -21,6 +22,13 @@ namespace WowModelExporterTester
 
         protected override void OnLoad(EventArgs e)
         {
+            raceCombobox.Items.AddRange(
+                ((WhRace[])Enum.GetValues(typeof(WhRace)))
+                .Where(x => !x.ToString().StartsWith("Undefined"))
+                .Select(x => x.ToString())
+                .ToArray());
+            raceCombobox.SelectedIndex = 0;
+
             InitBrowser();
         }
 
@@ -28,7 +36,9 @@ namespace WowModelExporterTester
         {
             webView.UrlChanged += (s, e) =>
             {
-                //OptsJsonForExport = null;
+                if (OptsJsonForExport != null)
+                    newFromBrowserStateMayBeOldLabel.Visible = true;
+
                 addressTextBox.Text = webView.Url;
             };
 
@@ -110,82 +120,29 @@ namespace WowModelExporterTester
 
         private void navigateToDressroomButton_Click(object sender, EventArgs e)
         {
-            webView.Url = "https://www.wowhead.com/dressing-room";
+            navigateToUrlManually("https://www.wowhead.com/dressing-room");
         }
 
         private void navigateToCharacterSearchButton_Click(object sender, EventArgs e)
         {
-            webView.Url = "https://www.wowhead.com/list";
+            navigateToUrlManually("https://www.wowhead.com/list");
         }
 
         private void addressTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
-                webView.Url = addressTextBox.Text;
+                navigateToUrlManually(addressTextBox.Text);
+        }
+
+        private void navigateToUrlManually(string url)
+        {
+            webView.Url = url;
+            OptsJsonForExport = null;
         }
 
         private void exportButton_Click(object sender, EventArgs e)
         {
-            var exporter = new WowModelExporter();
 
-            var wowObject = exporter.LoadCharacter(OptsJsonForExport);
-
-            PrepareForVRChatUtility.PrepareObject(wowObject, true, true);
-
-            var fbxExporter = new Exporter();
-
-            var dialog = new CommonOpenFileDialog
-            {
-                EnsurePathExists = true,
-                ShowPlacesList = true,
-                Title = "Choose directory to export .fbx and it's dependencies",
-                InitialDirectory = System.IO.Path.GetDirectoryName(Application.ExecutablePath),
-                IsFolderPicker = true
-            };
-
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                fbxExporter.ExportWowObject(wowObject, dialog.FileName).ToString();
-
-                System.Diagnostics.Process.Start("explorer.exe", dialog.FileName);
-            }
-            else
-            {
-                MessageBox.Show("Export canceled");
-            }
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            var exporter = new WowModelExporter();
-
-            var wowObject = exporter.LoadCharacter(WhRace.HUMAN, WhGender.MALE, new string[]
-            {
-                // шлем
-                "161600",
-                // плечи
-                "161621",
-                // плащ
-                "163355",
-                // чест
-                "161602",
-                // брасы
-                "161629",
-                // руки
-                "161610",
-                // пояс
-                "161624",
-                // ноги
-                "161616",
-                // ступни
-                "161605"
-            });
-
-            PrepareForVRChatUtility.PrepareObject(wowObject, true, true);
-
-            var test = new Exporter();
-
-            textBox1.Text = test.ExportWowObject(wowObject, "newtest").ToString();
         }
 
         private string OptsJsonForExport
@@ -196,7 +153,8 @@ namespace WowModelExporterTester
             {
                 _optsJsonForExport = value;
 
-                exportButton.Enabled = value != null;
+                newFromBrowserStateMayBeOldLabel.Visible = false;
+                newFromBrowserStateButton.Enabled = value != null;
             }
         }
 
@@ -211,9 +169,6 @@ namespace WowModelExporterTester
                 consoleLogModelsButton.Enabled = value != null;
             }
         }
-
-        private string _optsJsonForExport;
-        private Func<string> _consoleLogModelsFunction;
 
         private void getModelsButton_Click(object sender, EventArgs e)
         {
@@ -250,5 +205,131 @@ namespace WowModelExporterTester
             else
                 webView.EvalScript("window.g___visibleMeshIndex = undefined;");
         }
+
+        private void goButton_Click(object sender, EventArgs e)
+        {
+            navigateToUrlManually(addressTextBox.Text);
+        }
+
+        private void openExistingButton_Click(object sender, EventArgs e)
+        {
+            var dialog = new OpenFileDialog()
+            {
+                Filter = WowVrcFile.fileDialogFilter,
+                CheckFileExists = true
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                var file = WowVrcFile.Open(dialog.FileName);
+
+                SetOpenedFile(dialog.FileName, file);
+            }
+        }
+
+        private void newFromRaceGenderButton_Click(object sender, EventArgs e)
+        {
+            var dialog = new SaveFileDialog()
+            {
+                Filter = WowVrcFile.fileDialogFilter
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                var race = (WhRace)Enum.Parse(typeof(WhRace), raceCombobox.Text);
+                var gender = isMaleCheckbox.Checked ? WhGender.MALE : WhGender.FEMALE;
+
+                var file = new WowVrcFile(race, gender, null);
+
+                file.SaveTo(dialog.FileName);
+
+                SetOpenedFile(dialog.FileName, file);
+            }
+        }
+
+        private void newFromBrowserStateButton_Click(object sender, EventArgs e)
+        {
+            var dialog = new SaveFileDialog()
+            {
+                Filter = WowVrcFile.fileDialogFilter
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                var file = new WowVrcFile(OptsJsonForExport);
+
+                file.SaveTo(dialog.FileName);
+
+                SetOpenedFile(dialog.FileName, file);
+            }
+        }
+
+        private void exportButton_Click_1(object sender, EventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog
+            {
+                EnsurePathExists = true,
+                ShowPlacesList = true,
+                Title = "Choose directory to export .fbx and it's dependencies",
+                InitialDirectory = System.IO.Path.GetDirectoryName(Application.ExecutablePath),
+                IsFolderPicker = true
+            };
+
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                if (!_file.ExportToFbx(dialog.FileName))
+                    throw new InvalidOperationException();
+
+                System.Diagnostics.Process.Start("explorer.exe", dialog.FileName);
+            }
+            else
+            {
+                MessageBox.Show("Export canceled");
+            }
+        }
+
+        private void SetOpenedFile(string fileName, WowVrcFile file)
+        {
+            filenameTextbox.Text = fileName;
+            _file = file;
+            exportButton.Enabled = true;
+        }
+
+        private string _optsJsonForExport;
+        private Func<string> _consoleLogModelsFunction;
+        private WowVrcFile _file;
+
+        //private void button1_Click(object sender, EventArgs e)
+        //{
+        //    var exporter = new WowModelExporter();
+
+        //    var wowObject = exporter.LoadCharacter(WhRace.HUMAN, WhGender.MALE, new string[]
+        //    {
+        //        // шлем
+        //        "161600",
+        //        // плечи
+        //        "161621",
+        //        // плащ
+        //        "163355",
+        //        // чест
+        //        "161602",
+        //        // брасы
+        //        "161629",
+        //        // руки
+        //        "161610",
+        //        // пояс
+        //        "161624",
+        //        // ноги
+        //        "161616",
+        //        // ступни
+        //        "161605"
+        //    });
+
+        //    PrepareForVRChatUtility.PrepareObject(wowObject, true, true);
+
+        //    var test = new Exporter();
+
+        //    textBox1.Text = test.ExportWowObject(wowObject, "newtest").ToString();
+        //}
     }
 }
