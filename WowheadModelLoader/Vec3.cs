@@ -66,7 +66,20 @@ namespace WowheadModelLoader
             );
         }
 
-        #region я добавил
+        public Vec3 TransformMat4(Vec3 a, Mat4 m)
+        {
+            var x = a[0];
+            var y = a[1];
+            var z = a[2];
+
+            var res = new Vec3();
+            res[0] = m[0] * x + m[4] * y + m[8] * z + m[12];
+            res[1] = m[1] * x + m[5] * y + m[9] * z + m[13];
+            res[2] = m[2] * x + m[6] * y + m[10] * z + m[14];
+            return res;
+        }
+
+    #region я добавил
 
         public static Vec3 ConvertPositionFromWh(Vec3 position)
         {

@@ -261,9 +261,12 @@ public class MainController : MonoBehaviour
 
             data.Bones = x.Bones.Select(bone => new WowVrcFileData.BlendshapeData.BoneData() {
                 Name = bone.Key,
-                LocalPosition = new WowheadModelLoader.Vec3(bone.Value.LocalPosition.x, bone.Value.LocalPosition.y, bone.Value.LocalPosition.z),
-                LocalRotation = new WowheadModelLoader.Vec4(bone.Value.LocalRotation.x, bone.Value.LocalRotation.y, bone.Value.LocalRotation.z, bone.Value.LocalRotation.w),
-                LocalScale = new WowheadModelLoader.Vec3(bone.Value.LocalScale.x, bone.Value.LocalScale.y, bone.Value.LocalScale.z)
+                LocalTransform = new WowTransform()
+                {
+                    position = new WowheadModelLoader.Vec3(bone.Value.LocalPosition.x, bone.Value.LocalPosition.y, bone.Value.LocalPosition.z),
+                    rotation = new WowheadModelLoader.Vec4(bone.Value.LocalRotation.x, bone.Value.LocalRotation.y, bone.Value.LocalRotation.z, bone.Value.LocalRotation.w),
+                    scale = new WowheadModelLoader.Vec3(bone.Value.LocalScale.x, bone.Value.LocalScale.y, bone.Value.LocalScale.z)
+                }
             }).ToArray();
 
             return data;
@@ -280,9 +283,9 @@ public class MainController : MonoBehaviour
             var blendshapeData = _blendshapeData[blendshapeFromFile.Name];
 
             blendshapeData.Bones = blendshapeFromFile.Bones.ToDictionary(x => x.Name, x => new BoneData() {
-                LocalPosition = new Vector3(x.LocalPosition.X, x.LocalPosition.Y, x.LocalPosition.Z),
-                LocalRotation = new Quaternion(x.LocalRotation.X, x.LocalRotation.Y, x.LocalRotation.Z, x.LocalRotation.W),
-                LocalScale = new Vector3(x.LocalScale.X, x.LocalScale.Y, x.LocalScale.Z)
+                LocalPosition = new Vector3(x.LocalTransform.position.X, x.LocalTransform.position.Y, x.LocalTransform.position.Z),
+                LocalRotation = new Quaternion(x.LocalTransform.rotation.X, x.LocalTransform.rotation.Y, x.LocalTransform.rotation.Z, x.LocalTransform.rotation.W),
+                LocalScale = new Vector3(x.LocalTransform.scale.X, x.LocalTransform.scale.Y, x.LocalTransform.scale.Z)
             });
         }
     }

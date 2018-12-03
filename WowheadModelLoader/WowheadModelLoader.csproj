@@ -59,6 +59,7 @@
     <Compile Include="Json\WhGathererItem.cs" />
     <Compile Include="Json\WhMeta.cs" />
     <Compile Include="Json\WhOpts.cs" />
+    <Compile Include="Mat4.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quat.cs" />
     <Compile Include="TextureImage.cs" />

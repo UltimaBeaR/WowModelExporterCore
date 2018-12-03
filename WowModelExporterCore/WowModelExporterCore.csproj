@@ -45,7 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlendShapeBaker.cs" />
     <Compile Include="PrepareForVRChatUtility.cs" />
+    <Compile Include="Transform.cs" />
     <Compile Include="WowBone.cs" />
     <Compile Include="WowMaterial.cs" />
     <Compile Include="WowMeshWithMaterials.cs" />

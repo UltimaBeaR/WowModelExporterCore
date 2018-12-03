@@ -113,10 +113,7 @@ namespace WowModelExporterCore
             public class BoneData
             {
                 public string Name { get; set; }
-
-                public Vec3 LocalPosition { get; set; }
-                public Vec4 LocalRotation { get; set; }
-                public Vec3 LocalScale { get; set; }
+                public WowTransform LocalTransform { get; set; }
             }
         }
     }
