@@ -66,7 +66,7 @@ namespace WowheadModelLoader
             );
         }
 
-        public Vec3 TransformMat4(Vec3 a, Mat4 m)
+        public static Vec3 TransformMat4(Vec3 a, Mat4 m)
         {
             var x = a[0];
             var y = a[1];

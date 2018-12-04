@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using WowheadModelLoader;
 using WowModelExporterCore;
 using WowModelExporterUnityPlugin;
 
@@ -49,6 +50,122 @@ public class MainController : MonoBehaviour
         GetBlendshapesFromFile();
 
         SelectBlendshape(_blendshapeNames[0]);
+
+
+
+
+
+
+
+        DoExperiment();
+    }
+
+    private void DoExperiment()
+    {
+        // bone.LocalPosition - построить из локальной позиции матрицу и вычесть ее / из нее матрицу от локальной позиции/поворота/скейла блендшейпа
+        // по хорошему надо строить так матрицу глобальную учитывая парентов, но так как там только позиции, то поидее можно просто вычесть эти позиции (а они одинаковые 
+        // у кости и блендшейп кости) и посчитать разницу для локальных матриц
+        // https://www.gamedev.net/forums/topic/557605-calculating-the-difference-between-two-transform-matrices/
+        // отсюда следует что разница между матрицами это одну инвертнуть и умножить на другую.
+        // надо сначала эти вычисления вершин попробовать в редакторе юнити сделат чтобы проверить что все правильно вычисляется.
+        // можно взять уже трансформнутую кость и посчитать также на основе разницы локальной между базовой костью и трансормнутой эту матрицу и применить к 
+        // вершине 0 0 0 (сама эта кость) - через Vec4.TransformMat4 ну или еще что-то. можно попробовать прям там построить для всех вершин трансформированные вершины и создавать кубики например
+        // в координатах вершин. после того как там все ок будет можно тут уже делать
+
+
+
+
+
+
+
+
+
+        var exporter = new WowModelExporter();
+        WowObject characterWowObject;
+        var opts = _openedFile.GetOpts();
+        if (opts != null)
+        {
+            characterWowObject = exporter.LoadCharacter(WhViewerOptions.FromJson(opts));
+        }
+        else
+        {
+            var manualHeader = _openedFile.GetManualHeader();
+            if (manualHeader == null)
+                throw new System.InvalidOperationException();
+
+            characterWowObject = exporter.LoadCharacter(manualHeader.Race, manualHeader.Gender, manualHeader.ItemIds);
+        }
+
+
+
+
+
+
+        var mesh = _characterRoot.transform.GetSelfOrChildByName("character").GetComponent<SkinnedMeshRenderer>().sharedMesh;
+
+
+
+
+
+        var vertices = mesh.vertices.ToList();
+
+
+        var oh = _blendshapeData["CATS.OH"];
+
+        var boneData = oh.Bones["face_eye.L"];
+
+        var boneMatrix = Mat4.FromRotationTranslation(
+            new Vec4(boneData.LocalRotation.x, boneData.LocalRotation.y, boneData.LocalRotation.z, boneData.LocalRotation.w),
+
+            new Vec3(boneData.LocalPosition.x, boneData.LocalPosition.y, boneData.LocalPosition.z)
+        );
+
+        var wowBone = characterWowObject.Bones.First(x => x.GetName() == "face_eye.L");
+
+
+
+        var originalBoneMatrix = Mat4.FromRotationTranslation(
+            Quat.Create(),
+            wowBone.LocalPosition
+        );
+
+
+
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            var originalVertex = new Vec3(vertices[i].x, vertices[i].y, vertices[i].z);
+
+            Vec3 mutatedVertex = new Vec3();
+
+            var wowVertex = characterWowObject.Mesh.Vertices[i];
+
+            for (int boneInVertexIdx = 0; boneInVertexIdx < 4; boneInVertexIdx++)
+            {
+                if (wowVertex.BoneIndexes[boneInVertexIdx] == wowBone.Index)
+                {
+                    Mat4 differenceMatrix = Mat4.Multiply(Mat4.Invert(originalBoneMatrix), boneMatrix);
+
+                    var vertexFromMatrix = Vec3.TransformMat4(originalVertex, differenceMatrix);
+
+                    mutatedVertex.X += vertexFromMatrix.X * wowVertex.BoneWeights[boneInVertexIdx];
+                    mutatedVertex.Y += vertexFromMatrix.Y * wowVertex.BoneWeights[boneInVertexIdx];
+                    mutatedVertex.Z += vertexFromMatrix.Z * wowVertex.BoneWeights[boneInVertexIdx];
+                }
+                else
+                {
+                    mutatedVertex.X += originalVertex.X * wowVertex.BoneWeights[boneInVertexIdx];
+                    mutatedVertex.Y += originalVertex.Y * wowVertex.BoneWeights[boneInVertexIdx];
+                    mutatedVertex.Z += originalVertex.Z * wowVertex.BoneWeights[boneInVertexIdx];
+                }
+            }
+
+            vertices[i] = new Vector3(mutatedVertex.X, mutatedVertex.Y, mutatedVertex.Z);
+        }
+
+
+
+        mesh.SetVertices(vertices);
     }
 
     public void SaveFileButtonClickHandler()
