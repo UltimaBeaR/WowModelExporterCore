@@ -57,17 +57,25 @@ namespace WowModelExporterCore
                 globalPosition.Z - parentGlobalPosition.Z);
         }
 
-        public Vec3 GetGlobalPosition()
+        /// <summary>
+        /// Возвращает глобальную позицию для для указанной локальной позиции, учитывая текущего родителя
+        /// </summary>
+        public Vec3 GetGlobalPositionRelativeToThisParent(Vec3 localPosition)
         {
             if (ParentBone == null)
-                return LocalPosition;
+                return localPosition;
 
             var parentGlobalPosition = ParentBone.GetGlobalPosition();
 
             return new Vec3(
-                LocalPosition.X + parentGlobalPosition.X,
-                LocalPosition.Y + parentGlobalPosition.Y,
-                LocalPosition.Z + parentGlobalPosition.Z);
+                localPosition.X + parentGlobalPosition.X,
+                localPosition.Y + parentGlobalPosition.Y,
+                localPosition.Z + parentGlobalPosition.Z);
+        }
+
+        public Vec3 GetGlobalPosition()
+        {
+            return GetGlobalPositionRelativeToThisParent(LocalPosition);
         }
 
         /// <summary>

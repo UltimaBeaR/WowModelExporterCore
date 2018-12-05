@@ -62,24 +62,6 @@ public class MainController : MonoBehaviour
 
     private void DoExperiment()
     {
-        // bone.LocalPosition - построить из локальной позиции матрицу и вычесть ее / из нее матрицу от локальной позиции/поворота/скейла блендшейпа
-        // по хорошему надо строить так матрицу глобальную учитывая парентов, но так как там только позиции, то поидее можно просто вычесть эти позиции (а они одинаковые 
-        // у кости и блендшейп кости) и посчитать разницу для локальных матриц
-        // https://www.gamedev.net/forums/topic/557605-calculating-the-difference-between-two-transform-matrices/
-        // отсюда следует что разница между матрицами это одну инвертнуть и умножить на другую.
-        // надо сначала эти вычисления вершин попробовать в редакторе юнити сделат чтобы проверить что все правильно вычисляется.
-        // можно взять уже трансформнутую кость и посчитать также на основе разницы локальной между базовой костью и трансормнутой эту матрицу и применить к 
-        // вершине 0 0 0 (сама эта кость) - через Vec4.TransformMat4 ну или еще что-то. можно попробовать прям там построить для всех вершин трансформированные вершины и создавать кубики например
-        // в координатах вершин. после того как там все ок будет можно тут уже делать
-
-
-
-
-
-
-
-
-
         var exporter = new WowModelExporter();
         WowObject characterWowObject;
         var opts = _openedFile.GetOpts();
@@ -96,74 +78,69 @@ public class MainController : MonoBehaviour
             characterWowObject = exporter.LoadCharacter(manualHeader.Race, manualHeader.Gender, manualHeader.ItemIds);
         }
 
-
-
-
-
-
         var mesh = _characterRoot.transform.GetSelfOrChildByName("character").GetComponent<SkinnedMeshRenderer>().sharedMesh;
-
-
-
-
 
         var vertices = mesh.vertices.ToList();
 
-
-        var oh = _blendshapeData["CATS.OH"];
-
-        var boneData = oh.Bones["face_eye.L"];
-
-        var boneMatrix = Mat4.FromRotationTranslation(
-            new Vec4(boneData.LocalRotation.x, boneData.LocalRotation.y, boneData.LocalRotation.z, boneData.LocalRotation.w),
-
-            new Vec3(boneData.LocalPosition.x, boneData.LocalPosition.y, boneData.LocalPosition.z)
-        );
-
-        var wowBone = characterWowObject.Bones.First(x => x.GetName() == "face_eye.L");
-
-
-
-        var originalBoneMatrix = Mat4.FromRotationTranslation(
-            Quat.Create(),
-            wowBone.LocalPosition
-        );
-
-
-
-
-        for (int i = 0; i < vertices.Count; i++)
+        foreach (var blendshapeBoneDataEntry in _blendshapeData["CATS.OH"].Bones)
         {
-            var originalVertex = new Vec3(vertices[i].x, vertices[i].y, vertices[i].z);
+            var blendshapeBoneName = blendshapeBoneDataEntry.Key;
+            var blendshapeBoneData = blendshapeBoneDataEntry.Value;
 
-            Vec3 mutatedVertex = new Vec3();
+            var originalWowBone = characterWowObject.Bones.First(x => x.GetName() == blendshapeBoneName);
 
-            var wowVertex = characterWowObject.Mesh.Vertices[i];
+            var originalBoneMatrix = Mat4.FromRotationTranslation(
+                Quat.Create(),
+                originalWowBone.GetGlobalPosition()
+            );
 
-            for (int boneInVertexIdx = 0; boneInVertexIdx < 4; boneInVertexIdx++)
+            Mat4 blendshapeBoneMatrix = Mat4.Identity();
+
+            // ToDo: надо взять от глобальной позиции но при этом учесть все блейндшейповые измененеия (родитель может быть тоже блендшейп костью и там тооже могут быть изменения)
+            // то же касается поворота и скейла. Нужно построить иерархию костей но с учетом ВСЕХ блейндшейпов и по ним уже рассчитывать глобальную позицию/поворот/скейл.
+            // у оригинальных костей же будет только глобальная позиция, т.к. поврот и скейл там не учитываются
+
+            var blendshapeBoneGlobalPosition = originalWowBone.GetGlobalPositionRelativeToThisParent(new Vec3(blendshapeBoneData.LocalPosition.x, blendshapeBoneData.LocalPosition.y, blendshapeBoneData.LocalPosition.z));
+            var blendshapeBoneGlobalRotation = new Vec4(blendshapeBoneData.LocalRotation.x, blendshapeBoneData.LocalRotation.y, blendshapeBoneData.LocalRotation.z, blendshapeBoneData.LocalRotation.w);
+            var blendshapeBoneGlobalScale = new Vec3(blendshapeBoneData.LocalScale.x, blendshapeBoneData.LocalScale.y, blendshapeBoneData.LocalScale.z);
+
+            blendshapeBoneMatrix = Mat4.Translate(blendshapeBoneMatrix, blendshapeBoneGlobalPosition);
+            blendshapeBoneMatrix = Mat4.Multiply(blendshapeBoneMatrix, Mat4.FromQuat(blendshapeBoneGlobalRotation));
+            blendshapeBoneMatrix = Mat4.Scale(blendshapeBoneMatrix, blendshapeBoneGlobalScale);
+
+            for (int i = 0; i < vertices.Count; i++)
             {
-                if (wowVertex.BoneIndexes[boneInVertexIdx] == wowBone.Index)
-                {
-                    Mat4 differenceMatrix = Mat4.Multiply(Mat4.Invert(originalBoneMatrix), boneMatrix);
+                var originalVertex = new Vec3(vertices[i].x, vertices[i].y, vertices[i].z);
 
-                    var vertexFromMatrix = Vec3.TransformMat4(originalVertex, differenceMatrix);
+                Vec3 mutatedVertex = new Vec3();
 
-                    mutatedVertex.X += vertexFromMatrix.X * wowVertex.BoneWeights[boneInVertexIdx];
-                    mutatedVertex.Y += vertexFromMatrix.Y * wowVertex.BoneWeights[boneInVertexIdx];
-                    mutatedVertex.Z += vertexFromMatrix.Z * wowVertex.BoneWeights[boneInVertexIdx];
-                }
-                else
+                var wowVertex = characterWowObject.Mesh.Vertices[i];
+
+                for (int boneInVertexIdx = 0; boneInVertexIdx < 4; boneInVertexIdx++)
                 {
-                    mutatedVertex.X += originalVertex.X * wowVertex.BoneWeights[boneInVertexIdx];
-                    mutatedVertex.Y += originalVertex.Y * wowVertex.BoneWeights[boneInVertexIdx];
-                    mutatedVertex.Z += originalVertex.Z * wowVertex.BoneWeights[boneInVertexIdx];
+                    if (wowVertex.BoneIndexes[boneInVertexIdx] == originalWowBone.Index)
+                    {
+                        Mat4 differenceMatrix = Mat4.Multiply(blendshapeBoneMatrix, Mat4.Invert(originalBoneMatrix));
+
+                        var vertexFromMatrix = Vec3.TransformMat4(originalVertex, differenceMatrix);
+
+                        mutatedVertex.X += vertexFromMatrix.X * wowVertex.BoneWeights[boneInVertexIdx];
+                        mutatedVertex.Y += vertexFromMatrix.Y * wowVertex.BoneWeights[boneInVertexIdx];
+                        mutatedVertex.Z += vertexFromMatrix.Z * wowVertex.BoneWeights[boneInVertexIdx];
+                    }
+                    else
+                    {
+                        // ToDo: это не будет работать если на одну вершину будет несоклько костей от разных блендшейпов, просто тут гимор их находить.
+
+                        mutatedVertex.X += originalVertex.X * wowVertex.BoneWeights[boneInVertexIdx];
+                        mutatedVertex.Y += originalVertex.Y * wowVertex.BoneWeights[boneInVertexIdx];
+                        mutatedVertex.Z += originalVertex.Z * wowVertex.BoneWeights[boneInVertexIdx];
+                    }
                 }
+
+                vertices[i] = new Vector3(mutatedVertex.X, mutatedVertex.Y, mutatedVertex.Z);
             }
-
-            vertices[i] = new Vector3(mutatedVertex.X, mutatedVertex.Y, mutatedVertex.Z);
         }
-
-
 
         mesh.SetVertices(vertices);
     }
@@ -180,9 +157,20 @@ public class MainController : MonoBehaviour
         _openedFile.SaveTo(_openedFilePath);
     }
 
-    public void TranslateRotateButtonClickHandler()
+    public void TransformModeButtonClickHandler()
     {
-        TransformGizmo.type = TransformGizmo.type == TransformType.Move ? TransformType.Rotate : TransformType.Move;
+        switch (TransformGizmo.type)
+        {
+            case TransformType.Move:
+                TransformGizmo.type = TransformType.Rotate;
+                break;
+            case TransformType.Rotate:
+                TransformGizmo.type = TransformType.Scale;
+                break;
+            case TransformType.Scale:
+                TransformGizmo.type = TransformType.Move;
+                break;
+        }
     }
 
     public void GlobalLocalButtonClickHandler()

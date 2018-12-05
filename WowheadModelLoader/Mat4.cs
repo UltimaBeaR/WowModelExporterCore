@@ -143,34 +143,6 @@
             return res;
         }
 
-        public static Mat4 Scale(Mat4 a, Vec3 v)
-        {
-            var x = v[0];
-            var y = v[1];
-            var z = v[2];
-
-            var res = new Mat4();
-
-            res[0] = a[0] * x;
-            res[1] = a[1] * x;
-            res[2] = a[2] * x;
-            res[3] = a[3] * x;
-            res[4] = a[4] * y;
-            res[5] = a[5] * y;
-            res[6] = a[6] * y;
-            res[7] = a[7] * y;
-            res[8] = a[8] * z;
-            res[9] = a[9] * z;
-            res[10] = a[10] * z;
-            res[11] = a[11] * z;
-            res[12] = a[12];
-            res[13] = a[13];
-            res[14] = a[14];
-            res[15] = a[15];
-
-            return res;
-        }
-
         public static Mat4 Multiply(Mat4 a, Mat4 b)
         {
             var a00 = a[0];
@@ -283,6 +255,121 @@
             res[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
             res[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
             res[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+
+            return res;
+        }
+
+
+
+        public static Mat4 FromQuat(Vec4 q)
+        {
+            var x = q[0];
+            var y = q[1];
+            var z = q[2];
+            var w = q[3];
+
+            var x2 = x + x;
+            var y2 = y + y;
+            var z2 = z + z;
+            var xx = x * x2;
+            var yx = y * x2;
+            var yy = y * y2;
+            var zx = z * x2;
+            var zy = z * y2;
+            var zz = z * z2;
+            var wx = w * x2;
+            var wy = w * y2;
+            var wz = w * z2;
+
+            var res = new Mat4();
+
+            res[0] = 1 - yy - zz;
+            res[1] = yx + wz;
+            res[2] = zx - wy;
+            res[3] = 0;
+            res[4] = yx - wz;
+            res[5] = 1 - xx - zz;
+            res[6] = zy + wx;
+            res[7] = 0;
+            res[8] = zx + wy;
+            res[9] = zy - wx;
+            res[10] = 1 - xx - yy;
+            res[11] = 0;
+            res[12] = 0;
+            res[13] = 0;
+            res[14] = 0;
+            res[15] = 1;
+
+            return res;
+        }
+
+
+
+        public static Mat4 Translate(Mat4 a, Vec3 v)
+        {
+            var x = v[0];
+            var y = v[1];
+            var z = v[2];
+
+            var a00 = a[0];
+            var a01 = a[1];
+            var a02 = a[2];
+            var a03 = a[3];
+            var a10 = a[4];
+            var a11 = a[5];
+            var a12 = a[6];
+            var a13 = a[7];
+            var a20 = a[8];
+            var a21 = a[9];
+            var a22 = a[10];
+            var a23 = a[11];
+
+            var res = new Mat4();
+
+            res[0] = a00;
+            res[1] = a01;
+            res[2] = a02;
+            res[3] = a03;
+            res[4] = a10;
+            res[5] = a11;
+            res[6] = a12;
+            res[7] = a13;
+            res[8] = a20;
+            res[9] = a21;
+            res[10] = a22;
+            res[11] = a23;
+            res[12] = a00 * x + a10 * y + a20 * z + a[12];
+            res[13] = a01 * x + a11 * y + a21 * z + a[13];
+            res[14] = a02 * x + a12 * y + a22 * z + a[14];
+            res[15] = a03 * x + a13 * y + a23 * z + a[15];
+
+            return res;
+        }
+
+        public static Mat4 Scale(Mat4 a, Vec3 v)
+        {
+            var x = v[0];
+            var y = v[1];
+            var z = v[2];
+
+            var res = new Mat4();
+
+            res[0] = a[0] * x;
+            res[1] = a[1] * x;
+            res[2] = a[2] * x;
+            res[3] = a[3] * x;
+            res[4] = a[4] * y;
+            res[5] = a[5] * y;
+            res[6] = a[6] * y;
+            res[7] = a[7] * y;
+            res[8] = a[8] * z;
+            res[9] = a[9] * z;
+            res[10] = a[10] * z;
+            res[11] = a[11] * z;
+            res[12] = a[12];
+            res[13] = a[13];
+            res[14] = a[14];
+            res[15] = a[15];
 
             return res;
         }
