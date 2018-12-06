@@ -81,6 +81,14 @@ namespace WowheadModelLoader
 
     #region я добавил
 
+        public static bool AreNearlyEqual(Vec3 a, Vec3 b)
+        {
+            // Это значение Mathf.Epsilon из Unity3D
+            float epsilon = 1.401298E-45f;
+
+            return (Math.Abs(a.X - b.X) < epsilon) && (Math.Abs(a.Y - b.Y) < epsilon) && (Math.Abs(a.Z - b.Z) < epsilon);
+        }
+
         public static Vec3 ConvertPositionFromWh(Vec3 position)
         {
             var res = new Vec3(-position.X, position.Z, -position.Y);

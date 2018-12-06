@@ -6,45 +6,128 @@ namespace WowModelExporterCore
 {
     public static class BlendShapeBaker
     {
+        // ToDo: видимо еще надо вместе с позициями пересчитывать нормали вершин (применять к нормалям вершин повороты из blendshapeDifferenceMatricesPerBone, то есть нужно вытащить повороты и повернуть
+        // нормали в соответствии с весовыми коэффициентами). То есть в итоге должен быть не список позиций на индекс вершины а список позиций + нормалей на индекс вершины
+
         /// <summary>
         /// Формирует измененные позиции вершин (ключ словаря - индекс  в переданном массиве vertices, значение - новая позиция этой вершины) на основании переданного массива вершин,
         /// скелета (список костей) к которому эти вершины привязаны а также набора трансформаций с этими костями.
         /// То есть по сути формирует состояние вершин модели при изменении костей (как при скелетной анимации)
         /// </summary>
-        public static Dictionary<int, Vec3> BakeBlendShape(WowVertex[] vertices, WowBone[] allBones, WowVrcFileData.BlendshapeData.BoneData[] blendShapeBoneChanges)
+        public static Dictionary<int, Vec3> BakeBlendShape(WowVertex[] vertices, WowBone[] bones, WowVrcFileData.BlendshapeData.BoneData[] blendShapeBoneChanges)
         {
-            var allBonesList = allBones.ToList();
+            // Создаем оригинальные/трансформированные кости и просчитываем локальные матрицы для них
 
-            var transforms = new Dictionary<int, WowTransform>(blendShapeBoneChanges.Length);
+            var originalBones = new BoneMatrix[bones.Length];
+            var blenshapeBones = new BoneMatrix[bones.Length];
 
-            foreach (var blendshapeBoneChange in blendShapeBoneChanges)
+            for (int boneIdx = 0; boneIdx < bones.Length; boneIdx++)
             {
-                var boneIndex = allBonesList.FindIndex(x => x.GetName() == blendshapeBoneChange.Name);
-                var bone = allBones[boneIndex];
+                originalBones[boneIdx] = new BoneMatrix();
+                blenshapeBones[boneIdx] = new BoneMatrix();
 
-                var transform = blendshapeBoneChange.LocalTransform;
+                originalBones[boneIdx].SetLocalMatrixFromWowBone(bones[boneIdx]);
 
-                // ToDo:
-                // bone.LocalPosition - построить из локальной позиции матрицу и вычесть ее / из нее матрицу от локальной позиции/поворота/скейла блендшейпа
-                // по хорошему надо строить так матрицу глобальную учитывая парентов, но так как там только позиции, то поидее можно просто вычесть эти позиции (а они одинаковые 
-                // у кости и блендшейп кости) и посчитать разницу для локальных матриц
-                // https://www.gamedev.net/forums/topic/557605-calculating-the-difference-between-two-transform-matrices/
-                // отсюда следует что разница между матрицами это одну инвертнуть и умножить на другую.
-                // надо сначала эти вычисления вершин попробовать в редакторе юнити сделат чтобы проверить что все правильно вычисляется.
-                // можно взять уже трансформнутую кость и посчитать также на основе разницы локальной между базовой костью и трансормнутой эту матрицу и применить к 
-                // вершине 0 0 0 (сама эта кость) - через Vec4.TransformMat4 ну или еще что-то. можно попробовать прям там построить для всех вершин трансформированные вершины и создавать кубики например
-                // в координатах вершин. после того как там все ок будет можно тут уже делать
-
-                transforms[boneIndex] = transform;
+                var blendshapeChange = blendShapeBoneChanges.FirstOrDefault(x => x.Name == bones[boneIdx].GetName());
+                if (blendshapeChange != null)
+                    blenshapeBones[boneIdx].SetLocalMatrixFromBlendshapeBone(blendshapeChange);
+                else
+                    blenshapeBones[boneIdx].SetLocalMatrixFromWowBone(bones[boneIdx]);
             }
 
+            // Прописываем иерархию для оригинальных/трансформированных костей
+
+            for (int boneIdx = 0; boneIdx < bones.Length; boneIdx++)
+            {
+                if (bones[boneIdx].ParentBone != null)
+                {
+                    originalBones[boneIdx].Parent = originalBones[bones[boneIdx].ParentBone.Index];
+                    blenshapeBones[boneIdx].Parent = blenshapeBones[bones[boneIdx].ParentBone.Index];
+                }
+            }
+
+            // Считаем глобальные матрицы разницы между оригинальной и blendshape костью для каждой из костей в исходном массиве костей
+            // В случае если изменений в кости (с учетом родительской иерархии) не было, матрица изменений кости будет равна (или приблизительно равна) identity
+
+            var blendshapeDifferenceMatricesPerBone = new Mat4[bones.Length];
+            for (int boneIdx = 0; boneIdx < bones.Length; boneIdx++)
+                blendshapeDifferenceMatricesPerBone[boneIdx] = Mat4.Multiply(blenshapeBones[boneIdx].GetGlobalMatrix(), Mat4.Invert(originalBones[boneIdx].GetGlobalMatrix()));
+
+            // Меняем заданные вершины в соответствии с просчитанными матрицами изменений.
+            // Если значение вершины изменилось в результате примененных трансформаций (то есть если на вершину влияла хотя бы одна кость, матрица изменений которой не identity)
+            // то добавляем эту вершину в словарь измененных вершин, который далее возвращаем
+
+            var changedVertices = new Dictionary<int, Vec3>();
+
+            for (int vertexIdx = 0; vertexIdx < vertices.Length; vertexIdx++)
+            {
+                var vertex = vertices[vertexIdx];
+
+                var changedVertexPos = new Vec3();
+
+                for (int boneInVertexIdx = 0; boneInVertexIdx < 4; boneInVertexIdx++)
+                {
+                    var boneIdx = vertex.BoneIndexes[boneInVertexIdx];
+                    if (boneIdx < 0)
+                        continue;
+
+                    var boneWeight = vertex.BoneWeights[boneInVertexIdx];
+
+                    var vertexFromMatrix = Vec3.TransformMat4(vertex.Position, blendshapeDifferenceMatricesPerBone[boneIdx]);
+                    changedVertexPos.X += vertexFromMatrix.X * boneWeight;
+                    changedVertexPos.Y += vertexFromMatrix.Y * boneWeight;
+                    changedVertexPos.Z += vertexFromMatrix.Z * boneWeight;
+                }
+
+                if (!Vec3.AreNearlyEqual(changedVertexPos, vertex.Position))
+                    changedVertices.Add(vertexIdx, changedVertexPos);
+            }
+
+            return changedVertices;
+        }
 
 
+        /// <summary>
+        /// Кость, описанная в виде матрицы и указателя на родителя (для формирования иерархии).
+        /// Матрица формируется из локальной позиции кости либо локальной позиции/поворота/скейла блендшейп-кости
+        /// </summary>
+        private class BoneMatrix
+        {
+            public BoneMatrix Parent { get; set; }
 
+            public Mat4 LocalMatrix { get; set; }
 
+            /// <summary>
+            /// Вычисление глобальной матрицы кости
+            /// </summary>
+            /// <returns></returns>
+            public Mat4 GetGlobalMatrix()
+            {
+                if (Parent == null)
+                    return LocalMatrix;
 
+                return Mat4.Multiply(Parent.GetGlobalMatrix(), LocalMatrix);
+            }
 
-            throw new System.NotImplementedException();
+            public void SetLocalMatrixFromWowBone(WowBone bone)
+            {
+                var matrix = Mat4.Identity();
+                matrix = Mat4.Translate(matrix, bone.LocalPosition);
+                
+                // Поворота и скейла у базовых костей нет
+
+                LocalMatrix = matrix;
+            }
+
+            public void SetLocalMatrixFromBlendshapeBone(WowVrcFileData.BlendshapeData.BoneData bone)
+            {
+                var matrix = Mat4.Identity();
+                matrix = Mat4.Translate(matrix, bone.LocalTransform.position);
+                matrix = Mat4.Multiply(matrix, Mat4.FromQuat(bone.LocalTransform.rotation));
+                matrix = Mat4.Scale(matrix, bone.LocalTransform.scale);
+
+                LocalMatrix = matrix;
+            }
         }
     }
 }
