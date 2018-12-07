@@ -1,4 +1,5 @@
-﻿using WowheadModelLoader;
+﻿using System.Collections.Generic;
+using WowheadModelLoader;
 using WowModelExporterCore;
 using WowModelExporterFbx;
 
@@ -10,12 +11,12 @@ namespace WowModelExporterTester
         {
             var exporter = new WowModelExporter();
 
-            WowObject wowObject;
+            WowObject characterWowObject;
 
             var opts = file.GetOpts();
             if (opts != null)
             {
-                wowObject = exporter.LoadCharacter(WhViewerOptions.FromJson(opts));
+                characterWowObject = exporter.LoadCharacter(WhViewerOptions.FromJson(opts));
             }
             else
             {
@@ -23,14 +24,22 @@ namespace WowModelExporterTester
                 if (manualHeader == null)
                     throw new System.InvalidOperationException();
 
-                wowObject = exporter.LoadCharacter(manualHeader.Race, manualHeader.Gender, manualHeader.ItemIds);
+                characterWowObject = exporter.LoadCharacter(manualHeader.Race, manualHeader.Gender, manualHeader.ItemIds);
             }
 
-            PrepareForVRChatUtility.PrepareObject(wowObject, true, true);
+            // ToDo: после запекания идет привязка на текущие индексы вершин. Если вершины будут перестроены, надо тут тоже обновить индексы 
+            var bakedBlendshapes = new Dictionary<string, Dictionary<int, Vec3>>();
+            foreach (var blendshape in file.Blendshapes)
+            {
+                if (blendshape.Bones.Length > 0)
+                    bakedBlendshapes.Add(blendshape.Name, BlendShapeBaker.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones));
+            }
+
+            PrepareForVRChatUtility.PrepareObject(characterWowObject, true, true);
 
             var fbxExporter = new Exporter();
 
-            return fbxExporter.ExportWowObject(wowObject, exportDirectory);
+            return fbxExporter.ExportWowObject(characterWowObject, bakedBlendshapes, exportDirectory);
         }
     }
 }
