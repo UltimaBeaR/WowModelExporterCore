@@ -106,6 +106,8 @@ namespace WowModelExporterCore
 
         public class BlendshapeData
         {
+            public const string basicBlendshapeName = "___BASIC___";
+
             public string Name { get; set; }
 
             public BoneData[] Bones { get; set; }

@@ -32,7 +32,19 @@ namespace WowModelExporterTester
             foreach (var blendshape in file.Blendshapes)
             {
                 if (blendshape.Bones.Length > 0)
-                    bakedBlendshapes.Add(blendshape.Name, BlendShapeBaker.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones));
+                {
+                    if (blendshape.Name == WowVrcFileData.BlendshapeData.basicBlendshapeName)
+                    {
+                        var basicBakedBlendshape = BlendShapeBaker.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones);
+
+                        foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
+                        {
+                            characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.X, basicBakedBlendshapeElement.Value.Y, basicBakedBlendshapeElement.Value.Z);
+                        }
+                    }
+                    else
+                        bakedBlendshapes.Add(blendshape.Name, BlendShapeBaker.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones));
+                }
             }
 
             PrepareForVRChatUtility.PrepareObject(characterWowObject, true, true);

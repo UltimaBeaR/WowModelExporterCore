@@ -180,7 +180,7 @@ public class MainController : MonoBehaviour
 
         SaveChanges();
 
-        _selectedblendShapeName = basicBlendshapeName;
+        _selectedblendShapeName = WowVrcFileData.BlendshapeData.basicBlendshapeName;
 
         SetVerticesToDefault();
         SetBonesToDefault();
@@ -211,9 +211,9 @@ public class MainController : MonoBehaviour
 
         BlendshapesListbox.AddNewListboxItem("BASIC", out _basicBlendshapeButton);
         _basicBlendshapeButton.onClick.AddListener(SelectBasicBlendshape);
-        _blendshapeData[basicBlendshapeName] = new BlendshapeData()
+        _blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName] = new BlendshapeData()
         {
-            Name = basicBlendshapeName,
+            Name = WowVrcFileData.BlendshapeData.basicBlendshapeName,
             Bones = new Dictionary<string, BoneData>(),
             ListboxButton = _basicBlendshapeButton
         };
@@ -245,9 +245,12 @@ public class MainController : MonoBehaviour
         SaveBonesToSelectedBlendshape();
 
         // Если сейчас выбран basic блендшейп - запекаем в _basicVertexPositions измененные вершины на основании него
-        if (_selectedblendShapeName == basicBlendshapeName)
+        if (_selectedblendShapeName == WowVrcFileData.BlendshapeData.basicBlendshapeName)
         {
-            var basicVertexPositionChanges = BlendShapeBaker.BakeBlendShape(_character.WowObject.Mesh.Vertices, _character.WowObject.Bones, ConvertBlendshapeBonesToFile(_blendshapeData[basicBlendshapeName].Bones));
+            var basicVertexPositionChanges = BlendShapeBaker.BakeBlendShape(
+                _character.WowObject.Mesh.Vertices,
+                _character.WowObject.Bones,
+                ConvertBlendshapeBonesToFile(_blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName].Bones));
 
             _defaultVertexPositions.CopyTo(_basicVertexPositions, 0);
             foreach (var basicVertexPosition in basicVertexPositionChanges)
@@ -434,8 +437,6 @@ public class MainController : MonoBehaviour
     private WowVrcFile _openedFile;
 
     private static readonly Color selectedColor = new Color(0.7f, 0.7f, 0.9f);
-
-    private const string basicBlendshapeName = "___BASIC___";
 
     private class BlendshapeData
     {

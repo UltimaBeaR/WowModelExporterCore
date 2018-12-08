@@ -96,6 +96,16 @@ namespace WowheadModelLoader
             return res;
         }
 
+        public static Vec3 ConvertPositionToWh(Vec3 whPosition)
+        {
+            var res = new Vec3(whPosition.X, whPosition.Y, whPosition.Z);
+            res.RotateAroundY(-((float)Math.PI / 2));
+
+            res = new Vec3(-res.X, -res.Z, res.Y);
+
+            return res;
+        }
+
         public void RotateAroundX(float angleRad)
         {
             var sin = (float)Math.Sin(angleRad);
