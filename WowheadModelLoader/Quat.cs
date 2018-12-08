@@ -58,5 +58,26 @@ namespace WowheadModelLoader
                 a.W * invDot
             );
         }
+
+        public static Vec4 Multiply(Vec4 a, Vec4 b)
+        {
+            var ax = a[0];
+            var ay = a[1];
+            var az = a[2];
+            var aw = a[3];
+            var bx = b[0];
+            var by = b[1];
+            var bz = b[2];
+            var bw = b[3];
+
+            var res = new Vec4();
+
+            res[0] = ax * bw + aw * bx + ay * bz - az * by;
+            res[1] = ay * bw + aw * by + az * bx - ax * bz;
+            res[2] = az * bw + aw * bz + ax * by - ay * bx;
+            res[3] = aw * bw - ax * bx - ay * by - az * bz;
+
+            return res;
+        }
     }
 }

@@ -28,7 +28,7 @@ namespace WowModelExporterTester
             }
 
             // ToDo: после запекания идет привязка на текущие индексы вершин. Если вершины будут перестроены, надо тут тоже обновить индексы 
-            var bakedBlendshapes = new Dictionary<string, Dictionary<int, Vec3>>();
+            var bakedBlendshapes = new Dictionary<string, Dictionary<int, BlendShapeBaker.Vertex>>();
             foreach (var blendshape in file.Blendshapes)
             {
                 if (blendshape.Bones.Length > 0)
@@ -39,7 +39,7 @@ namespace WowModelExporterTester
 
                         foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
                         {
-                            characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.X, basicBakedBlendshapeElement.Value.Y, basicBakedBlendshapeElement.Value.Z);
+                            characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.Position.X, basicBakedBlendshapeElement.Value.Position.Y, basicBakedBlendshapeElement.Value.Position.Z);
                         }
                     }
                     else

@@ -50,9 +50,13 @@ public class MainController : MonoBehaviour
 
         _defaultVertexPositions = new Vector3[_characterMesh.vertices.Length];
         _characterMesh.vertices.CopyTo(_defaultVertexPositions, 0);
+        _defaultVertexNormals = new Vector3[_characterMesh.vertices.Length];
+        _characterMesh.normals.CopyTo(_defaultVertexNormals, 0);
 
         _basicVertexPositions = new Vector3[_characterMesh.vertices.Length];
         _characterMesh.vertices.CopyTo(_basicVertexPositions, 0);
+        _basicVertexNormals = new Vector3[_characterMesh.vertices.Length];
+        _characterMesh.normals.CopyTo(_basicVertexNormals, 0);
 
         SetBoneListboxItems();
 
@@ -88,6 +92,12 @@ public class MainController : MonoBehaviour
                 TransformGizmo.type = TransformType.Move;
                 break;
         }
+    }
+
+    public void ResetCurrentBoneButtonClickHandler()
+    {
+        TransformGizmo.ClearUndoRedo();
+        SetBoneToDefault(_selectedBone);
     }
 
     public void ResetCurrentBlendshapeButtonClickHandler()
@@ -247,14 +257,18 @@ public class MainController : MonoBehaviour
         // Если сейчас выбран basic блендшейп - запекаем в _basicVertexPositions измененные вершины на основании него
         if (_selectedblendShapeName == WowVrcFileData.BlendshapeData.basicBlendshapeName)
         {
-            var basicVertexPositionChanges = BlendShapeBaker.BakeBlendShape(
+            var basicVertexChanges = BlendShapeBaker.BakeBlendShape(
                 _character.WowObject.Mesh.Vertices,
                 _character.WowObject.Bones,
                 ConvertBlendshapeBonesToFile(_blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName].Bones));
 
             _defaultVertexPositions.CopyTo(_basicVertexPositions, 0);
-            foreach (var basicVertexPosition in basicVertexPositionChanges)
-                _basicVertexPositions[basicVertexPosition.Key] = new Vector3(basicVertexPosition.Value.X, basicVertexPosition.Value.Y, basicVertexPosition.Value.Z);
+            _defaultVertexNormals.CopyTo(_basicVertexNormals, 0);
+            foreach (var basicVertexChange in basicVertexChanges)
+            {
+                _basicVertexPositions[basicVertexChange.Key] = new Vector3(basicVertexChange.Value.Position.X, basicVertexChange.Value.Position.Y, basicVertexChange.Value.Position.Z);
+                _basicVertexNormals[basicVertexChange.Key] = new Vector3(basicVertexChange.Value.Normal.X, basicVertexChange.Value.Normal.Y, basicVertexChange.Value.Normal.Z);
+            }
         }
     }
 
@@ -285,23 +299,28 @@ public class MainController : MonoBehaviour
     private void SetVerticesToDefault()
     {
         _characterMesh.vertices = _defaultVertexPositions.ToArray();
+        _characterMesh.normals = _defaultVertexNormals.ToArray();
     }
 
     private void SetVerticesToBasic()
     {
         _characterMesh.vertices = _basicVertexPositions.ToArray();
+        _characterMesh.normals = _basicVertexNormals.ToArray();
     }
 
     private void SetBonesToDefault()
     {
         foreach (var bone in _bones)
-        {
-            var defaultBone = _defaultBones[bone.name];
+            SetBoneToDefault(bone);
+    }
 
-            bone.localPosition = defaultBone.LocalPosition;
-            bone.localRotation = defaultBone.LocalRotation;
-            bone.localScale = defaultBone.LocalScale;
-        }
+    private void SetBoneToDefault(Transform bone)
+    {
+        var defaultBone = _defaultBones[bone.name];
+
+        bone.localPosition = defaultBone.LocalPosition;
+        bone.localRotation = defaultBone.LocalRotation;
+        bone.localScale = defaultBone.LocalScale;
     }
 
     private void SetBonesFromSelectedBlendshape()
@@ -424,7 +443,10 @@ public class MainController : MonoBehaviour
     private Dictionary<string, BoneData> _defaultBones;
 
     private Vector3[] _defaultVertexPositions;
+    private Vector3[] _defaultVertexNormals;
+
     private Vector3[] _basicVertexPositions;
+    private Vector3[] _basicVertexNormals;
 
     private Transform _selectedBone;
     private string _selectedblendShapeName;
