@@ -28,6 +28,17 @@ public class MouseCameraControl : MonoBehaviour
         Camera = Camera.main;
     }
 
+    private void Update()
+    {
+        if (Target != null)
+        {
+            if (Input.GetKeyUp(KeyCode.F))
+            {
+                //Camera.transform.LookAt(Target.transform);
+            }
+        }
+    }
+
     void LateUpdate()
     {
         var isMouseOverUI = EventSystem.IsPointerOverGameObject();

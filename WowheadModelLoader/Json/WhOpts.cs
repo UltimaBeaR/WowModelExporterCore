@@ -1,4 +1,6 @@
-﻿namespace WowheadModelLoader.Json
+﻿using System.Linq;
+
+namespace WowheadModelLoader.Json
 {
     public class WhOpts
     {
@@ -33,6 +35,39 @@
         {
             public int type { get; set; }
             public string id { get; set; }
+        }
+
+        public WhOpts GetCopy()
+        {
+            return new WhOpts()
+            {
+                type = type,
+                contentPath = contentPath,
+                container = container,
+                aspect = aspect,
+                background = background,
+
+                sheathMain = sheathMain,
+                sheathOff = sheathOff,
+
+                sk = sk,
+                ha = ha,
+                hc = hc,
+                fa = fa,
+                fh = fh,
+                fc = fc,
+                ep = ep,
+                ho = ho,
+                ta = ta,
+                cls = cls,
+
+                items = items.Select(x => x.Select(y => y).ToArray()).ToArray(),
+
+                mount = new Model() { id = mount.id, type = mount.type },
+                models = new Model() { id = models.id, type = models.type },
+
+                hd = hd
+            };
         }
     }
 }
