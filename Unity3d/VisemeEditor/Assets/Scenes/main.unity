@@ -659,7 +659,7 @@ MonoBehaviour:
   circleDetail: 40
   minSelectedDistanceCheck: 0.04
   moveSpeedMultiplier: 1
-  scaleSpeedMultiplier: 1
+  scaleSpeedMultiplier: 10
   rotateSpeedMultiplier: 200
   allRotateSpeedMultiplier: 20
   useFirstSelectedAsMain: 1

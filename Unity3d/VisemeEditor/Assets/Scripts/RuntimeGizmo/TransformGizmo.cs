@@ -48,7 +48,7 @@ namespace RuntimeGizmos
         public int circleDetail = 40;
         public float minSelectedDistanceCheck = .04f;
         public float moveSpeedMultiplier = 1f;
-        public float scaleSpeedMultiplier = 1f;
+        public float scaleSpeedMultiplier = 10f;
         public float rotateSpeedMultiplier = 200f;
         public float allRotateSpeedMultiplier = 20f;
 

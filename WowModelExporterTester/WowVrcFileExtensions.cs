@@ -40,6 +40,7 @@ namespace WowModelExporterTester
                         foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
                         {
                             characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.Position.X, basicBakedBlendshapeElement.Value.Position.Y, basicBakedBlendshapeElement.Value.Position.Z);
+                            characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Normal = new Vec3(basicBakedBlendshapeElement.Value.Normal.X, basicBakedBlendshapeElement.Value.Normal.Y, basicBakedBlendshapeElement.Value.Normal.Z);
                         }
                     }
                     else
@@ -51,7 +52,7 @@ namespace WowModelExporterTester
 
             var fbxExporter = new Exporter();
 
-            return fbxExporter.ExportWowObject(characterWowObject, bakedBlendshapes, exportDirectory);
+            return fbxExporter.ExportWowObject(characterWowObject, bakedBlendshapes, exportDirectory, false);
         }
     }
 }

@@ -310,12 +310,18 @@ public class MainController : MonoBehaviour
 
     private void SetBonesToDefault()
     {
+        if (_bones == null)
+            return;
+
         foreach (var bone in _bones)
             SetBoneToDefault(bone);
     }
 
     private void SetBoneToDefault(Transform bone)
     {
+        if (bone == null)
+            return;
+
         var defaultBone = _defaultBones[bone.name];
 
         bone.localPosition = defaultBone.LocalPosition;

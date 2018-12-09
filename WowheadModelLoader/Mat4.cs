@@ -259,7 +259,29 @@
             return res;
         }
 
+        public static Mat4 Transpose(Mat4 a)
+        {
+            var res = new Mat4();
 
+            res[0] = a[0];
+            res[1] = a[4];
+            res[2] = a[8];
+            res[3] = a[12];
+            res[4] = a[1];
+            res[5] = a[5];
+            res[6] = a[9];
+            res[7] = a[13];
+            res[8] = a[2];
+            res[9] = a[6];
+            res[10] = a[10];
+            res[11] = a[14];
+            res[12] = a[3];
+            res[13] = a[7];
+            res[14] = a[11];
+            res[15] = a[15];
+
+            return res;
+        }
 
         public static Mat4 FromQuat(Vec4 q)
         {
@@ -302,8 +324,6 @@
 
             return res;
         }
-
-
 
         public static Mat4 Translate(Mat4 a, Vec3 v)
         {

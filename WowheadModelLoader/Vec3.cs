@@ -79,9 +79,29 @@ namespace WowheadModelLoader
             return res;
         }
 
-    #region я добавил
+        public static Vec3 Normalize(Vec3 a)
+        {
+            var x = a[0];
+            var y = a[1];
+            var z = a[2];
+            var len = x * x + y * y + z * z;
 
-        public static bool AreNearlyEqual(Vec3 a, Vec3 b)
+            var res = new Vec3();
+
+            if (len > 0)
+            {
+                len = 1f / (float)Math.Sqrt(len);
+                res[0] = a[0] * len;
+                res[1] = a[1] * len;
+                res[2] = a[2] * len;
+            }
+
+            return res;
+        }
+
+#region я добавил
+
+public static bool AreNearlyEqual(Vec3 a, Vec3 b)
         {
             // Это значение Mathf.Epsilon из Unity3D
             float epsilon = 1.401298E-45f;

@@ -47,13 +47,9 @@ namespace WowModelExporterCore
             // В случае если изменений в кости (с учетом родительской иерархии) не было, матрица изменений кости будет равна (или приблизительно равна) identity
 
             var blendshapeDifferenceMatricesPerBone = new Mat4[bones.Length];
-            var blendshapeDifferenceRotationsPerBone = new Vec4[bones.Length];
 
             for (int boneIdx = 0; boneIdx < bones.Length; boneIdx++)
-            {
                 blendshapeDifferenceMatricesPerBone[boneIdx] = Mat4.Multiply(blenshapeBones[boneIdx].GetGlobalMatrix(), Mat4.Invert(originalBones[boneIdx].GetGlobalMatrix()));
-                blendshapeDifferenceRotationsPerBone[boneIdx] = Quat.Multiply(blenshapeBones[boneIdx].GetGlobalRotation(), Quat.Invert(originalBones[boneIdx].GetGlobalRotation()));
-            }
 
             // Меняем заданные вершины в соответствии с просчитанными матрицами изменений.
             // Если значение вершины изменилось в результате примененных трансформаций (то есть если на вершину влияла хотя бы одна кость, матрица изменений которой не identity)
@@ -76,16 +72,19 @@ namespace WowModelExporterCore
 
                     var boneWeight = vertex.BoneWeights[boneInVertexIdx];
 
-                    var positionFromMatrix = Vec3.TransformMat4(vertex.Position, blendshapeDifferenceMatricesPerBone[boneIdx]);
-                    changedVertexPos.X += positionFromMatrix.X * boneWeight;
-                    changedVertexPos.Y += positionFromMatrix.Y * boneWeight;
-                    changedVertexPos.Z += positionFromMatrix.Z * boneWeight;
+                    var positionFromBone = Vec3.TransformMat4(vertex.Position, blendshapeDifferenceMatricesPerBone[boneIdx]);
+                    changedVertexPos.X += positionFromBone.X * boneWeight;
+                    changedVertexPos.Y += positionFromBone.Y * boneWeight;
+                    changedVertexPos.Z += positionFromBone.Z * boneWeight;
 
-                    var normalFromQuaternion = Vec3.TransformQuat(vertex.Normal, blendshapeDifferenceRotationsPerBone[boneIdx]);
-                    changedVertexNormal.X += normalFromQuaternion.X * boneWeight;
-                    changedVertexNormal.Y += normalFromQuaternion.Y * boneWeight;
-                    changedVertexNormal.Z += normalFromQuaternion.Z * boneWeight;
+                    // Незнаю в чем дело, но если используется scale в нормалях то результат не соответствует скинингу из юнити. При чем непонятно где правильно сделано, как тут или как там
+                    var normalFromBone = Vec3.TransformMat4(vertex.Normal, Mat4.Transpose(Mat4.Invert(blendshapeDifferenceMatricesPerBone[boneIdx])));
+                    changedVertexNormal.X += normalFromBone.X * boneWeight;
+                    changedVertexNormal.Y += normalFromBone.Y * boneWeight;
+                    changedVertexNormal.Z += normalFromBone.Z * boneWeight;
                 }
+
+                changedVertexNormal = Vec3.Normalize(changedVertexNormal);
 
                 if (!Vec3.AreNearlyEqual(changedVertexPos, vertex.Position))
                     changedVertices.Add(vertexIdx, new Vertex() { Position = changedVertexPos, Normal = changedVertexNormal });
@@ -109,7 +108,6 @@ namespace WowModelExporterCore
             public BoneTransform Parent { get; set; }
 
             public Mat4 LocalMatrix { get; set; }
-            public Vec4 LocalRotation { get; set; }
 
             /// <summary>
             /// Вычисление глобальной матрицы кости
@@ -123,14 +121,6 @@ namespace WowModelExporterCore
                 return Mat4.Multiply(Parent.GetGlobalMatrix(), LocalMatrix);
             }
 
-            public Vec4 GetGlobalRotation()
-            {
-                if (Parent == null)
-                    return LocalRotation;
-
-                return Quat.Multiply(Parent.GetGlobalRotation(), LocalRotation);
-            }
-
             public void SetLocalDataFromWowBone(WowBone bone)
             {
                 var matrix = Mat4.Identity();
@@ -139,8 +129,6 @@ namespace WowModelExporterCore
                 // Поворота и скейла у базовых костей нет
 
                 LocalMatrix = matrix;
-
-                LocalRotation = Quat.Create();
             }
 
             public void SetLocalDataFromBlendshapeBone(WowVrcFileData.BlendshapeData.BoneData bone)
@@ -151,8 +139,6 @@ namespace WowModelExporterCore
                 matrix = Mat4.Scale(matrix, bone.LocalTransform.scale);
 
                 LocalMatrix = matrix;
-
-                LocalRotation = bone.LocalTransform.rotation;
             }
         }
     }

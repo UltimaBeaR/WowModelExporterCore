@@ -16,7 +16,17 @@ namespace WowModelExporterCore
             }
         }
 
-        public Vec3 Normal { get { return Vec3.ConvertPositionFromWh(WhNormal); } }
+        public Vec3 Normal
+        {
+            get
+            {
+                return Vec3.ConvertPositionFromWh(WhNormal);
+            }
+            set
+            {
+                WhNormal = Vec3.ConvertPositionToWh(value);
+            }
+        }
 
         public Vec3 WhPosition { get; set; }
         public Vec3 WhNormal { get; set; }
