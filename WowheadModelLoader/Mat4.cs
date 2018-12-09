@@ -393,5 +393,47 @@
 
             return res;
         }
+
+        public static Mat4 Lerp(Mat4 a, Mat4 b, float amount)
+        {
+            var matrixA = new System.Numerics.Matrix4x4(
+                a.a00, a.a01, a.a02, a.a03,
+                a.a10, a.a11, a.a12, a.a13,
+                a.a20, a.a21, a.a22, a.a23,
+                a.a30, a.a31, a.a32, a.a33
+            );
+
+            var matrixB = new System.Numerics.Matrix4x4(
+                b.a00, b.a01, b.a02, b.a03,
+                b.a10, b.a11, b.a12, b.a13,
+                b.a20, b.a21, b.a22, b.a23,
+                b.a30, b.a31, b.a32, b.a33
+            );
+
+            var matrixRes = System.Numerics.Matrix4x4.Lerp(matrixA, matrixB, amount);
+
+            return new Mat4()
+            {
+                a00 = matrixRes.M11,
+                a01 = matrixRes.M12,
+                a02 = matrixRes.M13,
+                a03 = matrixRes.M14,
+
+                a10 = matrixRes.M21,
+                a11 = matrixRes.M22,
+                a12 = matrixRes.M23,
+                a13 = matrixRes.M24,
+
+                a20 = matrixRes.M31,
+                a21 = matrixRes.M32,
+                a22 = matrixRes.M33,
+                a23 = matrixRes.M34,
+
+                a30 = matrixRes.M41,
+                a31 = matrixRes.M42,
+                a32 = matrixRes.M43,
+                a33 = matrixRes.M44
+            };
+        }
     }
 }

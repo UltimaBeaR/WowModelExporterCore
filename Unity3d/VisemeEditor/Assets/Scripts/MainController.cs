@@ -63,7 +63,7 @@ public class MainController : MonoBehaviour
         ClearBlendshapes();
         GetBlendshapesFromFile();
 
-        SelectBasicBlendshape();
+        SelectBlendshape(WowVrcFileData.BlendshapeData.basicBlendshapeName, false);
     }
 
     public void SaveFileButtonClickHandler()
@@ -71,7 +71,7 @@ public class MainController : MonoBehaviour
         if (_openedFile == null)
             return;
 
-        SaveChanges();
+        UpdateChanges();
 
         SetBlendshapesToFile();
 
@@ -109,6 +109,35 @@ public class MainController : MonoBehaviour
     public void GlobalLocalButtonClickHandler()
     {
         TransformGizmo.space = TransformGizmo.space == TransformSpace.Global ? TransformSpace.Local : TransformSpace.Global;
+    }
+
+    public void GenerateFromCatsButtonClickHandler()
+    {
+        if (_openedFile == null)
+            return;
+
+        UpdateChanges();
+
+        var res = new Dictionary<string, Dictionary<string, BoneData>>();
+
+        foreach (var catsVisemeMixerDataElement in _catsVisemeMixerData)
+        {
+            var blendshapeBoneChangesWithIntensity = catsVisemeMixerDataElement.Value
+                .Select(x => new BlendShapeUtility.BlendshapeBoneChangesWithIntensity()
+                {
+                    BlendShapeBoneChanges = ConvertBlendshapeBonesToFile(_blendshapeData[x.Key].Bones),
+                    Intensity = x.Value
+                })
+                .ToArray();
+
+            res.Add(catsVisemeMixerDataElement.Key, ConvertBlendshapeBonesFromFile(BlendShapeUtility.MixBlendshapeBoneChanges(blendshapeBoneChangesWithIntensity)));
+        }
+
+        foreach (var resItem in res)
+            _blendshapeData[resItem.Key].Bones = resItem.Value;
+
+        // Если меняем на этот же блендшейп, то обновлять ненужно, т.к. смысл этой операции наоборот из измененного состояния обновить отображение (иначе получится затирание данных)
+        SelectBlendshape(_selectedblendShapeName, false);
     }
 
     private void SetBoneListboxItems()
@@ -184,35 +213,34 @@ public class MainController : MonoBehaviour
         GetComponent<MouseCameraControl>().Target = obj;
     }
 
-    private void SelectBasicBlendshape()
+    private void SelectBlendshape(string blendshapeName, bool updateCurrentChangesBeforeSelecting = true)
     {
         TransformGizmo.ClearUndoRedo();
 
-        SaveChanges();
+        if (updateCurrentChangesBeforeSelecting)
+            UpdateChanges();
 
-        _selectedblendShapeName = WowVrcFileData.BlendshapeData.basicBlendshapeName;
+        if (blendshapeName == WowVrcFileData.BlendshapeData.basicBlendshapeName)
+        {
+            _selectedblendShapeName = WowVrcFileData.BlendshapeData.basicBlendshapeName;
 
-        SetVerticesToDefault();
-        SetBonesToDefault();
-        SetBonesFromSelectedBlendshape();
+            SetVerticesToDefault();
+            SetBonesToDefault();
+            UpdateBonesFromSelectedBlendshape();
 
-        BlendshapesListbox.SetSelectedListboxItemButton(_basicBlendshapeButton, selectedColor);
-    }
+            BlendshapesListbox.SetSelectedListboxItemButton(_basicBlendshapeButton, selectedColor);
+        }
+        else
+        {
+            var data = _blendshapeData[blendshapeName];
+            _selectedblendShapeName = blendshapeName;
 
-    private void SelectBlendshape(string blendshapeName)
-    {
-        TransformGizmo.ClearUndoRedo();
+            SetVerticesToBasic();
+            SetBonesToDefault();
+            UpdateBonesFromSelectedBlendshape();
 
-        SaveChanges();
-
-        var data = _blendshapeData[blendshapeName];
-        _selectedblendShapeName = blendshapeName;
-
-        SetVerticesToBasic();
-        SetBonesToDefault();
-        SetBonesFromSelectedBlendshape();
-
-        BlendshapesListbox.SetSelectedListboxItemButton(data.ListboxButton, selectedColor);
+            BlendshapesListbox.SetSelectedListboxItemButton(data.ListboxButton, selectedColor);
+        }
     }
 
     private void InitBlendShapes()
@@ -220,7 +248,7 @@ public class MainController : MonoBehaviour
         _blendshapeData = new Dictionary<string, BlendshapeData>(_blendshapeNames.Length + 1);
 
         BlendshapesListbox.AddNewListboxItem("BASIC", out _basicBlendshapeButton);
-        _basicBlendshapeButton.onClick.AddListener(SelectBasicBlendshape);
+        _basicBlendshapeButton.onClick.AddListener(() => SelectBlendshape(WowVrcFileData.BlendshapeData.basicBlendshapeName));
         _blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName] = new BlendshapeData()
         {
             Name = WowVrcFileData.BlendshapeData.basicBlendshapeName,
@@ -250,14 +278,14 @@ public class MainController : MonoBehaviour
             blendshape.Bones.Clear();
     }
 
-    private void SaveChanges()
+    private void UpdateChanges()
     {
-        SaveBonesToSelectedBlendshape();
+        UpdateBonesToSelectedBlendshape();
 
         // Если сейчас выбран basic блендшейп - запекаем в _basicVertexPositions измененные вершины на основании него
         if (_selectedblendShapeName == WowVrcFileData.BlendshapeData.basicBlendshapeName)
         {
-            var basicVertexChanges = BlendShapeBaker.BakeBlendShape(
+            var basicVertexChanges = BlendShapeUtility.BakeBlendShape(
                 _character.WowObject.Mesh.Vertices,
                 _character.WowObject.Bones,
                 ConvertBlendshapeBonesToFile(_blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName].Bones));
@@ -268,30 +296,6 @@ public class MainController : MonoBehaviour
             {
                 _basicVertexPositions[basicVertexChange.Key] = new Vector3(basicVertexChange.Value.Position.X, basicVertexChange.Value.Position.Y, basicVertexChange.Value.Position.Z);
                 _basicVertexNormals[basicVertexChange.Key] = new Vector3(basicVertexChange.Value.Normal.X, basicVertexChange.Value.Normal.Y, basicVertexChange.Value.Normal.Z);
-            }
-        }
-    }
-
-    private void SaveBonesToSelectedBlendshape()
-    {
-        if (_selectedblendShapeName != null)
-        {
-            foreach (var bone in _bones)
-            {
-                var boneData = new BoneData()
-                {
-                    LocalPosition = bone.localPosition,
-                    LocalRotation = bone.localRotation,
-                    LocalScale = bone.localScale
-                };
-
-                var blendshapeData = _blendshapeData[_selectedblendShapeName];
-
-                var isSavingBoneDefault = boneData.Equals(_defaultBones[bone.name]);
-                if (isSavingBoneDefault)
-                    blendshapeData.Bones.Remove(bone.name);
-                else
-                    blendshapeData.Bones[bone.name] = boneData;
             }
         }
     }
@@ -325,11 +329,11 @@ public class MainController : MonoBehaviour
         var defaultBone = _defaultBones[bone.name];
 
         bone.localPosition = defaultBone.LocalPosition;
-        bone.localRotation = defaultBone.LocalRotation;
-        bone.localScale = defaultBone.LocalScale;
+        bone.localRotation = Quaternion.identity;
+        bone.localScale = Vector3.one;
     }
 
-    private void SetBonesFromSelectedBlendshape()
+    private void UpdateBonesFromSelectedBlendshape()
     {
         if (_selectedblendShapeName != null)
         {
@@ -337,13 +341,41 @@ public class MainController : MonoBehaviour
 
             foreach (var bone in _bones)
             {
+                var defaultBone = _defaultBones[bone.name];
+
                 BoneData boneData;
                 if (bones.TryGetValue(bone.name, out boneData))
                 {
-                    bone.localPosition = boneData.LocalPosition;
+                    bone.localPosition = defaultBone.LocalPosition + boneData.LocalPosition;
                     bone.localRotation = boneData.LocalRotation;
                     bone.localScale = boneData.LocalScale;
                 }
+            }
+        }
+    }
+
+    private void UpdateBonesToSelectedBlendshape()
+    {
+        if (_selectedblendShapeName != null)
+        {
+            foreach (var bone in _bones)
+            {
+                var defaultBone = _defaultBones[bone.name];
+
+                var boneData = new BoneData()
+                {
+                    LocalPosition = bone.localPosition - defaultBone.LocalPosition,
+                    LocalRotation = bone.localRotation,
+                    LocalScale = bone.localScale
+                };
+
+                var blendshapeData = _blendshapeData[_selectedblendShapeName];
+
+                var isSavingBoneDefault = boneData.Equals(_identityBone);
+                if (isSavingBoneDefault)
+                    blendshapeData.Bones.Remove(bone.name);
+                else
+                    blendshapeData.Bones[bone.name] = boneData;
             }
         }
     }
@@ -367,6 +399,7 @@ public class MainController : MonoBehaviour
                 Name = x.Name,
                 Bones = ConvertBlendshapeBonesToFile(x.Bones)
             })
+            .Where(x => x.Bones.Length > 0)
             .ToArray();
     }
 
@@ -381,16 +414,19 @@ public class MainController : MonoBehaviour
 
     private WowVrcFileData.BlendshapeData.BoneData[] ConvertBlendshapeBonesToFile(Dictionary<string, BoneData> bones)
     {
-        return bones.Select(bone => new WowVrcFileData.BlendshapeData.BoneData()
-        {
-            Name = bone.Key,
-            LocalTransform = new WowTransform()
+        return bones
+            .Where(x => !x.Value.Equals(_identityBone))
+            .Select(bone => new WowVrcFileData.BlendshapeData.BoneData()
             {
-                position = new Vec3(bone.Value.LocalPosition.x, bone.Value.LocalPosition.y, bone.Value.LocalPosition.z),
-                rotation = new Vec4(bone.Value.LocalRotation.x, bone.Value.LocalRotation.y, bone.Value.LocalRotation.z, bone.Value.LocalRotation.w),
-                scale = new Vec3(bone.Value.LocalScale.x, bone.Value.LocalScale.y, bone.Value.LocalScale.z)
-            }
-        }).ToArray();
+                Name = bone.Key,
+                LocalTransform = new WowTransform()
+                {
+                    position = new Vec3(bone.Value.LocalPosition.x, bone.Value.LocalPosition.y, bone.Value.LocalPosition.z),
+                    rotation = new Vec4(bone.Value.LocalRotation.x, bone.Value.LocalRotation.y, bone.Value.LocalRotation.z, bone.Value.LocalRotation.w),
+                    scale = new Vec3(bone.Value.LocalScale.x, bone.Value.LocalScale.y, bone.Value.LocalScale.z)
+                }
+            })
+            .ToArray();
     }
 
     private Dictionary<string, BoneData> ConvertBlendshapeBonesFromFile(WowVrcFileData.BlendshapeData.BoneData[] bones)
@@ -403,7 +439,7 @@ public class MainController : MonoBehaviour
         });
     }
 
-    private readonly string[] _blendshapeNames = new []
+    private static readonly string[] _blendshapeNames = new []
     {
         "CATS.AA",
         "CATS.OH",
@@ -432,6 +468,111 @@ public class MainController : MonoBehaviour
         "vrc.v_ou"
     };
 
+    private static readonly Dictionary<string, Dictionary<string, float>> _catsVisemeMixerData = new Dictionary<string, Dictionary<string, float>>
+    {
+        {
+            "vrc.v_aa", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.9998f }
+            }
+        },
+        {
+            "vrc.v_ch", new Dictionary<string, float>
+            {
+                { "CATS.CH", 0.9996f }
+            }
+        },
+        {
+            "vrc.v_dd", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.3f },
+                { "CATS.CH", 0.7f }
+            }
+        },
+        {
+            "vrc.v_e", new Dictionary<string, float>
+            {
+                { "CATS.CH", 0.7f },
+                { "CATS.OH", 0.3f }
+            }
+        },
+        {
+            "vrc.v_ff", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.2f },
+                { "CATS.CH", 0.4f }
+            }
+        },
+        {
+            "vrc.v_ih", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.5f },
+                { "CATS.CH", 0.2f }
+            }
+        },
+        {
+            "vrc.v_kk", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.7f },
+                { "CATS.CH", 0.4f }
+            }
+        },
+        {
+            "vrc.v_nn", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.2f },
+                { "CATS.CH", 0.7f }
+            }
+        },
+        {
+            "vrc.v_oh", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.2f },
+                { "CATS.OH", 0.8f }
+            }
+        },
+        {
+            "vrc.v_ou", new Dictionary<string, float>
+            {
+                { "CATS.OH", 0.9994f }
+            }
+        },
+        {
+            "vrc.v_pp", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.0004f },
+                { "CATS.OH", 0.0004f }
+            }
+        },
+        {
+            "vrc.v_rr", new Dictionary<string, float>
+            {
+                { "CATS.CH", 0.5f },
+                { "CATS.OH", 0.3f }
+            }
+        },
+        {
+            "vrc.v_sil", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.0002f },
+                { "CATS.CH", 0.0002f }
+            }
+        },
+        {
+            "vrc.v_ss", new Dictionary<string, float>
+            {
+                { "CATS.CH", 0.8f }
+            }
+        },
+        {
+            "vrc.v_th", new Dictionary<string, float>
+            {
+                { "CATS.AA", 0.4f },
+                { "CATS.OH", 0.15f }
+            }
+        }
+    };
+
     private Dictionary<Transform, Button> _bonesToButtons;
 
     // Ключ - название blendshape
@@ -447,6 +588,13 @@ public class MainController : MonoBehaviour
     /// Тут есть только кости, которые могут подвергнуться трансформации (из списка костей слева то есть)
     /// </summary>
     private Dictionary<string, BoneData> _defaultBones;
+
+    private BoneData _identityBone = new BoneData()
+    {
+        LocalPosition = Vector3.zero,
+        LocalRotation = Quaternion.identity,
+        LocalScale = Vector3.one
+    };
 
     private Vector3[] _defaultVertexPositions;
     private Vector3[] _defaultVertexNormals;
@@ -492,9 +640,10 @@ public class MainController : MonoBehaviour
             if (other == null)
                 return false;
 
-            return LocalPosition == other.LocalPosition
-                && LocalRotation == other.LocalRotation
-                && LocalScale == other.LocalScale;
+            return
+                (Mathf.Approximately(LocalPosition.x, other.LocalPosition.x) && Mathf.Approximately(LocalPosition.y, other.LocalPosition.y) && Mathf.Approximately(LocalPosition.z, other.LocalPosition.z)) &&
+                (Mathf.Approximately(LocalRotation.x, other.LocalRotation.x) && Mathf.Approximately(LocalRotation.y, other.LocalRotation.y) && Mathf.Approximately(LocalRotation.z, other.LocalRotation.z) && Mathf.Approximately(LocalRotation.w, other.LocalRotation.w)) &&
+                (Mathf.Approximately(LocalScale.x, other.LocalScale.x) && Mathf.Approximately(LocalScale.y, other.LocalScale.y) && Mathf.Approximately(LocalScale.z, other.LocalScale.z));
         }
 
         public override int GetHashCode() => base.GetHashCode();
