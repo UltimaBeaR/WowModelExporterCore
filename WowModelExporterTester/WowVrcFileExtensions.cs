@@ -48,7 +48,7 @@ namespace WowModelExporterTester
                 }
             }
 
-            PrepareForVRChatUtility.PrepareObject(characterWowObject, true, true);
+            PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true);
 
             var fbxExporter = new Exporter();
 
