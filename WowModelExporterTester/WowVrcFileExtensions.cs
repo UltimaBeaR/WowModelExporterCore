@@ -29,22 +29,25 @@ namespace WowModelExporterTester
 
             // ToDo: после запекания идет привязка на текущие индексы вершин. Если вершины будут перестроены, надо тут тоже обновить индексы 
             var bakedBlendshapes = new Dictionary<string, Dictionary<int, BlendShapeUtility.Vertex>>();
-            foreach (var blendshape in file.Blendshapes)
+            if (file.Blendshapes != null)
             {
-                if (blendshape.Bones.Length > 0)
+                foreach (var blendshape in file.Blendshapes)
                 {
-                    if (blendshape.Name == WowVrcFileData.BlendshapeData.basicBlendshapeName)
+                    if (blendshape.Bones.Length > 0)
                     {
-                        var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones);
-
-                        foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
+                        if (blendshape.Name == WowVrcFileData.BlendshapeData.basicBlendshapeName)
                         {
-                            characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.Position.X, basicBakedBlendshapeElement.Value.Position.Y, basicBakedBlendshapeElement.Value.Position.Z);
-                            characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Normal = new Vec3(basicBakedBlendshapeElement.Value.Normal.X, basicBakedBlendshapeElement.Value.Normal.Y, basicBakedBlendshapeElement.Value.Normal.Z);
+                            var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones);
+
+                            foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
+                            {
+                                characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.Position.X, basicBakedBlendshapeElement.Value.Position.Y, basicBakedBlendshapeElement.Value.Position.Z);
+                                characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Normal = new Vec3(basicBakedBlendshapeElement.Value.Normal.X, basicBakedBlendshapeElement.Value.Normal.Y, basicBakedBlendshapeElement.Value.Normal.Z);
+                            }
                         }
+                        else
+                            bakedBlendshapes.Add(blendshape.Name, BlendShapeUtility.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones));
                     }
-                    else
-                        bakedBlendshapes.Add(blendshape.Name, BlendShapeUtility.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones));
                 }
             }
 
