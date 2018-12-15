@@ -30,8 +30,8 @@ namespace WowModelExporterCore
             if (ensureEyeVisemesExist)
             {
                 // добавляем в блендшейп одну вершину. Если в блендшейпе вообще не будет изменений - eye tracking все равно не будет работать, как будто блендшейпа не существует
-                var pos = wowObject.Mesh.Vertices[0].Position;
-                var normal = wowObject.Mesh.Vertices[0].Normal;
+                var pos = wowObject.MainMesh.Vertices[0].Position;
+                var normal = wowObject.MainMesh.Vertices[0].Normal;
 
                 if (!bakedBlendshapes.ContainsKey("vrc.blink_left"))
                     bakedBlendshapes.Add("vrc.blink_left", new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } });

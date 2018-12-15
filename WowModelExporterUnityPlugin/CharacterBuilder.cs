@@ -70,8 +70,8 @@ namespace WowModelExporterUnityPlugin
 
         private GameObject CreateGameObjectForCharacterWowObject(string name, Transform parent, WowObject characterWowObject, out GameObject rootBoneGo)
         {
-            var mesh = CreateMeshFromWowMeshWithMaterials(characterWowObject.Mesh);
-            var materials = CreateMaterialsFromWowMeshWithMaterials(characterWowObject.Mesh);
+            var mesh = CreateMeshFromWowMeshWithMaterials(characterWowObject.MainMesh);
+            var materials = CreateMaterialsFromWowMeshWithMaterials(characterWowObject.MainMesh);
 
             var go = new GameObject(name);
             go.transform.position = new Vector3(characterWowObject.GlobalPosition.X, characterWowObject.GlobalPosition.Y, characterWowObject.GlobalPosition.Z);

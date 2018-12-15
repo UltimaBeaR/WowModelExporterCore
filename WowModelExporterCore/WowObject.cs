@@ -22,7 +22,7 @@ namespace WowModelExporterCore
 
             GlobalPosition = new Vec3();
 
-            Mesh = null;
+            Meshes = new List<WowMeshWithMaterials>(1);
 
             Bones = null;
         }
@@ -32,7 +32,11 @@ namespace WowModelExporterCore
 
         public Vec3 GlobalPosition { get; set; }
 
-        public WowMeshWithMaterials Mesh { get; set; }
+        // По сути "body" меш - самый первый в списке
+        public WowMeshWithMaterials MainMesh
+            => Meshes.FirstOrDefault();
+
+        public List<WowMeshWithMaterials> Meshes { get; set; }
 
         /// <summary>
         /// Все кости в виде массива. Позиция в массиве это <see cref="WowBone.Index"/>
@@ -84,36 +88,39 @@ namespace WowModelExporterCore
             // к костям этим либо вообще отдельно скелет хранить и в нем уже список мешей/wowobject-ов)
 
             // Меняем веса у вершин в соответствии с новой иерархией костей
-            foreach (var vertex in Mesh.Vertices)
+            foreach (var mesh in Meshes)
             {
-                boneIndexes = vertex.BoneIndexes;
-                boneWeights = vertex.BoneWeights;
-                changed = false;
-
-                for (int i = 0; i < 4; i++)
+                foreach (var vertex in mesh.Vertices)
                 {
-                    if (boneIndexes[i] == boneIndex)
+                    boneIndexes = vertex.BoneIndexes;
+                    boneWeights = vertex.BoneWeights;
+                    changed = false;
+
+                    for (int i = 0; i < 4; i++)
                     {
-                        if (boneToRemove.ParentBone != null)
-                            boneIndexes[i] = boneToRemove.ParentBone.Index;
-                        else if (boneToRemoveSingleChild != null)
-                            boneIndexes[i] = boneToRemoveSingleChild.Index;
-                        else
+                        if (boneIndexes[i] == boneIndex)
                         {
-                            boneIndexes[i] = 0;
-                            boneWeights[i] = 0;
+                            if (boneToRemove.ParentBone != null)
+                                boneIndexes[i] = boneToRemove.ParentBone.Index;
+                            else if (boneToRemoveSingleChild != null)
+                                boneIndexes[i] = boneToRemoveSingleChild.Index;
+                            else
+                            {
+                                boneIndexes[i] = 0;
+                                boneWeights[i] = 0;
+                            }
+
+                            changed = true;
                         }
-                            
-                        changed = true;
                     }
-                }
 
-                if (changed)
-                {
-                    boneWeights.NormalizeSum();
+                    if (changed)
+                    {
+                        boneWeights.NormalizeSum();
 
-                    vertex.BoneIndexes = boneIndexes;
-                    vertex.BoneWeights = boneWeights;
+                        vertex.BoneIndexes = boneIndexes;
+                        vertex.BoneWeights = boneWeights;
+                    }
                 }
             }
 
@@ -145,32 +152,36 @@ namespace WowModelExporterCore
             // далее нормализирую веса в каждой вершине. Индексы костей при этом сортируются в порядке возрастания (в конце идут неиспользуемые кости с индексом и весом 0)
 
             var indexedWeights = new Dictionary<byte, float>();
-            foreach (var vertex in Mesh.Vertices)
+
+            foreach (var mesh in Meshes)
             {
-                int i;
-
-                indexedWeights.Clear();
-                for (i = 0; i < 4; i++)
-                    indexedWeights[vertex.BoneIndexes[i]] = 0f;
-
-                for (i = 0; i < 4; i++)
-                    indexedWeights[vertex.BoneIndexes[i]] += vertex.BoneWeights[i];
-
-                var newIndexes = new ByteVec4();
-                var newWeights = new Vec4();
-
-                i = 0;
-                foreach (var indexedWeight in indexedWeights.OrderBy(x => x.Key))
+                foreach (var vertex in mesh.Vertices)
                 {
-                    newIndexes[i] = indexedWeight.Key;
-                    newWeights[i] = indexedWeight.Value;
-                    i++;
+                    int i;
+
+                    indexedWeights.Clear();
+                    for (i = 0; i < 4; i++)
+                        indexedWeights[vertex.BoneIndexes[i]] = 0f;
+
+                    for (i = 0; i < 4; i++)
+                        indexedWeights[vertex.BoneIndexes[i]] += vertex.BoneWeights[i];
+
+                    var newIndexes = new ByteVec4();
+                    var newWeights = new Vec4();
+
+                    i = 0;
+                    foreach (var indexedWeight in indexedWeights.OrderBy(x => x.Key))
+                    {
+                        newIndexes[i] = indexedWeight.Key;
+                        newWeights[i] = indexedWeight.Value;
+                        i++;
+                    }
+
+                    newWeights.NormalizeSum();
+
+                    vertex.BoneIndexes = newIndexes;
+                    vertex.BoneWeights = newWeights;
                 }
-
-                newWeights.NormalizeSum();
-
-                vertex.BoneIndexes = newIndexes;
-                vertex.BoneWeights = newWeights;
             }
 
             // Перестраиваем массив костей, удаляя пустые костаи и заменяя старые индексы в вершинах на новые

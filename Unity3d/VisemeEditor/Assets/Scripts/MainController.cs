@@ -286,7 +286,7 @@ public class MainController : MonoBehaviour
         if (_selectedblendShapeName == WowVrcFileData.BlendshapeData.basicBlendshapeName)
         {
             var basicVertexChanges = BlendShapeUtility.BakeBlendShape(
-                _character.WowObject.Mesh.Vertices,
+                _character.WowObject.MainMesh.Vertices,
                 _character.WowObject.Bones,
                 ConvertBlendshapeBonesToFile(_blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName].Bones));
 

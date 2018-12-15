@@ -16,7 +16,9 @@ namespace WowModelExporterCore
 
             var characterObject = new WowObject();
 
-            characterObject.Mesh = MakeMeshFromWhModel(whCharacterModel);
+            // Добавляем MainMesh
+            characterObject.Meshes.Add(MakeMeshFromWhModel(whCharacterModel));
+
             characterObject.Bones = MakeBoneHierarchyFromWhModel(whCharacterModel);
             characterObject.OptimizeBones();
             TranslateBonePositionsFromGlobalToLocal(characterObject);
@@ -30,7 +32,8 @@ namespace WowModelExporterCore
                     Parent = characterObject
                 };
 
-                hornsObject.Mesh = MakeMeshFromWhModel(whCharacterModel.HornsModel);
+                // MainMesh (не факт что я вообще тут правильно делаю, т.к. еще не тестил)
+                hornsObject.Meshes.Add(MakeMeshFromWhModel(whCharacterModel.HornsModel));
 
                 characterObject.Children.Add(hornsObject);
             }
@@ -44,7 +47,8 @@ namespace WowModelExporterCore
                     Parent = characterObject
                 };
 
-                mountObject.Mesh = MakeMeshFromWhModel(whCharacterModel.Mount);
+                // MainMesh (не факт что я вообще тут правильно делаю, т.к. еще не тестил)
+                mountObject.Meshes.Add(MakeMeshFromWhModel(whCharacterModel.Mount));
 
                 characterObject.Children.Add(mountObject);
             }
@@ -63,68 +67,80 @@ namespace WowModelExporterCore
                     if (whItemModel?.Model == null)
                         continue;
 
-                    // Был такой случай (чест)
-                    if (whItemModel.Attachment == null)
-                        continue;
-
-                    var itemPosition = Vec3.ConvertPositionFromWh(whItemModel.Attachment.Position);
-
-                    var itemObject = new WowObject()
+                    if (whItemModel.Bone > -1 && whItemModel.Bone < whCharacterModel.Bones.Length)
                     {
-                        Parent = characterObject,
-                        GlobalPosition = itemPosition,
-                    };
+                        var itemPosition = Vec3.ConvertPositionFromWh(whItemModel.Attachment.Position);
 
-                    itemObject.Mesh = MakeMeshFromWhModel(whItemModel.Model);
-
-                    // Если у итема есть кость, к которой можно прикрепиться
-                    if (itemObject.Parent != null && whItemModel.Attachment.Bone >= 0)
-                    {
-                        var parentAttachmentBone = itemObject.Parent.Bones[whItemModel.Attachment.Bone];
-                        var whParentAttachmentBone = whItemModel.Model.Parent.Bones[whItemModel.Attachment.Bone];
-
-                        // записываем объект этого итема в кость, к которой крепимся(у родительского объекта)
-                        parentAttachmentBone.AttachedWowObjects.Add(itemObject);
-
-                        // меняем данные о костях в вершинах так итема так, чтобы при привязке к скелету родителя этот итем двигался вместе с костью
-                        // (при этом в иерархии объектов он не будет в ноде кости, а будет на том же уровне что и родительский объект, к скелету которого мы привязываем итем)
-
-                        itemObject.Mesh.ApplyTransform(
-                            whParentAttachmentBone.LastUpdatedTranslation,
-                            whParentAttachmentBone.LastUpdatedRotation,
-                            whParentAttachmentBone.LastUpdatedScale);
-
-                        var eachVertexItemBoneIndexes = new ByteVec4((byte)parentAttachmentBone.Index, 0, 0, 0);
-                        var eachVertexItemBoneWeights = new Vec4(1, 0, 0, 0);
-
-                        foreach (var vertex in itemObject.Mesh.Vertices)
+                        var itemObject = new WowObject()
                         {
-                            vertex.BoneIndexes = eachVertexItemBoneIndexes;
-                            vertex.BoneWeights = eachVertexItemBoneWeights;
-                        }
-                    }
+                            Parent = characterObject,
+                            GlobalPosition = itemPosition,
+                        };
 
-                    characterObject.Children.Add(itemObject);
+                        // MainMesh - по сути он использоваться будет тлолько в AttachedWowObjects кости
+                        itemObject.Meshes.Add(MakeMeshFromWhModel(whItemModel.Model));
 
-                    if (whItem.Visual?.Models != null && whItemModel.Model.Loaded)
-                    {
-                        foreach (var visual in whItem.Visual.Models)
+                        // Если у итема есть кость, к которой можно прикрепиться
+                        if (itemObject.Parent != null && whItemModel.Attachment.Bone >= 0)
                         {
-                            if (visual != null)
+                            var parentAttachmentBone = itemObject.Parent.Bones[whItemModel.Attachment.Bone];
+                            var whParentAttachmentBone = whItemModel.Model.Parent.Bones[whItemModel.Attachment.Bone];
+
+                            // записываем объект этого итема в кость, к которой крепимся(у родительского объекта)
+                            parentAttachmentBone.AttachedWowObjects.Add(itemObject);
+
+                            // меняем данные о костях в вершинах так итема так, чтобы при привязке к скелету родителя этот итем двигался вместе с костью
+                            // (при этом в иерархии объектов он не будет в ноде кости, а будет на том же уровне что и родительский объект, к скелету которого мы привязываем итем)
+
+                            itemObject.MainMesh.ApplyTransform(
+                                whParentAttachmentBone.LastUpdatedTranslation,
+                                whParentAttachmentBone.LastUpdatedRotation,
+                                whParentAttachmentBone.LastUpdatedScale);
+
+                            var eachVertexItemBoneIndexes = new ByteVec4((byte)parentAttachmentBone.Index, 0, 0, 0);
+                            var eachVertexItemBoneWeights = new Vec4(1, 0, 0, 0);
+
+                            foreach (var vertex in itemObject.MainMesh.Vertices)
                             {
-                                var visualPosition = Vec3.ConvertPositionFromWh(visual.Attachment.Position);
-
-                                var visualObject = new WowObject()
-                                {
-                                    Parent = characterObject,
-                                    GlobalPosition = visualPosition
-                                };
-
-                                visualObject.Mesh = MakeMeshFromWhModel(visual.Model);
-
-                                characterObject.Children.Add(visualObject);
+                                vertex.BoneIndexes = eachVertexItemBoneIndexes;
+                                vertex.BoneWeights = eachVertexItemBoneWeights;
                             }
                         }
+
+                        characterObject.Children.Add(itemObject);
+
+                        if (whItem.Visual?.Models != null && whItemModel.Model.Loaded)
+                        {
+                            foreach (var visual in whItem.Visual.Models)
+                            {
+                                if (visual != null)
+                                {
+                                    var visualPosition = Vec3.ConvertPositionFromWh(visual.Attachment.Position);
+
+                                    var visualObject = new WowObject()
+                                    {
+                                        Parent = characterObject,
+                                        GlobalPosition = visualPosition
+                                    };
+
+                                    // MainMesh (не факт что я вообще тут правильно делаю, т.к. еще не тестил)
+                                    visualObject.Meshes.Add(MakeMeshFromWhModel(visual.Model));
+
+                                    characterObject.Children.Add(visualObject);
+                                }
+                            }
+                        }
+                    }
+                    else if (whItemModel.Bone == -1)
+                    {
+                        var itemObject = new WowObject()
+                        {
+                            Parent = characterObject,
+                            GlobalPosition = new Vec3(0, 0, 0),
+                        };
+
+                        // На этот раз добавляем не в MainMesh а делаем дополнительный меш, таким образом этот меш будет исползовать те же кости что и основной
+                        characterObject.Meshes.Add(MakeMeshFromWhModel(whItemModel.Model));
                     }
                 }
             }

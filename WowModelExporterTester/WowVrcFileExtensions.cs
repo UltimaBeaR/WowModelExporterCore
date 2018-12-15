@@ -37,16 +37,16 @@ namespace WowModelExporterTester
                     {
                         if (blendshape.Name == WowVrcFileData.BlendshapeData.basicBlendshapeName)
                         {
-                            var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones);
+                            var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones);
 
                             foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
                             {
-                                characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.Position.X, basicBakedBlendshapeElement.Value.Position.Y, basicBakedBlendshapeElement.Value.Position.Z);
-                                characterWowObject.Mesh.Vertices[basicBakedBlendshapeElement.Key].Normal = new Vec3(basicBakedBlendshapeElement.Value.Normal.X, basicBakedBlendshapeElement.Value.Normal.Y, basicBakedBlendshapeElement.Value.Normal.Z);
+                                characterWowObject.MainMesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.Position.X, basicBakedBlendshapeElement.Value.Position.Y, basicBakedBlendshapeElement.Value.Position.Z);
+                                characterWowObject.MainMesh.Vertices[basicBakedBlendshapeElement.Key].Normal = new Vec3(basicBakedBlendshapeElement.Value.Normal.X, basicBakedBlendshapeElement.Value.Normal.Y, basicBakedBlendshapeElement.Value.Normal.Z);
                             }
                         }
                         else
-                            bakedBlendshapes.Add(blendshape.Name, BlendShapeUtility.BakeBlendShape(characterWowObject.Mesh.Vertices, characterWowObject.Bones, blendshape.Bones));
+                            bakedBlendshapes.Add(blendshape.Name, BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones));
                     }
                 }
             }

@@ -26,6 +26,9 @@ namespace WowheadModelLoader
             //self.tmpVec = vec3.create();
             //self.tmpQuat = quat.create();
             //self.tmpMat = mat4.create();
+
+            // Я сделал. -1 значит что эта переменная будет игнорироваться при Update модели
+            IndexInParentModel = -1;
         }
 
         public WhModel Model { get; set; }
@@ -69,6 +72,10 @@ namespace WowheadModelLoader
         public Vec3? LastUpdatedTranslation { get; set; }
         public Vec4? LastUpdatedRotation { get; set; }
         public Vec3? LastUpdatedScale { get; set; }
+
+        // Это я добавил - означает индекс кости в родительской модели к которому привязана эта кость.
+        // Нужно для варианта итема с ремаппингом индексов (незнаю зачем они сделали такое извращение)
+        public int IndexInParentModel { get; set; }
 
         public void Hide()
         {

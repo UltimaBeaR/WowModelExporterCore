@@ -284,6 +284,9 @@ namespace WowheadModelLoader
         public int Bone { get; set; }
         public WhAttachment Attachment { get; set; }
 
+        // Я добавил. Нужно чтоб видеть когда индексы костей были заремаплены на родителя (см. использование)
+        public bool BoneIndexesRemapped { get; set; }
+
         public void Update()
         {
             if (!Loaded || TexUnits == null)
@@ -395,6 +398,31 @@ namespace WowheadModelLoader
                     //    self.updateBounds()
                     //}
                 }
+            }
+
+            // Я сделал - проходим по всем вершинам и делаем ремаппинг индексов костей на индексы костей родителя (в случае если это модель итема. родителем будет модель персонажа)
+            // ремаппинг индекса делается только если в кости указано IndexInParentModel != -1
+
+            if (Bones != null && Vertices != null && !BoneIndexesRemapped)
+            {
+                var numVerts = Vertices.Length;
+
+                for (int i = 0; i < numVerts; i++)
+                {
+                    var boneIndexes = Vertices[i].Bones;
+
+                    for (int boneNum = 0; boneNum < 4; boneNum++)
+                    {
+                        var boneIndex = boneIndexes[boneNum];
+
+                        if (Bones[boneIndex].IndexInParentModel != -1)
+                            boneIndexes[boneNum] = (byte)Bones[boneIndex].IndexInParentModel;
+                    }
+
+                    Vertices[i].Bones = boneIndexes;
+                }
+
+                BoneIndexesRemapped = true;
             }
         }
 
@@ -1445,6 +1473,10 @@ namespace WowheadModelLoader
                                 if (!boneMap.TryGetValue(bone.Id, out var pi))
                                     continue;
 
+                                // Я сделал вот это вместо гимора с матрицами. прописываю индекс из костей родителя (по сути это в кости модели character) в костях итема,
+                                // чтобы можно было апдейтнуть индексы костей в вершинах итема.
+                                ibones[i].IndexInParentModel = pi;
+
                                 //var dst = ibones[i].matrix;
                                 //var src = self.bones[pi].matrix;
 
@@ -1456,7 +1488,10 @@ namespace WowheadModelLoader
                             //mat4.identity(self.tmpMat);
                             //item.models[j].model.setMatrix(self.matrix, self.tmpMat);
 
+                            // В этом методе также будет мой код по обновлению индексов костей в вершинах в случае если прописаны IndexInParentModel у этих костей (устанавливаю его тут чуть выше)
+                            // по умолчанию он -1 так что этот ремаппинг индексов коснется только этого случая с итемами
                             item.Models[j].Model.Update();
+
                             item.Models[j].Model.EmulateDraw(false);
                         }
                     }
