@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+// На данный момент весь код из этой библиотеки совместим с 2018.11.18 версией viewer.min.js
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
