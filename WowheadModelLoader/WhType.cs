@@ -13,7 +13,6 @@
         OBJECT = 64,
         ARMOR = 128,
         PATH = 256,
-        ITEMVISUAL = 512,
-        COLLECTION = 1024
+        ITEMVISUAL = 512
     }
 }

@@ -65,15 +65,16 @@ namespace WowModelExporterTester
         private string GetViewerScriptReplacement()
         {
             // ToDo: временно так - будет появляться диалог при открытии, потом поменять, чтобы этот файл замены скрипта брался из конфига или еще как-то
+            // пока закомментил это
 
-            var dialog = new OpenFileDialog()
-            {
-                Filter = "javascript file|*.js",
-                CheckFileExists = true
-            };
+            //var dialog = new OpenFileDialog()
+            //{
+            //    Filter = "javascript file|*.js",
+            //    CheckFileExists = true
+            //};
 
-            if (dialog.ShowDialog() == DialogResult.OK)
-                return System.IO.File.ReadAllText(dialog.FileName);
+            //if (dialog.ShowDialog() == DialogResult.OK)
+            //    return System.IO.File.ReadAllText(dialog.FileName);
 
             return null;
         }

@@ -46,6 +46,8 @@ namespace WowheadModelLoader
         public int ItemClass { get; set; }
         public int ItemSubClass { get; set; }
 
+        public WhModel CollectionModel { get; set; }
+
         public void Load(int id, WhRace race, WhGender gender)
         {
             Id = id;
@@ -66,8 +68,6 @@ namespace WowheadModelLoader
 
         private uint SelectBestTexture(WhJsonMeta meta, string textureid, WhGender gender, WhClass cls, WhRace race) {
             var textures = meta.TextureFiles[textureid];
-            if (textures.Length == 1)
-                return textures[0].FileDataId;
 
             for (int i = 0; i < textures.Length; i++)
             {
@@ -113,18 +113,22 @@ namespace WowheadModelLoader
                     var region = componentTexture.Key;
                     var texFile = SelectBestTexture(meta, componentTexture.Value, Model.Gender, Model.Class, Model.Race);
 
-                    var texture = new WhItemTexture()
+                    WhItemTexture texture = null;
+                    if (texFile != 0)
                     {
-                        Region = region,
-                        Gender = Model.Gender,
-                        File = texFile,
-                        Texture = null
-                    };
+                        texture = new WhItemTexture()
+                        {
+                            Region = region,
+                            Gender = Model.Gender,
+                            File = texFile,
+                            Texture = null
+                        };
 
-                    if (region != WhRegion.Base)
-                        texture.Texture = new WhTexture(Model, (int)region, texFile);
-                    else if (Slot == WhSlot.CAPE)
-                        Model.TextureOverrides[2] = new WhTexture(Model, 2, texFile);
+                        if (region != WhRegion.Base)
+                            texture.Texture = new WhTexture(Model, (int)region, texFile);
+                        else if (Slot == WhSlot.CAPE)
+                            Model.TextureOverrides[2] = new WhTexture(Model, 2, texFile);
+                    }
 
                     Textures.Add(texture);
                 }
@@ -167,7 +171,7 @@ namespace WowheadModelLoader
                         modelInfo.Shoulder = i + 1;
 
                     model.Model = new WhModel(Model.Opts, modelInfo, i, true);
-                    model.Model.LoadMeta(meta, modelInfo.Type, 0);
+                    model.Model.LoadMeta(meta, modelInfo.Type);
                     Models[i] = model;
                 }
             }
@@ -190,7 +194,7 @@ namespace WowheadModelLoader
                 };
 
                 model.Model = new WhModel(Model.Opts, modelInfo, 0, true);
-                model.Model.LoadMeta(meta, WhType.ARMOR, 0);
+                model.Model.LoadMeta(meta, WhType.ARMOR);
                 Models = new List<WhItemModel>() { model };
             }
 
@@ -199,31 +203,57 @@ namespace WowheadModelLoader
                 int componentIndex = 0;
                 if (Slot == WhSlot.HEAD)
                     componentIndex = 1;
+
                 if (meta.ComponentModels != null && meta.ComponentModels.ContainsKey(componentIndex.ToString()))
                 {
-                    var model = new WhItemModel()
-                    {
-                        Race = WhRace.Undefined2,
-                        Gender = WhGender.MALE,
-                        Bone = -1,
-                        Attachment = null,
-                        Model = null,
-                        IsCollection = true
-                    };
+                    var modelId = meta.ComponentModels[componentIndex.ToString()];
 
-                    var modelInfo = new WhModelInfo()
-                    {
-                        Type = WhGlobal.SlotType[Slot],
-                        Id = Id.ToString(),
-                        Parent = Model
-                    };
+                    if (modelId != 0 && meta.ModelFiles.ContainsKey(modelId)) {
+                        var modelInfo = new WhModelInfo() {
+                            Type = WhGlobal.SlotType[Slot],
+                            Id = Id.ToString(),
+                            Parent = Model
+                        };
 
-                    model.Model = new WhModel(Model.Opts, modelInfo, 0, true);
-                    model.Model.LoadMeta(meta, WhType.COLLECTION, componentIndex);
-                    if (Models == null)
-                        Models = new List<WhItemModel>() { model };
-                    else
-                        Models.Add(model);
+                        var model = new WhModel(Model.Opts, modelInfo, 0, true);
+
+                        model.Meta = meta;
+                        model.IsDirty = true;
+
+                        var race = WhRace.HUMAN;
+                        var gender = WhGender.MALE;
+                        var cls = WhClass.WARRIOR;
+
+                        if (Model != null)
+                        {
+                            race = Model.Race;
+                            gender = Model.Gender;
+                            cls = Model.Class;
+                        }
+
+                        var modelFile = model.SelectBestModel(modelId, gender, cls, race);
+                        if (modelFile != 0)
+                        {
+                            if (Model != null) {
+                                if (!Model.CollectionModels.ContainsKey(modelFile))
+                                {
+                                    Model.CollectionModels[modelFile] = model;
+                                    CollectionModel = model;
+                                    model._Load(WhType.PATH, modelFile.ToString());
+                                }
+                                else
+                                    CollectionModel = Model.CollectionModels[modelFile];
+                            }
+                            else
+                                model._Load(WhType.PATH, modelFile.ToString());
+
+                            if (meta.Textures != null)
+                            {
+                                foreach (var texturePair in meta.Textures)
+                                    model.TextureOverrides[texturePair.Key] = new WhTexture(model, texturePair.Key, texturePair.Value);
+                            }
+                        }
+                    }
                 }
             }
 

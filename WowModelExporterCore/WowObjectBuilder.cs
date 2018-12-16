@@ -26,31 +26,23 @@ namespace WowModelExporterCore
             // Рога
 
             if (whCharacterModel.HornsModel != null)
-            {
-                var hornsObject = new WowObject()
-                {
-                    Parent = characterObject
-                };
-
-                // MainMesh (не факт что я вообще тут правильно делаю, т.к. еще не тестил)
-                hornsObject.Meshes.Add(MakeMeshFromWhModel(whCharacterModel.HornsModel));
-
-                characterObject.Children.Add(hornsObject);
-            }
+                AddAdditionalMeshToCharacterObject(characterObject, whCharacterModel.HornsModel);
 
             // Маунт
 
             if (whCharacterModel.Mount != null)
             {
-                var mountObject = new WowObject()
-                {
-                    Parent = characterObject
-                };
+                // ToDo: хз че тут  делать, создать его вообще отдельно?
 
-                // MainMesh (не факт что я вообще тут правильно делаю, т.к. еще не тестил)
-                mountObject.Meshes.Add(MakeMeshFromWhModel(whCharacterModel.Mount));
+                //var mountObject = new WowObject()
+                //{
+                //    Parent = characterObject
+                //};
 
-                characterObject.Children.Add(mountObject);
+                //// MainMesh (не факт что я вообще тут правильно делаю, т.к. еще не тестил)
+                //mountObject.Meshes.Add(MakeMeshFromWhModel(whCharacterModel.Mount));
+
+                //characterObject.Children.Add(mountObject);
             }
 
             // Итемы
@@ -107,8 +99,6 @@ namespace WowModelExporterCore
                             }
                         }
 
-                        characterObject.Children.Add(itemObject);
-
                         if (whItem.Visual?.Models != null && whItemModel.Model.Loaded)
                         {
                             foreach (var visual in whItem.Visual.Models)
@@ -125,27 +115,36 @@ namespace WowModelExporterCore
 
                                     // MainMesh (не факт что я вообще тут правильно делаю, т.к. еще не тестил)
                                     visualObject.Meshes.Add(MakeMeshFromWhModel(visual.Model));
-
-                                    characterObject.Children.Add(visualObject);
                                 }
                             }
                         }
                     }
                     else if (whItemModel.Bone == -1)
-                    {
-                        var itemObject = new WowObject()
-                        {
-                            Parent = characterObject,
-                            GlobalPosition = new Vec3(0, 0, 0),
-                        };
-
-                        // На этот раз добавляем не в MainMesh а делаем дополнительный меш, таким образом этот меш будет исползовать те же кости что и основной
-                        characterObject.Meshes.Add(MakeMeshFromWhModel(whItemModel.Model));
-                    }
+                        AddAdditionalMeshToCharacterObject(characterObject, whItemModel.Model);
                 }
             }
 
+            foreach (var collection in whCharacterModel.CollectionModels.Values)
+            {
+                if (collection == null)
+                    continue;
+
+                AddAdditionalMeshToCharacterObject(characterObject, collection);
+            }
+
             return characterObject;
+        }
+
+        private void AddAdditionalMeshToCharacterObject(WowObject characterObject, WhModel whModel)
+        {
+            var itemObject = new WowObject()
+            {
+                Parent = characterObject,
+                GlobalPosition = new Vec3(0, 0, 0),
+            };
+
+            // На этот раз добавляем не в MainMesh а делаем дополнительный меш, таким образом этот меш будет исползовать те же кости что и основной
+            characterObject.Meshes.Add(MakeMeshFromWhModel(whModel));
         }
 
         private WowMeshWithMaterials MakeMeshFromWhModel(WhModel whModel)

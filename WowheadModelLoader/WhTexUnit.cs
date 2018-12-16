@@ -87,7 +87,6 @@ namespace WowheadModelLoader
             //window.MeshLoadFilter && window.MeshLoadFilter(self);
 
             //var program = ZamModelViewer.Wow.ShaderTool.GetWowProgram(self.shaderId, self.opcount, self.renderFlag);
-            //WH.debug(self.shaderId, program);
             //self.program = program;
 
             for (int i = 0; i < Opcount; i++)

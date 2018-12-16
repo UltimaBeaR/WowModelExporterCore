@@ -18,7 +18,6 @@ namespace WowModelExporterCore
         public WowObject()
         {
             Parent = null;
-            Children = new List<WowObject>();
 
             GlobalPosition = new Vec3();
 
@@ -28,7 +27,6 @@ namespace WowModelExporterCore
         }
 
         public WowObject Parent { get; set; }
-        public List<WowObject> Children { get; set; }
 
         public Vec3 GlobalPosition { get; set; }
 

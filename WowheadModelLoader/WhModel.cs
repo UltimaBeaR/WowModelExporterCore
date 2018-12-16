@@ -62,6 +62,8 @@ namespace WowheadModelLoader
 
             Items = new Dictionary<WhSlot, WhItem>();
 
+            CollectionModels = new Dictionary<uint, WhModel>();
+
             NeedsCompositing = false;
 
             CustomFeatures = null;
@@ -212,6 +214,8 @@ namespace WowheadModelLoader
 
         public Dictionary<WhSlot, WhItem> Items { get; set; }
 
+        public Dictionary<uint, WhModel> CollectionModels { get; set; }
+
         public bool NeedsCompositing { get; set; }
 
         public WhCustomFeatures CustomFeatures { get; set; }
@@ -283,6 +287,8 @@ namespace WowheadModelLoader
 
         public int Bone { get; set; }
         public WhAttachment Attachment { get; set; }
+
+        public bool IsDirty { get; set; }
 
         // Я добавил. Нужно чтоб видеть когда индексы костей были заремаплены на родителя (см. использование)
         public bool BoneIndexesRemapped { get; set; }
@@ -402,6 +408,7 @@ namespace WowheadModelLoader
 
             // Я сделал - проходим по всем вершинам и делаем ремаппинг индексов костей на индексы костей родителя (в случае если это модель итема. родителем будет модель персонажа)
             // ремаппинг индекса делается только если в кости указано IndexInParentModel != -1
+            // По сути это имеет актуальность только для моделей-коллекций, которые были переданы в UpdateCollection(модель-коллекция)
 
             if (Bones != null && Vertices != null && !BoneIndexesRemapped)
             {
@@ -514,7 +521,7 @@ namespace WowheadModelLoader
             throw new NotImplementedException("selectBestModel for " + modelid + ", gender " + gender + ", class " + cls + ", race " + race + " failed!");
         }
 
-        public void LoadMeta(WhJsonMeta meta, WhType type, int componentIndex)
+        public void LoadMeta(WhJsonMeta meta, WhType type)
         {
             if (!Enum.IsDefined(typeof(WhType), type))
                 type = Model.Type;
@@ -648,33 +655,6 @@ namespace WowheadModelLoader
             }
             else if (type == WhType.ITEMVISUAL)
                 _Load(WhType.PATH, meta.GetEquipmentAsStringIds()[ModelIndex]);
-            else if (type == WhType.COLLECTION)
-            {
-                if (meta.ComponentModels.ContainsKey(componentIndex.ToString()))
-                {
-                    var race = WhRace.HUMAN;
-                    var gender = WhGender.MALE;
-                    var cls = WhClass.WARRIOR;
-
-                    if (Parent != null)
-                    {
-                        race = Parent.Race;
-                        gender = Parent.Gender;
-                        cls = Parent.Class;
-                    }
-
-                    model = meta.ComponentModels[componentIndex.ToString()];
-
-                    if (model != 0 && meta.ModelFiles[model] != null)
-                        _Load(WhType.PATH, SelectBestModel(model, gender, cls, race).ToString());
-                    if (meta.Textures != null) {
-                        foreach (var textureInMetaTextures in meta.Textures)
-                            TextureOverrides[textureInMetaTextures.Key] = new WhTexture(this, textureInMetaTextures.Key, textureInMetaTextures.Value);
-                    }
-                } else {
-                    System.Diagnostics.Debug.WriteLine("Attempt to load collection without valid model");
-                }
-            }
             else
             {
                 if (meta.Creature != null && meta.Creature.CreatureGeosetData != 0)
@@ -1360,37 +1340,7 @@ namespace WowheadModelLoader
                 CompositeTextures();
 
             if (HornsModel != null)
-            {
-                var hornsModel = HornsModel;
-                var boneMap = new Dictionary<uint, int>();
-                for (var i = 0; i < Bones.Length; i++)
-                {
-                    boneMap[Bones[i].Id] = i;
-                }
-
-                var ibones = hornsModel.Bones;
-                if (ibones != null)
-                {
-                    for (var i = 0; i < ibones.Length; i++)
-                    {
-                        var bone = ibones[i];
-                        if(!boneMap.TryGetValue(bone.Id, out var pi))
-                            continue;
-
-                        //var dst = ibones[i].matrix;
-                        //var src = self.bones[pi].matrix;
-
-                        ibones[i].SkipUpdate = true;
-
-                        //mat4.copy(dst, src)
-                    }
-
-                    //mat4.identity(self.tmpMat);
-                    //hornsModel.setMatrix(self.matrix, self.tmpMat);
-                    hornsModel.Update();
-                    //hornsModel.draw(false)
-                }
-            }
+                UpdateCollection(HornsModel);
 
             foreach (var item in Items.Values)
             {
@@ -1455,48 +1405,19 @@ namespace WowheadModelLoader
                         }
                     }
                     else if (item.Models[j] != null && item.Models[j].Model != null && item.Models[j].Bone == -1)
-                    {
-                        var boneMap = new Dictionary<uint, int>();
-
-                        for (var i = 0; i < Bones.Length; i++)
-                        {
-                            boneMap[Bones[i].Id] = i;
-                        }
-
-                        var ibones = item.Models[j].Model.Bones;
-
-                        if (ibones != null)
-                        {
-                            for (var i = 0; i < ibones.Length; i++)
-                            {
-                                var bone = ibones[i];
-                                if (!boneMap.TryGetValue(bone.Id, out var pi))
-                                    continue;
-
-                                // Я сделал вот это вместо гимора с матрицами. прописываю индекс из костей родителя (по сути это в кости модели character) в костях итема,
-                                // чтобы можно было апдейтнуть индексы костей в вершинах итема.
-                                ibones[i].IndexInParentModel = pi;
-
-                                //var dst = ibones[i].matrix;
-                                //var src = self.bones[pi].matrix;
-
-                                ibones[i].SkipUpdate = true;
-
-                                //mat4.copy(dst, src);
-                            }
-
-                            //mat4.identity(self.tmpMat);
-                            //item.models[j].model.setMatrix(self.matrix, self.tmpMat);
-
-                            // В этом методе также будет мой код по обновлению индексов костей в вершинах в случае если прописаны IndexInParentModel у этих костей (устанавливаю его тут чуть выше)
-                            // по умолчанию он -1 так что этот ремаппинг индексов коснется только этого случая с итемами
-                            item.Models[j].Model.Update();
-
-                            item.Models[j].Model.EmulateDraw(false);
-                        }
-                    }
+                        UpdateCollection(item.Models[j].Model);
                 }
             }
+
+            foreach (var collection in CollectionModels.Values)
+            {
+                if (collection == null)
+                    continue;
+
+                UpdateCollection(collection);
+            }
+
+            // ToDo: тут дальше еще particle и ribbon emmiters
         }
 
         public void SetGeometryVisibleCustom(WhJsonHairGeoset data)
@@ -1505,16 +1426,18 @@ namespace WowheadModelLoader
                 Geosets[data.geosetType] = (ushort)(data.geosetType * 100 + data.geosetID);
         }
 
-        public void SetGeometryVisible(ushort minId, ushort maxId, bool visible)
+        public bool SetGeometryVisible(ushort minId, ushort maxId, bool visible)
         {
-            if (TexUnits == null)
-                return;
+            if (TexUnits == null || TexUnits.Length == 0)
+                return false;
 
             foreach (var texUnit in TexUnits)
             {
                 if (texUnit.MeshId >= minId && texUnit.MeshId <= maxId)
                     texUnit.Show = visible;
             }
+
+            return true;
         }
 
         public void ApplyMonsterGeosets()
@@ -1535,6 +1458,69 @@ namespace WowheadModelLoader
                     }
                 }
             }
+        }
+
+        public void UpdateCollection(WhModel collection)
+        {
+            var boneMap = new Dictionary<uint, int>();
+
+            for (var i = 0; i < Bones.Length; i++)
+            {
+                boneMap[Bones[i].Id] = i;
+            }
+
+            var ibones = collection.Bones;
+
+            if (ibones != null)
+            {
+                for (var i = 0; i < ibones.Length; i++)
+                {
+                    var bone = ibones[i];
+                    if (!boneMap.TryGetValue(bone.Id, out var pi))
+                        continue;
+
+                    // Я сделал вот это вместо гимора с матрицами. прописываю индекс из костей родителя (по сути это в кости модели character) в костях итема,
+                    // чтобы можно было апдейтнуть индексы костей в вершинах итема.
+                    ibones[i].IndexInParentModel = pi;
+
+                    //var dst = ibones[i].matrix;
+                    //var src = self.bones[pi].matrix;
+
+                    ibones[i].SkipUpdate = true;
+
+                    //mat4.copy(dst, src);
+                }
+
+                //mat4.identity(self.tmpMat);
+                //item.models[j].model.setMatrix(self.matrix, self.tmpMat);
+
+                // В этом методе также будет мой код по обновлению индексов костей в вершинах в случае если прописаны IndexInParentModel у этих костей (устанавливаю его тут чуть выше)
+                // по умолчанию он -1 так что этот ремаппинг индексов коснется только этого случая с итемами
+                collection.Update();
+
+                collection.EmulateDraw(false);
+            }
+        }
+
+        private static void SetGeo(WhModel model, ushort meshId, ushort def)
+        {
+            if (model.TexUnits == null)
+                return;
+
+            var found = false;
+            for (var i = 0; i < model.TexUnits.Length; i++)
+            {
+                var texUnit = model.TexUnits[i];
+                if (texUnit.MeshId == meshId)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            meshId = found ? meshId : def;
+
+            model.SetGeometryVisible(meshId, meshId, true);
         }
 
         public void UpdateMeshes()
@@ -1602,7 +1588,7 @@ namespace WowheadModelLoader
             bool eyeGlowFlag = false;
             if (Class == WhClass.DEATHKNIGHT)
                 eyeGlowFlag = true;
-            else
+            else if (CustomFeatures != null)
             {
                 var faceSection = CustomFeatures.GetFeature(GetResolutionVariationType(WhCharVariationType.Face), FaceIndex, SkinIndex);
                 if (faceSection != null)
@@ -1637,47 +1623,117 @@ namespace WowheadModelLoader
 
             SetGeometryVisible((ushort)(1900 + tailGeoset), (ushort)(1900 + tailGeoset), true);
 
+            var helm = Items.GetOrDefault(WhSlot.HEAD);
+            var shirt = Items.GetOrDefault(WhSlot.SHIRT);
+            var chest = Items.GetOrDefault(WhSlot.CHEST);
+            var belt = Items.GetOrDefault(WhSlot.BELT);
+            var pants = Items.GetOrDefault(WhSlot.PANTS);
+            var boots = Items.GetOrDefault(WhSlot.BOOTS);
+            var wrist = Items.GetOrDefault(WhSlot.BRACERS);
+            var gloves = Items.GetOrDefault(WhSlot.HANDS);
+            var tabard = Items.GetOrDefault(WhSlot.TABARD);
+            var cloak = Items.GetOrDefault(WhSlot.CAPE);
+
+            foreach (var collectionModel in CollectionModels.Values)
+            {
+                if (collectionModel.IsDirty)
+                {
+                    if (collectionModel.SetGeometryVisible(0, 3000, false))
+                        collectionModel.IsDirty = false;
+                }
+            }
+
             foreach (var item in Items.Values)
             {
-                if (item.Models != null && item.Models.Count > 0)
+                if (item.CollectionModel != null)
                 {
-                    if (item.Slot == WhSlot.BOOTS) {
-                        item.Models[0].Model.SetGeometryVisible(0, 3000, false);
-                        item.Models[0].Model.SetGeometryVisible(501, 501, true);
-                        item.Models[0].Model.SetGeometryVisible(2001, 2001, true);
+                    var collectionModel = item.CollectionModel;
+
+                    ushort meshId;
+
+                    if (item.Slot == WhSlot.HEAD)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 2700 + item.GeosetGroup[0] : 2701);
+                        SetGeo(collectionModel, meshId, 2701);
+
+                        meshId = (ushort)(item.GeosetGroup[1] > 0 ? 2100 + item.GeosetGroup[1] : 2101);
+                        SetGeo(collectionModel, meshId, 2101);
                     }
-                    else if (item.Slot == WhSlot.HANDS) {
-                        item.Models[0].Model.SetGeometryVisible(0, 3000, false);
-                        item.Models[0].Model.SetGeometryVisible(401, 401, true);
+                    else if (item.Slot == WhSlot.SHOULDER)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 2600 + item.GeosetGroup[0] : 2601);
+                        SetGeo(collectionModel, meshId, 2601);
                     }
-                    else if (item.Slot == WhSlot.PANTS) {
-                        item.Models[0].Model.SetGeometryVisible(0, 3000, false);
-                        item.Models[0].Model.SetGeometryVisible(901, 901, true);
+                    else if (item.Slot == WhSlot.SHIRT)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 800 + item.GeosetGroup[0] : 801);
+                        SetGeo(collectionModel, meshId, 801);
+
+                        meshId = (ushort)(item.GeosetGroup[1] > 0 ? 1e3 + item.GeosetGroup[1] : 1001);
+                        SetGeo(collectionModel, meshId, 1001);
                     }
-                    else if (item.Slot == WhSlot.CHEST || item.Slot == WhSlot.ROBE) {
-                        item.Models[0].Model.SetGeometryVisible(0, 3000, false);
-                        item.Models[0].Model.SetGeometryVisible(1001, 1001, true);
-                        item.Models[0].Model.SetGeometryVisible(1101, 1101, true);
-                        item.Models[0].Model.SetGeometryVisible(1301, 1301, true);
+                    else if (item.Slot == WhSlot.CHEST || item.Slot == WhSlot.ROBE)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 800 + item.GeosetGroup[0] : 801);
+                        SetGeo(collectionModel, meshId, 801);
+
+                        meshId = (ushort)(item.GeosetGroup[1] > 0 ? 1e3 + item.GeosetGroup[1] : 1001);
+                        SetGeo(collectionModel, meshId, 1001);
+
+                        meshId = (ushort)(item.GeosetGroup[2] > 0 ? 1300 + item.GeosetGroup[2] : 1301);
+                        SetGeo(collectionModel, meshId, 1301);
+
+                        meshId = (ushort)(item.GeosetGroup[3] > 0 ? 2200 + item.GeosetGroup[3] : 2201);
+                        SetGeo(collectionModel, meshId, 2201);
+
+                        meshId = (ushort)(item.GeosetGroup[4] > 0 ? 2800 + item.GeosetGroup[4] : 2801);
+                        SetGeo(collectionModel, meshId, 2801);
                     }
-                    else if (item.Slot == WhSlot.HEAD) {
-                        if (item.Models.Count > 1) {
-                            item.Models[1].Model.SetGeometryVisible(0, 3000, false);
-                            item.Models[1].Model.SetGeometryVisible(2701, 2701, true);
-                        }
+                    else if (item.Slot == WhSlot.BELT)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 1800 + item.GeosetGroup[0] : 1801);
+                        SetGeo(collectionModel, meshId, 1801);
                     }
-                    else if (item.Slot == WhSlot.BELT) {
-                        for (int i = 0; i < item.Models.Count; i++) {
-                            if (item.Models[i].IsCollection) {
-                                item.Models[i].Model.SetGeometryVisible(0, 3000, false);
-                                item.Models[i].Model.SetGeometryVisible(1801, 1801, true);
-                            }
-                        }
+                    else if (item.Slot == WhSlot.PANTS)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 1100 + item.GeosetGroup[0] : 1101);
+                        SetGeo(collectionModel, meshId, 1101);
+
+                        meshId = (ushort)(item.GeosetGroup[1] > 0 ? 900 + item.GeosetGroup[1] : 901);
+                        SetGeo(collectionModel, meshId, 901);
+
+                        meshId = (ushort)(item.GeosetGroup[2] > 0 ? 1300 + item.GeosetGroup[2] : 1301);
+                        SetGeo(collectionModel, meshId, 1301);
+                    }
+                    else if (item.Slot == WhSlot.BOOTS)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 500 + item.GeosetGroup[0] : 501);
+                        SetGeo(collectionModel, meshId, 501);
+
+                        meshId = (ushort)(item.GeosetGroup[1] > 0 ? 2e3 + item.GeosetGroup[1] : 2001);
+                        SetGeo(collectionModel, meshId, 2001);
+                    }
+                    else if (item.Slot == WhSlot.HANDS)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 400 + item.GeosetGroup[0] : 401);
+                        SetGeo(collectionModel, meshId, 401);
+
+                        meshId = (ushort)(item.GeosetGroup[1] > 0 ? 2300 + item.GeosetGroup[1] : 2301);
+                        SetGeo(collectionModel, meshId, 2301);
+                    }
+                    else if (item.Slot == WhSlot.CAPE)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 1500 + item.GeosetGroup[0] : 1501);
+                        SetGeo(collectionModel, meshId, 1501);
+                    }
+                    else if (item.Slot == WhSlot.TABARD)
+                    {
+                        meshId = (ushort)(item.GeosetGroup[0] > 0 ? 1200 + item.GeosetGroup[0] : 1201);
+                        SetGeo(collectionModel, meshId, 1201);
                     }
                 }
             }
 
-            var helm = Items.GetOrDefault(WhSlot.HEAD);
             if (helm != null)
             {
                 var race = Race;
@@ -1700,16 +1756,6 @@ namespace WowheadModelLoader
                     }
                 }
             }
-
-            var shirt = Items.GetOrDefault(WhSlot.SHIRT);
-            var chest = Items.GetOrDefault(WhSlot.CHEST);
-            var belt = Items.GetOrDefault(WhSlot.BELT);
-            var pants = Items.GetOrDefault(WhSlot.PANTS);
-            var boots = Items.GetOrDefault(WhSlot.BOOTS);
-            var wrist = Items.GetOrDefault(WhSlot.BRACERS);
-            var gloves = Items.GetOrDefault(WhSlot.HANDS);
-            var tabard = Items.GetOrDefault(WhSlot.TABARD);
-            var cloak = Items.GetOrDefault(WhSlot.CAPE);
 
             int flags = 0;
             if (tabard != null)
@@ -1922,7 +1968,7 @@ namespace WowheadModelLoader
                 var slotAttachments = GetSlotAttachments(slot, item);
                 for (int i = 0; i < item.Models.Count; i++)
                 {
-                    if (item.Models[i] != null && !item.Models[i].IsCollection && slotAttachments.Count > i)
+                    if (item.Models[i] != null && slotAttachments.Count > i)
                     {
                         var attach = Attachments[slotAttachments[i]];
                         item.Models[i].Bone = attach.Bone;
@@ -2128,7 +2174,7 @@ namespace WowheadModelLoader
             }
         }
 
-        private void _Load(WhType type, string id)
+        public void _Load(WhType type, string id)
         {
             string metaPath = null;
 
@@ -2166,7 +2212,7 @@ namespace WowheadModelLoader
         {
             var data = WhDataLoader.LoadMeta(metaPath, id);
 
-            LoadMeta(data, type, 0);
+            LoadMeta(data, type);
         }
 
         private void LoadAndHandle_Mo3(string id)

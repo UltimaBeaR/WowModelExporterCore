@@ -37,8 +37,6 @@ namespace WowheadModelLoader
             self.Unlit = (self.RenderFlag.Flags & 1) != 0;
             self.Cull = (self.RenderFlag.Flags & 4) == 0;
             self.NoZWrite = (self.RenderFlag.Flags & 16) != 0;
-
-            //WH.debug("RenderFlag.ComputeFlags", "self.flags", self.flags, "self.priorityPlane", self.priorityPlane, "self.renderFlag.flags", self.renderFlag.flags, "self.renderFlag.blend", self.renderFlag.blend, "self.materialLayer", self.materialLayer, "self.materialIndex", self.materialIndex, "self.texUnitIndex", self.texUnitIndex)
         }
     }
 }
