@@ -32,9 +32,9 @@ namespace WowModelExporterCore
                 // Если костей глаз не найдено - добавляем фейковые внутрь кости головы
 
                 if (wowObject.FindBoneByName("LeftEye") == null)
-                    wowObject.AddDummyBone("LeftEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3());
+                    wowObject.AddDummyBone("LeftEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3(-0.05f, 0.1f, 0.07f));
                 if (wowObject.FindBoneByName("RightEye") == null)
-                    wowObject.AddDummyBone("RightEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3());
+                    wowObject.AddDummyBone("RightEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3(0.05f, 0.1f, 0.07f));
 
                 // добавляем в блендшейп одну вершину. Если в блендшейпе вообще не будет изменений - eye tracking все равно не будет работать, как будто блендшейпа не существует
                 var pos = wowObject.MainMesh.Vertices[0].Position;
