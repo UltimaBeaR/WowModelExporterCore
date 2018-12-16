@@ -305,7 +305,7 @@ namespace WowModelExporterTester
 
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                if (!_file.ExportToFbx(dialog.FileName))
+                if (!_file.ExportToFbx(dialog.FileName, prepareForVrchatCheckbox.Checked))
                     throw new InvalidOperationException();
 
                 System.Diagnostics.Process.Start("explorer.exe", dialog.FileName);

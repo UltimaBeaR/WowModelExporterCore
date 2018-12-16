@@ -7,7 +7,7 @@ namespace WowModelExporterTester
 {
     public static class WowVrcFileExtensions
     {
-        public static bool ExportToFbx(this WowVrcFile file, string exportDirectory)
+        public static bool ExportToFbx(this WowVrcFile file, string exportDirectory, bool prepareForVRChat)
         {
             var exporter = new WowModelExporter();
 
@@ -51,7 +51,8 @@ namespace WowModelExporterTester
                 }
             }
 
-            PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true);
+            if (prepareForVRChat)
+                PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true);
 
             var fbxExporter = new Exporter();
 

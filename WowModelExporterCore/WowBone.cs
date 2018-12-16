@@ -104,6 +104,11 @@ namespace WowModelExporterCore
 
         private static readonly Dictionary<uint, string> _boneNames = new Dictionary<uint, string>()
         {
+            // Тут я в регионах прописываю какая кость у кого была найдена, чтобы потом можно было разрулить конфликты с именами, если такие будут
+            // но многие кости при этом могут быть общими у разных расс/полов
+
+            #region human male
+
             { 521822810,    "ROOT" },
 
             { 3066451557,   "body" },
@@ -236,7 +241,47 @@ namespace WowModelExporterCore
             { 2526474064,   "attachment_head" },
             { 28063340,     "attachment_shoulder.L" },
             { 4221766415,   "attachment_shoulder.R" },
-            { 2776517278,   "attachment_belt" }
+            { 2776517278,   "attachment_belt" },
+
+            #endregion
+
+            #region nightelf female
+
+            { 2896842011,   "face_eyelid_upper.L" },
+            { 899882145,    "face_eyelid_lower.L" },
+
+            { 2513304640,   "face_eyelid_upper.R" },
+            { 214216186,    "face_eyelid_lower.R" },
+
+
+            { 3351897000,   "face_ear_1.L" },
+            { 1589686802,   "face_ear_2.L" },
+
+            { 4029154363,   "face_ear_1.R" },
+            { 1763792257,   "face_ear_2.R" },
+
+            { 2925917466,   "face_teeth_upper" },
+            { 1740637058,   "face_teeth_lower" },
+
+            { 1073771550,   "face_chin_side.L" },
+            { 3162545107,   "face_chin_side.R" },
+
+            { 2978057156,   "face_ponytail_1" },
+            { 680057470,    "face_ponytail_2" },
+            { 1603267304,   "face_ponytail_3" },
+            { 3253436235,   "face_ponytail_4" },
+
+
+            { 2309325446,   "face_moustache.L" },
+            { 1965387083,   "face_moustache.R" },
+
+            { 2605442443,   "face_long_brow_1.L" },
+            { 37925937,     "face_long_brow_2.L" },
+
+            { 1741359686,   "face_long_brow_1.R" },
+            { 4274150396,   "face_long_brow_2.R" },
+
+            #endregion
         };
     }
 }
