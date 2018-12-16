@@ -2,7 +2,6 @@
 using System.Windows.Forms;
 using WowModelExporterCore;
 using WowheadModelLoader;
-using WowModelExporterFbx;
 using System.Collections.Generic;
 using WebViewJsModifier;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -51,7 +50,11 @@ namespace WowModelExporterTester
         {
             var jsModifyActions = new List<JsModifyAction>();
 
-            jsModifyActions.Add(CreateJsModifyAction_ZamModelViewerContructor());
+            var viewerScriptReplacement = GetViewerScriptReplacement();
+            if (viewerScriptReplacement != null)
+                jsModifyActions.Add(CreateJsModifyAction_ReplaceWhole(viewerScriptReplacement));
+
+            jsModifyActions.Add(CreateJsModifyAction_ZamModelViewerConstructor());
             jsModifyActions.Add(CreateJsModifyAction_WebGlDrawFunction());
             jsModifyActions.Add(CreateJsModifyAction_TestTextReplace());
             jsModifyActions.Add(CreateJsModifyAction_RenderTexUnitsByMeshIndex());
@@ -59,7 +62,31 @@ namespace WowModelExporterTester
             new JsModifier(webView, jsModifyActions);
         }
 
-        private InterceptDataJsModifyAction CreateJsModifyAction_ZamModelViewerContructor()
+        private string GetViewerScriptReplacement()
+        {
+            // ToDo: временно так - будет появляться диалог при открытии, потом поменять, чтобы этот файл замены скрипта брался из конфига или еще как-то
+
+            var dialog = new OpenFileDialog()
+            {
+                Filter = "javascript file|*.js",
+                CheckFileExists = true
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+                return System.IO.File.ReadAllText(dialog.FileName);
+
+            return null;
+        }
+
+        private ReplaceWholeModifyAction CreateJsModifyAction_ReplaceWhole(string fileContents)
+        {
+            return new ReplaceWholeModifyAction(
+                "/modelviewer/viewer/viewer.min.js$",
+                fileContents
+            );
+        }
+
+        private InterceptDataJsModifyAction CreateJsModifyAction_ZamModelViewerConstructor()
         {
             var jsModifyAction = new InterceptDataJsModifyAction(
                 "/modelviewer/viewer/viewer.min.js$",
@@ -298,38 +325,5 @@ namespace WowModelExporterTester
         private string _optsJsonForExport;
         private Func<string> _consoleLogModelsFunction;
         private WowVrcFile _file;
-
-        //private void button1_Click(object sender, EventArgs e)
-        //{
-        //    var exporter = new WowModelExporter();
-
-        //    var wowObject = exporter.LoadCharacter(WhRace.HUMAN, WhGender.MALE, new string[]
-        //    {
-        //        // шлем
-        //        "161600",
-        //        // плечи
-        //        "161621",
-        //        // плащ
-        //        "163355",
-        //        // чест
-        //        "161602",
-        //        // брасы
-        //        "161629",
-        //        // руки
-        //        "161610",
-        //        // пояс
-        //        "161624",
-        //        // ноги
-        //        "161616",
-        //        // ступни
-        //        "161605"
-        //    });
-
-        //    PrepareForVRChatUtility.PrepareObject(wowObject, true, true);
-
-        //    var test = new Exporter();
-
-        //    textBox1.Text = test.ExportWowObject(wowObject, "newtest").ToString();
-        //}
     }
 }

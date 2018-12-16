@@ -77,8 +77,18 @@ namespace WebViewJsModifier
 
             public override void ProcessRequest(Request request, Response response)
             {
-                var client = new HttpClient();
-                var remoteFile = client.GetStringAsync(request.Url).Result;
+                string remoteFile = "";
+
+                // ToDo: Потом надо что-то сделать с этим, пока вот таким костылем получаю модификатор который должен вызываться первым по приоритету по сути и зменять собой удаленный запрос серверный (т.к. результат все равно ненужен)
+                var replaceWholeFileModifyAction = _modifier._jsModifyActionsPerUrlMatchPattern.FirstOrDefault(x => Regex.IsMatch(request.Url, x.Key)).Value.FirstOrDefault(x => x is ReplaceWholeModifyAction) as ReplaceWholeModifyAction;
+
+                if (replaceWholeFileModifyAction == null)
+                {
+                    var client = new HttpClient();
+                    remoteFile = client.GetStringAsync(request.Url).Result;
+                }
+                else
+                    remoteFile = replaceWholeFileModifyAction.ReplacementString;
 
                 // Добавляем кастомные либы в начало файла
                 remoteFile = Resources.WebViewJsModifierLibs + remoteFile;

@@ -2,6 +2,7 @@
 
 namespace WebViewJsModifier
 {
+    // ToDo: Надо тут переработать видимо - поисковые строки (SearchStrings) не являются универсальными - их ненужно хранить в базовом классе.
     public abstract class JsModifyAction
     {
         public JsModifyAction(string urlMatchPattern, string[] searchStrings)
@@ -20,6 +21,20 @@ namespace WebViewJsModifier
         /// Строка, в исходном файле по которой идет поиск
         /// </summary>
         public string[] SearchStrings { get; private set; }
+    }
+
+    /// <summary>
+    /// Меняет все содержимое файла на заданное.
+    /// </summary>
+    public class ReplaceWholeModifyAction : JsModifyAction
+    {
+        public ReplaceWholeModifyAction(string urlMatchPattern, string replacementString)
+            : base(urlMatchPattern, null)
+        {
+            ReplacementString = replacementString;
+        }
+
+        public string ReplacementString { get; private set; }
     }
 
     /// <summary>

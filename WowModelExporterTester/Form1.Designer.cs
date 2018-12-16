@@ -33,20 +33,29 @@
             this.webView = new EO.WebBrowser.WebView();
             this.tabs = new System.Windows.Forms.TabControl();
             this.mainTab = new System.Windows.Forms.TabPage();
+            this.openGroupbox = new System.Windows.Forms.GroupBox();
+            this.openExistingButton = new System.Windows.Forms.Button();
+            this.filenameTextbox = new System.Windows.Forms.TextBox();
+            this.createNewGroupbox = new System.Windows.Forms.GroupBox();
+            this.newFromRaceGenderButton = new System.Windows.Forms.Button();
+            this.isMaleCheckbox = new System.Windows.Forms.CheckBox();
+            this.raceCombobox = new System.Windows.Forms.ComboBox();
+            this.newFromBrowserStateMayBeOldLabel = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.mergeGroupBox = new System.Windows.Forms.GroupBox();
             this.exportButton = new System.Windows.Forms.Button();
-            this.newFromBrowserStateMayBeOldLabel = new System.Windows.Forms.Label();
             this.browserTab = new System.Windows.Forms.TabPage();
             this.browserContentPanel = new System.Windows.Forms.Panel();
             this.addressPanel = new System.Windows.Forms.Panel();
-            this.addressTextboxPanel = new System.Windows.Forms.Panel();
-            this.addressTextBox = new System.Windows.Forms.TextBox();
             this.urlButtonsPanel = new System.Windows.Forms.Panel();
             this.submeshIndexTextbox = new System.Windows.Forms.TextBox();
             this.drawOnlySelectedSumeshCheckbox = new System.Windows.Forms.CheckBox();
             this.consoleLogModelsButton = new System.Windows.Forms.Button();
             this.navigateToCharacterSearchButton = new System.Windows.Forms.Button();
             this.navigateToDressroomButton = new System.Windows.Forms.Button();
+            this.addressTextboxPanel = new System.Windows.Forms.Panel();
+            this.addressTextBox = new System.Windows.Forms.TextBox();
+            this.goButton = new System.Windows.Forms.Button();
             this.devToolsTab = new System.Windows.Forms.TabPage();
             this.devToolsContent = new System.Windows.Forms.Panel();
             this.devToolsHeader = new System.Windows.Forms.Panel();
@@ -55,27 +64,18 @@
             this.openCacheDirectoryButton = new System.Windows.Forms.Button();
             this.browserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDevToolsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.goButton = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.createNewGroupbox = new System.Windows.Forms.GroupBox();
-            this.raceCombobox = new System.Windows.Forms.ComboBox();
-            this.isMaleCheckbox = new System.Windows.Forms.CheckBox();
-            this.newFromRaceGenderButton = new System.Windows.Forms.Button();
-            this.filenameTextbox = new System.Windows.Forms.TextBox();
-            this.openGroupbox = new System.Windows.Forms.GroupBox();
-            this.openExistingButton = new System.Windows.Forms.Button();
             this.tabs.SuspendLayout();
             this.mainTab.SuspendLayout();
+            this.openGroupbox.SuspendLayout();
+            this.createNewGroupbox.SuspendLayout();
             this.browserTab.SuspendLayout();
             this.browserContentPanel.SuspendLayout();
             this.addressPanel.SuspendLayout();
-            this.addressTextboxPanel.SuspendLayout();
             this.urlButtonsPanel.SuspendLayout();
+            this.addressTextboxPanel.SuspendLayout();
             this.devToolsTab.SuspendLayout();
             this.devToolsHeader.SuspendLayout();
             this.utilityTab.SuspendLayout();
-            this.createNewGroupbox.SuspendLayout();
-            this.openGroupbox.SuspendLayout();
             this.SuspendLayout();
             // 
             // newFromBrowserStateButton
@@ -132,6 +132,99 @@
             this.mainTab.Text = "main";
             this.mainTab.UseVisualStyleBackColor = true;
             // 
+            // openGroupbox
+            // 
+            this.openGroupbox.Controls.Add(this.openExistingButton);
+            this.openGroupbox.Location = new System.Drawing.Point(20, 95);
+            this.openGroupbox.Name = "openGroupbox";
+            this.openGroupbox.Size = new System.Drawing.Size(200, 80);
+            this.openGroupbox.TabIndex = 7;
+            this.openGroupbox.TabStop = false;
+            this.openGroupbox.Text = "open existing .wowvrc";
+            // 
+            // openExistingButton
+            // 
+            this.openExistingButton.Location = new System.Drawing.Point(56, 33);
+            this.openExistingButton.Name = "openExistingButton";
+            this.openExistingButton.Size = new System.Drawing.Size(75, 23);
+            this.openExistingButton.TabIndex = 0;
+            this.openExistingButton.Text = "open";
+            this.openExistingButton.UseVisualStyleBackColor = true;
+            this.openExistingButton.Click += new System.EventHandler(this.openExistingButton_Click);
+            // 
+            // filenameTextbox
+            // 
+            this.filenameTextbox.Location = new System.Drawing.Point(20, 30);
+            this.filenameTextbox.Multiline = true;
+            this.filenameTextbox.Name = "filenameTextbox";
+            this.filenameTextbox.ReadOnly = true;
+            this.filenameTextbox.Size = new System.Drawing.Size(548, 59);
+            this.filenameTextbox.TabIndex = 6;
+            // 
+            // createNewGroupbox
+            // 
+            this.createNewGroupbox.Controls.Add(this.newFromRaceGenderButton);
+            this.createNewGroupbox.Controls.Add(this.isMaleCheckbox);
+            this.createNewGroupbox.Controls.Add(this.raceCombobox);
+            this.createNewGroupbox.Controls.Add(this.newFromBrowserStateButton);
+            this.createNewGroupbox.Controls.Add(this.newFromBrowserStateMayBeOldLabel);
+            this.createNewGroupbox.Location = new System.Drawing.Point(226, 95);
+            this.createNewGroupbox.Name = "createNewGroupbox";
+            this.createNewGroupbox.Size = new System.Drawing.Size(342, 80);
+            this.createNewGroupbox.TabIndex = 5;
+            this.createNewGroupbox.TabStop = false;
+            this.createNewGroupbox.Text = "create new .wowvrc";
+            // 
+            // newFromRaceGenderButton
+            // 
+            this.newFromRaceGenderButton.Location = new System.Drawing.Point(6, 46);
+            this.newFromRaceGenderButton.Name = "newFromRaceGenderButton";
+            this.newFromRaceGenderButton.Size = new System.Drawing.Size(175, 23);
+            this.newFromRaceGenderButton.TabIndex = 4;
+            this.newFromRaceGenderButton.Text = "from race/gender";
+            this.newFromRaceGenderButton.UseVisualStyleBackColor = true;
+            this.newFromRaceGenderButton.Click += new System.EventHandler(this.newFromRaceGenderButton_Click);
+            // 
+            // isMaleCheckbox
+            // 
+            this.isMaleCheckbox.AutoSize = true;
+            this.isMaleCheckbox.Checked = true;
+            this.isMaleCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.isMaleCheckbox.Location = new System.Drawing.Point(133, 23);
+            this.isMaleCheckbox.Name = "isMaleCheckbox";
+            this.isMaleCheckbox.Size = new System.Drawing.Size(48, 17);
+            this.isMaleCheckbox.TabIndex = 3;
+            this.isMaleCheckbox.Text = "male";
+            this.isMaleCheckbox.UseVisualStyleBackColor = true;
+            // 
+            // raceCombobox
+            // 
+            this.raceCombobox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.raceCombobox.FormattingEnabled = true;
+            this.raceCombobox.Location = new System.Drawing.Point(6, 19);
+            this.raceCombobox.Name = "raceCombobox";
+            this.raceCombobox.Size = new System.Drawing.Size(121, 21);
+            this.raceCombobox.TabIndex = 2;
+            // 
+            // newFromBrowserStateMayBeOldLabel
+            // 
+            this.newFromBrowserStateMayBeOldLabel.AutoSize = true;
+            this.newFromBrowserStateMayBeOldLabel.ForeColor = System.Drawing.Color.Red;
+            this.newFromBrowserStateMayBeOldLabel.Location = new System.Drawing.Point(211, 17);
+            this.newFromBrowserStateMayBeOldLabel.Name = "newFromBrowserStateMayBeOldLabel";
+            this.newFromBrowserStateMayBeOldLabel.Size = new System.Drawing.Size(124, 26);
+            this.newFromBrowserStateMayBeOldLabel.TabIndex = 1;
+            this.newFromBrowserStateMayBeOldLabel.Text = "browser state may be old\r\n(page refresh needed)";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(17, 14);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(147, 13);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "Current opened .wowvrc path";
+            // 
             // mergeGroupBox
             // 
             this.mergeGroupBox.Location = new System.Drawing.Point(20, 181);
@@ -151,16 +244,6 @@
             this.exportButton.Text = "export .fbx and .fbx.wowvrc.meta from opened .wowvrc";
             this.exportButton.UseVisualStyleBackColor = true;
             this.exportButton.Click += new System.EventHandler(this.exportButton_Click_1);
-            // 
-            // newFromBrowserStateMayBeOldLabel
-            // 
-            this.newFromBrowserStateMayBeOldLabel.AutoSize = true;
-            this.newFromBrowserStateMayBeOldLabel.ForeColor = System.Drawing.Color.Red;
-            this.newFromBrowserStateMayBeOldLabel.Location = new System.Drawing.Point(211, 17);
-            this.newFromBrowserStateMayBeOldLabel.Name = "newFromBrowserStateMayBeOldLabel";
-            this.newFromBrowserStateMayBeOldLabel.Size = new System.Drawing.Size(124, 26);
-            this.newFromBrowserStateMayBeOldLabel.TabIndex = 1;
-            this.newFromBrowserStateMayBeOldLabel.Text = "browser state may be old\r\n(page refresh needed)";
             // 
             // browserTab
             // 
@@ -192,25 +275,6 @@
             this.addressPanel.Name = "addressPanel";
             this.addressPanel.Size = new System.Drawing.Size(786, 55);
             this.addressPanel.TabIndex = 3;
-            // 
-            // addressTextboxPanel
-            // 
-            this.addressTextboxPanel.Controls.Add(this.addressTextBox);
-            this.addressTextboxPanel.Controls.Add(this.goButton);
-            this.addressTextboxPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.addressTextboxPanel.Location = new System.Drawing.Point(0, 0);
-            this.addressTextboxPanel.Name = "addressTextboxPanel";
-            this.addressTextboxPanel.Size = new System.Drawing.Size(786, 22);
-            this.addressTextboxPanel.TabIndex = 7;
-            // 
-            // addressTextBox
-            // 
-            this.addressTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.addressTextBox.Location = new System.Drawing.Point(0, 0);
-            this.addressTextBox.Name = "addressTextBox";
-            this.addressTextBox.Size = new System.Drawing.Size(743, 20);
-            this.addressTextBox.TabIndex = 0;
-            this.addressTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.addressTextBox_KeyPress);
             // 
             // urlButtonsPanel
             // 
@@ -275,6 +339,36 @@
             this.navigateToDressroomButton.Text = "dressroom";
             this.navigateToDressroomButton.UseVisualStyleBackColor = true;
             this.navigateToDressroomButton.Click += new System.EventHandler(this.navigateToDressroomButton_Click);
+            // 
+            // addressTextboxPanel
+            // 
+            this.addressTextboxPanel.Controls.Add(this.addressTextBox);
+            this.addressTextboxPanel.Controls.Add(this.goButton);
+            this.addressTextboxPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.addressTextboxPanel.Location = new System.Drawing.Point(0, 0);
+            this.addressTextboxPanel.Name = "addressTextboxPanel";
+            this.addressTextboxPanel.Size = new System.Drawing.Size(786, 22);
+            this.addressTextboxPanel.TabIndex = 7;
+            // 
+            // addressTextBox
+            // 
+            this.addressTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.addressTextBox.Location = new System.Drawing.Point(0, 0);
+            this.addressTextBox.Name = "addressTextBox";
+            this.addressTextBox.Size = new System.Drawing.Size(743, 20);
+            this.addressTextBox.TabIndex = 0;
+            this.addressTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.addressTextBox_KeyPress);
+            // 
+            // goButton
+            // 
+            this.goButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.goButton.Location = new System.Drawing.Point(743, 0);
+            this.goButton.Name = "goButton";
+            this.goButton.Size = new System.Drawing.Size(43, 22);
+            this.goButton.TabIndex = 1;
+            this.goButton.Text = "go";
+            this.goButton.UseVisualStyleBackColor = true;
+            this.goButton.Click += new System.EventHandler(this.goButton_Click);
             // 
             // devToolsTab
             // 
@@ -348,100 +442,6 @@
             this.showDevToolsTabToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showDevToolsTabToolStripMenuItem.Text = "Show dev tools tab";
             // 
-            // goButton
-            // 
-            this.goButton.Dock = System.Windows.Forms.DockStyle.Right;
-            this.goButton.Location = new System.Drawing.Point(743, 0);
-            this.goButton.Name = "goButton";
-            this.goButton.Size = new System.Drawing.Size(43, 22);
-            this.goButton.TabIndex = 1;
-            this.goButton.Text = "go";
-            this.goButton.UseVisualStyleBackColor = true;
-            this.goButton.Click += new System.EventHandler(this.goButton_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(17, 14);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(147, 13);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Current opened .wowvrc path";
-            // 
-            // createNewGroupbox
-            // 
-            this.createNewGroupbox.Controls.Add(this.newFromRaceGenderButton);
-            this.createNewGroupbox.Controls.Add(this.isMaleCheckbox);
-            this.createNewGroupbox.Controls.Add(this.raceCombobox);
-            this.createNewGroupbox.Controls.Add(this.newFromBrowserStateButton);
-            this.createNewGroupbox.Controls.Add(this.newFromBrowserStateMayBeOldLabel);
-            this.createNewGroupbox.Location = new System.Drawing.Point(226, 95);
-            this.createNewGroupbox.Name = "createNewGroupbox";
-            this.createNewGroupbox.Size = new System.Drawing.Size(342, 80);
-            this.createNewGroupbox.TabIndex = 5;
-            this.createNewGroupbox.TabStop = false;
-            this.createNewGroupbox.Text = "create new .wowvrc";
-            // 
-            // raceCombobox
-            // 
-            this.raceCombobox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.raceCombobox.FormattingEnabled = true;
-            this.raceCombobox.Location = new System.Drawing.Point(6, 19);
-            this.raceCombobox.Name = "raceCombobox";
-            this.raceCombobox.Size = new System.Drawing.Size(121, 21);
-            this.raceCombobox.TabIndex = 2;
-            // 
-            // isMaleCheckbox
-            // 
-            this.isMaleCheckbox.AutoSize = true;
-            this.isMaleCheckbox.Checked = true;
-            this.isMaleCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.isMaleCheckbox.Location = new System.Drawing.Point(133, 23);
-            this.isMaleCheckbox.Name = "isMaleCheckbox";
-            this.isMaleCheckbox.Size = new System.Drawing.Size(48, 17);
-            this.isMaleCheckbox.TabIndex = 3;
-            this.isMaleCheckbox.Text = "male";
-            this.isMaleCheckbox.UseVisualStyleBackColor = true;
-            // 
-            // newFromRaceGenderButton
-            // 
-            this.newFromRaceGenderButton.Location = new System.Drawing.Point(6, 46);
-            this.newFromRaceGenderButton.Name = "newFromRaceGenderButton";
-            this.newFromRaceGenderButton.Size = new System.Drawing.Size(175, 23);
-            this.newFromRaceGenderButton.TabIndex = 4;
-            this.newFromRaceGenderButton.Text = "from race/gender";
-            this.newFromRaceGenderButton.UseVisualStyleBackColor = true;
-            this.newFromRaceGenderButton.Click += new System.EventHandler(this.newFromRaceGenderButton_Click);
-            // 
-            // filenameTextbox
-            // 
-            this.filenameTextbox.Location = new System.Drawing.Point(20, 30);
-            this.filenameTextbox.Multiline = true;
-            this.filenameTextbox.Name = "filenameTextbox";
-            this.filenameTextbox.ReadOnly = true;
-            this.filenameTextbox.Size = new System.Drawing.Size(548, 59);
-            this.filenameTextbox.TabIndex = 6;
-            // 
-            // openGroupbox
-            // 
-            this.openGroupbox.Controls.Add(this.openExistingButton);
-            this.openGroupbox.Location = new System.Drawing.Point(20, 95);
-            this.openGroupbox.Name = "openGroupbox";
-            this.openGroupbox.Size = new System.Drawing.Size(200, 80);
-            this.openGroupbox.TabIndex = 7;
-            this.openGroupbox.TabStop = false;
-            this.openGroupbox.Text = "open existing .wowvrc";
-            // 
-            // openExistingButton
-            // 
-            this.openExistingButton.Location = new System.Drawing.Point(56, 33);
-            this.openExistingButton.Name = "openExistingButton";
-            this.openExistingButton.Size = new System.Drawing.Size(75, 23);
-            this.openExistingButton.TabIndex = 0;
-            this.openExistingButton.Text = "open";
-            this.openExistingButton.UseVisualStyleBackColor = true;
-            this.openExistingButton.Click += new System.EventHandler(this.openExistingButton_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -453,20 +453,20 @@
             this.tabs.ResumeLayout(false);
             this.mainTab.ResumeLayout(false);
             this.mainTab.PerformLayout();
+            this.openGroupbox.ResumeLayout(false);
+            this.createNewGroupbox.ResumeLayout(false);
+            this.createNewGroupbox.PerformLayout();
             this.browserTab.ResumeLayout(false);
             this.browserContentPanel.ResumeLayout(false);
             this.addressPanel.ResumeLayout(false);
-            this.addressTextboxPanel.ResumeLayout(false);
-            this.addressTextboxPanel.PerformLayout();
             this.urlButtonsPanel.ResumeLayout(false);
             this.urlButtonsPanel.PerformLayout();
+            this.addressTextboxPanel.ResumeLayout(false);
+            this.addressTextboxPanel.PerformLayout();
             this.devToolsTab.ResumeLayout(false);
             this.devToolsHeader.ResumeLayout(false);
             this.devToolsHeader.PerformLayout();
             this.utilityTab.ResumeLayout(false);
-            this.createNewGroupbox.ResumeLayout(false);
-            this.createNewGroupbox.PerformLayout();
-            this.openGroupbox.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
