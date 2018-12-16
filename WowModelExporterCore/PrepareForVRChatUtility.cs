@@ -14,7 +14,7 @@ namespace WowModelExporterCore
     /// </summary>
     public static class PrepareForVRChatUtility
     {
-        public static void PrepareObject(WowObject wowObject, Dictionary<string, Dictionary<int, BlendShapeUtility.Vertex>> bakedBlendshapes, bool removeToes, bool removeJaw, bool ensureEyeVisemesExist, bool fixBlendshapes)
+        public static void PrepareObject(WowObject wowObject, Dictionary<string, Dictionary<int, BlendShapeUtility.Vertex>> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes)
         {
             MakeUnityCompatibleHumanoidSkeleton(wowObject);
 
@@ -27,8 +27,15 @@ namespace WowModelExporterCore
                 wowObject.RemoveBonesByNames(new[] { "Jaw" });
 
             // Если не заданы необходимые для движения глаз виземы моргания, создаем пустые (чтобы глаза двигались, т.к. врчат не делает движение глаз при отсутствии этих визем)
-            if (ensureEyeVisemesExist)
+            if (addDummyEyesAndEyelidVisemes)
             {
+                // Если костей глаз не найдено - добавляем фейковые внутрь кости головы
+
+                if (wowObject.FindBoneByName("LeftEye") == null)
+                    wowObject.AddDummyBone("LeftEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3());
+                if (wowObject.FindBoneByName("RightEye") == null)
+                    wowObject.AddDummyBone("RightEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3());
+
                 // добавляем в блендшейп одну вершину. Если в блендшейпе вообще не будет изменений - eye tracking все равно не будет работать, как будто блендшейпа не существует
                 var pos = wowObject.MainMesh.Vertices[0].Position;
                 var normal = wowObject.MainMesh.Vertices[0].Normal;

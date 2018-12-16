@@ -46,6 +46,30 @@ namespace WowModelExporterCore
             return Bones.First(x => x != null && x.ParentBone == null);
         }
 
+        /// <summary>
+        /// Добавляет кость-пустышку в конец массива с костями
+        /// </summary>
+        public void AddDummyBone(string boneName, WowBone parent, Vec3 localPosition)
+        {
+            // Так как добавление идет в конец массива - индексы в вершинах перестраивать ненужно - все старые кости остаются на своих местах
+
+            var bone = new WowBone() { Id = uint.MaxValue, Index = (byte)Bones.Length, ParentBone = parent, LocalPosition = localPosition };
+            bone.SetName(boneName);
+
+            Bones = Bones.Append(bone).ToArray();
+
+            if (parent != null)
+                parent.ChildBones.Add(bone);
+        }
+
+        /// <summary>
+        /// Находит первую попавшуюся кость с заданным именем, либо null
+        /// </summary>
+        public WowBone FindBoneByName(string boneName)
+        {
+            return Bones.FirstOrDefault(x => x != null && x.GetName() == boneName);
+        }
+
         public void RemoveBonesByNames(string[] boneNames)
         {
             RemoveBones(x => Array.IndexOf(boneNames, x.GetName()) > -1);
