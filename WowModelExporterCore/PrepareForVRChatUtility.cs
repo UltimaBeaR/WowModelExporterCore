@@ -14,7 +14,7 @@ namespace WowModelExporterCore
     /// </summary>
     public static class PrepareForVRChatUtility
     {
-        public static void PrepareObject(WowObject wowObject, Dictionary<string, Dictionary<int, BlendShapeUtility.Vertex>> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes)
+        public static void PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes)
         {
             MakeUnityCompatibleHumanoidSkeleton(wowObject);
 
@@ -40,14 +40,14 @@ namespace WowModelExporterCore
                 var pos = wowObject.MainMesh.Vertices[0].Position;
                 var normal = wowObject.MainMesh.Vertices[0].Normal;
 
-                if (!bakedBlendshapes.ContainsKey("vrc.blink_left"))
-                    bakedBlendshapes.Add("vrc.blink_left", new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } });
-                if (!bakedBlendshapes.ContainsKey("vrc.blink_right"))
-                    bakedBlendshapes.Add("vrc.blink_right", new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } });
-                if (!bakedBlendshapes.ContainsKey("vrc.lowerlid_left"))
-                    bakedBlendshapes.Add("vrc.lowerlid_left", new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } });
-                if (!bakedBlendshapes.ContainsKey("vrc.lowerlid_right"))
-                    bakedBlendshapes.Add("vrc.lowerlid_right", new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } });
+                if (bakedBlendshapes.FindIndex(x => x.BlendshapeName == "vrc.blink_left") == -1)
+                    bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape { BlendshapeName = "vrc.blink_left", Changes = new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } } });
+                if (bakedBlendshapes.FindIndex(x => x.BlendshapeName == "vrc.blink_right") == -1)
+                    bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape { BlendshapeName = "vrc.blink_right", Changes = new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } } });
+                if (bakedBlendshapes.FindIndex(x => x.BlendshapeName == "vrc.lowerlid_left") == -1)
+                    bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape { BlendshapeName = "vrc.lowerlid_left", Changes = new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } } });
+                if (bakedBlendshapes.FindIndex(x => x.BlendshapeName == "vrc.lowerlid_right") == -1)
+                    bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape { BlendshapeName = "vrc.lowerlid_right", Changes = new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } } });
             }
 
             // Добавляем небольшое смещение к каждой из позиций вершин, чтобы избавиться от каких-то глюков (repair_shapekeys и repair_shapekeys_mouth функции в cats плагине)
@@ -58,9 +58,9 @@ namespace WowModelExporterCore
 
                 foreach (var bakedBlendshape in bakedBlendshapes)
                 {
-                    if (bakedBlendshape.Key.StartsWith("vrc."))
+                    if (bakedBlendshape.BlendshapeName.StartsWith("vrc."))
                     {
-                        foreach (var vertex in bakedBlendshape.Value)
+                        foreach (var vertex in bakedBlendshape.Changes)
                         {
                             var tinyChange = 0.00007f * (rand.NextDouble() < 0.5 ? -1f : 1f);
 
@@ -71,6 +71,24 @@ namespace WowModelExporterCore
             }
 
             wowObject.OptimizeBones();
+
+            // Сортируем блендшейпы так чтобы _firstBlendshapes (список имен блендшейпов) шел сначала а потом уже все остальные
+            bakedBlendshapes.Sort((x, y) =>
+            {
+                var xIndex = _firstBlendshapes.IndexOf(x.BlendshapeName);
+                var yIndex = _firstBlendshapes.IndexOf(y.BlendshapeName);
+
+                if (xIndex != -1 && yIndex == -1)
+                    return -1;
+
+                if (xIndex == -1 && yIndex != -1)
+                    return 1;
+
+                if (xIndex != -1 && yIndex != -1)
+                    return xIndex.CompareTo(yIndex);
+
+                return x.BlendshapeName.CompareTo(y.BlendshapeName);
+            });
         }
 
         private static void MakeUnityCompatibleHumanoidSkeleton(WowObject wowObject)
@@ -180,6 +198,31 @@ namespace WowModelExporterCore
             //{ "", "Right Little Distal" },
 
             //{ "", "UpperChest" },
+        };
+
+        private static readonly List<string> _firstBlendshapes = new List<string>
+        {
+            "vrc.blink_left",
+            "vrc.blink_right",
+
+            "vrc.lowerlid_left",
+            "vrc.lowerlid_right",
+
+            "vrc.v_aa",
+            "vrc.v_ch",
+            "vrc.v_dd",
+            "vrc.v_e",
+            "vrc.v_ff",
+            "vrc.v_ih",
+            "vrc.v_kk",
+            "vrc.v_nn",
+            "vrc.v_oh",
+            "vrc.v_ou",
+            "vrc.v_pp",
+            "vrc.v_rr",
+            "vrc.v_sil",
+            "vrc.v_ss",
+            "vrc.v_th"
         };
     }
 }

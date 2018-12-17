@@ -28,7 +28,7 @@ namespace WowModelExporterTester
             }
 
             // ToDo: после запекания идет привязка на текущие индексы вершин. Если вершины будут перестроены, надо тут тоже обновить индексы 
-            var bakedBlendshapes = new Dictionary<string, Dictionary<int, BlendShapeUtility.Vertex>>();
+            var bakedBlendshapes = new List<BlendShapeUtility.BakedBlendshape>();
             if (file.Blendshapes != null)
             {
                 foreach (var blendshape in file.Blendshapes)
@@ -46,7 +46,13 @@ namespace WowModelExporterTester
                             }
                         }
                         else
-                            bakedBlendshapes.Add(blendshape.Name, BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones));
+                        {
+                            bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape
+                            {
+                                BlendshapeName = blendshape.Name,
+                                Changes = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones)
+                            });
+                        }
                     }
                 }
             }

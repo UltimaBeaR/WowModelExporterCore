@@ -159,6 +159,19 @@ namespace WowModelExporterCore
             return changedVertices;
         }
 
+        public class BakedBlendshape
+        {
+            /// <summary>
+            /// Название блендшейпа
+            /// </summary>
+            public string BlendshapeName { get; set; }
+
+            /// <summary>
+            /// Изменения вершин. Ключ - индекс вершины, значение - новое значение вершины (новая позиция и нормаль)
+            /// </summary>
+            public Dictionary<int, Vertex> Changes { get; set; }
+        }
+
         public class Vertex
         {
             public Vec3 Position { get; set; }
