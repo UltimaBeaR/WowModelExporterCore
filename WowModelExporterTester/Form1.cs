@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using WebViewJsModifier;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Linq;
+using System.Globalization;
 
 namespace WowModelExporterTester
 {
@@ -294,6 +295,15 @@ namespace WowModelExporterTester
 
         private void exportButton_Click_1(object sender, EventArgs e)
         {
+            var ci = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            ci.NumberFormat.CurrencyDecimalSeparator = ".";
+
+            if (!float.TryParse(scaleTextbox.Text, NumberStyles.Any, ci, out float scale))
+            {
+                MessageBox.Show("Scale is invalid");
+                return;
+            }
+
             var dialog = new CommonOpenFileDialog
             {
                 EnsurePathExists = true,
@@ -305,8 +315,13 @@ namespace WowModelExporterTester
 
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                if (!_file.ExportToFbx(dialog.FileName, prepareForVrchatCheckbox.Checked))
+                if (!_file.ExportToFbx(dialog.FileName, prepareForVrchatCheckbox.Checked, scale, out var warnings))
                     throw new InvalidOperationException();
+
+                if (warnings != null)
+                {
+                    MessageBox.Show(warnings, "export warnings");
+                }
 
                 System.Diagnostics.Process.Start("explorer.exe", dialog.FileName);
             }

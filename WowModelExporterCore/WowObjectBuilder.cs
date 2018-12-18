@@ -7,6 +7,11 @@ namespace WowModelExporterCore
 {
     public class WowObjectBuilder
     {
+        public WowObjectBuilder(float scale = 1.0f)
+        {
+            _scale = scale;
+        }
+
         public WowObject BuildFromCharacterWhModel(WhModel whCharacterModel)
         {
             // ToDo: Смотреть как работает, Wow.Model.draw,
@@ -61,7 +66,7 @@ namespace WowModelExporterCore
 
                     if (whItemModel.Bone > -1 && whItemModel.Bone < whCharacterModel.Bones.Length)
                     {
-                        var itemPosition = Vec3.ConvertPositionFromWh(whItemModel.Attachment.Position);
+                        var itemPosition = Vec3.Scale(Vec3.ConvertPositionFromWh(whItemModel.Attachment.Position), _scale);
 
                         var itemObject = new WowObject()
                         {
@@ -105,7 +110,7 @@ namespace WowModelExporterCore
                             {
                                 if (visual != null)
                                 {
-                                    var visualPosition = Vec3.ConvertPositionFromWh(visual.Attachment.Position);
+                                    var visualPosition = Vec3.Scale(Vec3.ConvertPositionFromWh(visual.Attachment.Position), _scale);
 
                                     var visualObject = new WowObject()
                                     {
@@ -188,7 +193,7 @@ namespace WowModelExporterCore
                 {
                     Index = Convert.ToByte(x.Index),
                     Id = x.Id,
-                    LocalPosition = Vec3.ConvertPositionFromWh(x.Pivot)
+                    LocalPosition = Vec3.Scale(Vec3.ConvertPositionFromWh(x.Pivot), _scale)
                 })
                 .ToArray();
 
@@ -289,7 +294,7 @@ namespace WowModelExporterCore
         {
             return new WowVertex()
             {
-                WhPosition = whVertex.Position,
+                WhPosition = Vec3.Scale(whVertex.Position, _scale),
 
                 WhNormal = new Vec3(whVertex.Normal.X, whVertex.Normal.Y, whVertex.Normal.Z),
 
@@ -332,5 +337,7 @@ namespace WowModelExporterCore
         {
             return boneWeight / 255f;
         }
+
+        private float _scale;
     }
 }

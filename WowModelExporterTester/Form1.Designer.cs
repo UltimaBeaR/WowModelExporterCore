@@ -33,6 +33,7 @@
             this.webView = new EO.WebBrowser.WebView();
             this.tabs = new System.Windows.Forms.TabControl();
             this.mainTab = new System.Windows.Forms.TabPage();
+            this.prepareForVrchatCheckbox = new System.Windows.Forms.CheckBox();
             this.openGroupbox = new System.Windows.Forms.GroupBox();
             this.openExistingButton = new System.Windows.Forms.Button();
             this.filenameTextbox = new System.Windows.Forms.TextBox();
@@ -64,7 +65,8 @@
             this.openCacheDirectoryButton = new System.Windows.Forms.Button();
             this.browserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDevToolsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.prepareForVrchatCheckbox = new System.Windows.Forms.CheckBox();
+            this.scaleTextbox = new System.Windows.Forms.TextBox();
+            this.scaleLabel = new System.Windows.Forms.Label();
             this.tabs.SuspendLayout();
             this.mainTab.SuspendLayout();
             this.openGroupbox.SuspendLayout();
@@ -119,6 +121,8 @@
             // 
             // mainTab
             // 
+            this.mainTab.Controls.Add(this.scaleLabel);
+            this.mainTab.Controls.Add(this.scaleTextbox);
             this.mainTab.Controls.Add(this.prepareForVrchatCheckbox);
             this.mainTab.Controls.Add(this.openGroupbox);
             this.mainTab.Controls.Add(this.filenameTextbox);
@@ -133,6 +137,18 @@
             this.mainTab.TabIndex = 1;
             this.mainTab.Text = "main";
             this.mainTab.UseVisualStyleBackColor = true;
+            // 
+            // prepareForVrchatCheckbox
+            // 
+            this.prepareForVrchatCheckbox.AutoSize = true;
+            this.prepareForVrchatCheckbox.Checked = true;
+            this.prepareForVrchatCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.prepareForVrchatCheckbox.Location = new System.Drawing.Point(20, 294);
+            this.prepareForVrchatCheckbox.Name = "prepareForVrchatCheckbox";
+            this.prepareForVrchatCheckbox.Size = new System.Drawing.Size(117, 17);
+            this.prepareForVrchatCheckbox.TabIndex = 8;
+            this.prepareForVrchatCheckbox.Text = "prepare for VRChat";
+            this.prepareForVrchatCheckbox.UseVisualStyleBackColor = true;
             // 
             // openGroupbox
             // 
@@ -444,17 +460,22 @@
             this.showDevToolsTabToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showDevToolsTabToolStripMenuItem.Text = "Show dev tools tab";
             // 
-            // prepareForVrchatCheckbox
+            // scaleTextbox
             // 
-            this.prepareForVrchatCheckbox.AutoSize = true;
-            this.prepareForVrchatCheckbox.Checked = true;
-            this.prepareForVrchatCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.prepareForVrchatCheckbox.Location = new System.Drawing.Point(20, 294);
-            this.prepareForVrchatCheckbox.Name = "prepareForVrchatCheckbox";
-            this.prepareForVrchatCheckbox.Size = new System.Drawing.Size(117, 17);
-            this.prepareForVrchatCheckbox.TabIndex = 8;
-            this.prepareForVrchatCheckbox.Text = "prepare for VRChat";
-            this.prepareForVrchatCheckbox.UseVisualStyleBackColor = true;
+            this.scaleTextbox.Location = new System.Drawing.Point(514, 292);
+            this.scaleTextbox.Name = "scaleTextbox";
+            this.scaleTextbox.Size = new System.Drawing.Size(54, 20);
+            this.scaleTextbox.TabIndex = 9;
+            this.scaleTextbox.Text = "1.0";
+            // 
+            // scaleLabel
+            // 
+            this.scaleLabel.AutoSize = true;
+            this.scaleLabel.Location = new System.Drawing.Point(476, 298);
+            this.scaleLabel.Name = "scaleLabel";
+            this.scaleLabel.Size = new System.Drawing.Size(32, 13);
+            this.scaleLabel.TabIndex = 10;
+            this.scaleLabel.Text = "scale";
             // 
             // Form1
             // 
@@ -524,6 +545,8 @@
         private System.Windows.Forms.TextBox filenameTextbox;
         private System.Windows.Forms.Button openExistingButton;
         private System.Windows.Forms.CheckBox prepareForVrchatCheckbox;
+        private System.Windows.Forms.Label scaleLabel;
+        private System.Windows.Forms.TextBox scaleTextbox;
     }
 }
 

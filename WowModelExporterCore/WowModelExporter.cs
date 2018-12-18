@@ -5,18 +5,18 @@ namespace WowModelExporterCore
 {
     public class WowModelExporter
     {
-        public WowObject LoadCharacter(WhRace race, WhGender gender, string[] itemIds)
+        public WowObject LoadCharacter(WhRace race, WhGender gender, string[] itemIds, float scale = 1f)
         {
             var whCharacterModel = LoadWhCharacterModel(race, gender, itemIds);
 
-            return new WowObjectBuilder().BuildFromCharacterWhModel(whCharacterModel);
+            return new WowObjectBuilder(scale).BuildFromCharacterWhModel(whCharacterModel);
         }
 
-        public WowObject LoadCharacter(WhViewerOptions opts)
+        public WowObject LoadCharacter(WhViewerOptions opts, float scale = 1f)
         {
             var whCharacterModel = LoadWhCharacterModel(opts);
 
-            return new WowObjectBuilder().BuildFromCharacterWhModel(whCharacterModel);
+            return new WowObjectBuilder(scale).BuildFromCharacterWhModel(whCharacterModel);
         }
 
         private WhModel LoadWhCharacterModel(WhRace race, WhGender gender, string[] itemIds)

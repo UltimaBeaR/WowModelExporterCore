@@ -126,6 +126,11 @@ public static bool AreNearlyEqual(Vec3 a, Vec3 b)
             return res;
         }
 
+        public static Vec3 Scale(Vec3 v, float scale)
+        {
+            return new Vec3(v.X * scale, v.Y * scale, v.Z * scale);
+        }
+
         public void RotateAroundX(float angleRad)
         {
             var sin = (float)Math.Sin(angleRad);

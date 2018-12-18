@@ -7,7 +7,7 @@ namespace WowModelExporterTester
 {
     public static class WowVrcFileExtensions
     {
-        public static bool ExportToFbx(this WowVrcFile file, string exportDirectory, bool prepareForVRChat)
+        public static bool ExportToFbx(this WowVrcFile file, string exportDirectory, bool prepareForVRChat, float scale, out string warnings)
         {
             var exporter = new WowModelExporter();
 
@@ -16,7 +16,7 @@ namespace WowModelExporterTester
             var opts = file.GetOpts();
             if (opts != null)
             {
-                characterWowObject = exporter.LoadCharacter(WhViewerOptions.FromJson(opts));
+                characterWowObject = exporter.LoadCharacter(WhViewerOptions.FromJson(opts), scale);
             }
             else
             {
@@ -24,7 +24,7 @@ namespace WowModelExporterTester
                 if (manualHeader == null)
                     throw new System.InvalidOperationException();
 
-                characterWowObject = exporter.LoadCharacter(manualHeader.Race, manualHeader.Gender, manualHeader.ItemIds);
+                characterWowObject = exporter.LoadCharacter(manualHeader.Race, manualHeader.Gender, manualHeader.ItemIds, scale);
             }
 
             // ToDo: после запекания идет привязка на текущие индексы вершин. Если вершины будут перестроены, надо тут тоже обновить индексы 
@@ -58,7 +58,9 @@ namespace WowModelExporterTester
             }
 
             if (prepareForVRChat)
-                PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true);
+                warnings = PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true);
+            else
+                warnings = null;
 
             var fbxExporter = new Exporter();
 

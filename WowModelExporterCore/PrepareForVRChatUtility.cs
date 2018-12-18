@@ -14,17 +14,11 @@ namespace WowModelExporterCore
     /// </summary>
     public static class PrepareForVRChatUtility
     {
-        public static void PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes)
+        public static string PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes)
         {
+            var warnings = "";
+
             MakeUnityCompatibleHumanoidSkeleton(wowObject);
-
-            // Удаляем пальцы ног если надо (чтоб не глючило в вр режиме в врчате)
-            if (removeToes)
-                wowObject.RemoveBonesByNames(new[] { "LeftToes", "RightToes" });
-
-            // Удаляем нижнюю челюсть, если надо (чтобы vrchat не делал автоматическую анимацию речи через эту кость - оно работает глючно)
-            if (removeJaw)
-                wowObject.RemoveBonesByNames(new[] { "Jaw" });
 
             // Если не заданы необходимые для движения глаз виземы моргания, создаем пустые (чтобы глаза двигались, т.к. врчат не делает движение глаз при отсутствии этих визем)
             if (addDummyEyesAndEyelidVisemes)
@@ -49,6 +43,18 @@ namespace WowModelExporterCore
                 if (bakedBlendshapes.FindIndex(x => x.BlendshapeName == "vrc.lowerlid_right") == -1)
                     bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape { BlendshapeName = "vrc.lowerlid_right", Changes = new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } } });
             }
+
+            var noBonesWarnings = CheckRequiredBonesExist(wowObject);
+            if (noBonesWarnings != null)
+                warnings += noBonesWarnings;
+
+            // Удаляем пальцы ног если надо (чтоб не глючило в вр режиме в врчате)
+            if (removeToes)
+                wowObject.RemoveBonesByNames(new[] { "LeftToes", "RightToes" });
+
+            // Удаляем нижнюю челюсть, если надо (чтобы vrchat не делал автоматическую анимацию речи через эту кость - оно работает глючно)
+            if (removeJaw)
+                wowObject.RemoveBonesByNames(new[] { "Jaw" });
 
             // Добавляем небольшое смещение к каждой из позиций вершин, чтобы избавиться от каких-то глюков (repair_shapekeys и repair_shapekeys_mouth функции в cats плагине)
             // как минимум - если пустой blendshape например на vrc.lowerlid_left ничем не отличается от базы - eye tracking работать не будет. При этом очень мелкое значение тоже не влияет, нужно именно определенное
@@ -89,6 +95,29 @@ namespace WowModelExporterCore
 
                 return x.BlendshapeName.CompareTo(y.BlendshapeName);
             });
+
+            if (warnings == "")
+                warnings = null;
+
+            return warnings;
+        }
+
+        private static string CheckRequiredBonesExist(WowObject wowObject)
+        {
+            string warnings = "";
+
+            var requiredBoneNames = _normalToHumanoidBoneNamesMapping.Values.ToArray();
+
+            foreach (var boneName in requiredBoneNames)
+            {
+                if (wowObject.FindBoneByName(boneName) == null)
+                    warnings += $"Bone \"{boneName}\" was not found\n";
+            }
+
+            if (warnings == "")
+                warnings = null;
+
+            return warnings;
         }
 
         private static void MakeUnityCompatibleHumanoidSkeleton(WowObject wowObject)

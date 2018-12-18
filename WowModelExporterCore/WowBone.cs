@@ -282,6 +282,12 @@ namespace WowModelExporterCore
             { 4274150396,   "face_long_brow_2.R" },
 
             #endregion
+
+            #region draenei female
+                
+            { 1639899198,   "attachment_weapon.R" },
+
+            #endregion
         };
     }
 }

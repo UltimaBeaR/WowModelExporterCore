@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using WowheadModelLoader.Json;
@@ -2038,17 +2039,18 @@ namespace WowheadModelLoader
                 };
             }
 
-            using (CompositeTexture.ChangeBitmap())
-            using (var graphics = Graphics.FromImage(CompositeTexture.Bitmap))
+            var layersBitmap = new Bitmap(CompositeTexture.Bitmap.Width, CompositeTexture.Bitmap.Height);
+            using (var graphics = Graphics.FromImage(layersBitmap))
             {
-                graphics.DrawImage(SpecialTextures[1].Img.Bitmap, new PointF(0, 0));
+                var w = layersBitmap.Width;
+                var h = layersBitmap.Height;
 
-                var w = CompositeTexture.Bitmap.Width;
-                var h = CompositeTexture.Bitmap.Height;
                 var regions = WhRegionOldNew.Old;
 
                 if (w != h)
                     regions = WhRegionOldNew.New;
+
+                FillColor(graphics, w, h, Color.Transparent);
 
                 for (int i = 1; i <= 3; ++i)
                 {
@@ -2057,7 +2059,7 @@ namespace WowheadModelLoader
                         if (!BakedTextures[WhRegion.FaceLower][i].Ready())
                             return;
 
-                        DrawImage(graphics, BakedTextures[WhRegion.FaceLower][i].Img.Bitmap, w, h, regions[WhRegion.FaceLower]);
+                        DrawImage(graphics, BakedTextures[WhRegion.FaceLower][i].Img.Bitmap, w, h, true, regions[WhRegion.FaceLower]);
                     }
 
                     if (BakedTextures[WhRegion.FaceUpper].ContainsKey(i))
@@ -2065,7 +2067,7 @@ namespace WowheadModelLoader
                         if (!BakedTextures[WhRegion.FaceUpper][i].Ready())
                             return;
 
-                        DrawImage(graphics, BakedTextures[WhRegion.FaceUpper][i].Img.Bitmap, w, h, regions[WhRegion.FaceUpper]);
+                        DrawImage(graphics, BakedTextures[WhRegion.FaceUpper][i].Img.Bitmap, w, h, true, regions[WhRegion.FaceUpper]);
                     }
                 }
 
@@ -2087,7 +2089,7 @@ namespace WowheadModelLoader
                     if (!BakedTextures[WhRegion.TorsoUpper][1].Ready())
                         return;
 
-                    DrawImage(graphics, BakedTextures[WhRegion.TorsoUpper][1].Img.Bitmap, w, h, regions[WhRegion.TorsoUpper]);
+                    DrawImage(graphics, BakedTextures[WhRegion.TorsoUpper][1].Img.Bitmap, w, h, true, regions[WhRegion.TorsoUpper]);
                 }
 
                 if (drawPanties && BakedTextures[WhRegion.LegUpper].ContainsKey(1))
@@ -2095,7 +2097,7 @@ namespace WowheadModelLoader
                     if (!BakedTextures[WhRegion.LegUpper][1].Ready())
                         return;
 
-                    DrawImage(graphics, BakedTextures[WhRegion.LegUpper][1].Img.Bitmap, w, h, regions[WhRegion.LegUpper]);
+                    DrawImage(graphics, BakedTextures[WhRegion.LegUpper][1].Img.Bitmap, w, h, true, regions[WhRegion.LegUpper]);
                 }
 
                 //if (self.TattoosIndex > 0) {
@@ -2126,24 +2128,83 @@ namespace WowheadModelLoader
                             if ((Meta.RaceFlags & 2) != 0 && t.Region == WhRegion.Foot)
                                 continue;
 
-                            DrawImage(graphics, t.Texture.Img.Bitmap, w, h, regions[t.Region]);
+                            DrawImage(graphics, t.Texture.Img.Bitmap, w, h, true, regions[t.Region]);
                         }
                     }
+                }
+            }
+
+            FixNearlyOpaquePixels(layersBitmap);
+
+            using (CompositeTexture.ChangeBitmap())
+            {
+                using (var graphics = Graphics.FromImage(CompositeTexture.Bitmap))
+                {
+                    FillColor(graphics, CompositeTexture.Bitmap.Width, CompositeTexture.Bitmap.Height, Color.Transparent);
+
+                    DrawImage(graphics, SpecialTextures[1].Img.Bitmap, CompositeTexture.Bitmap.Width, CompositeTexture.Bitmap.Height, true);
+                    DrawImage(graphics, layersBitmap, CompositeTexture.Bitmap.Width, CompositeTexture.Bitmap.Height, false);
                 }
             }
 
             NeedsCompositing = false;
         }
 
-        private static void DrawImage(Graphics graphics, Bitmap image, int sourceWidth, int sourceHeight, WhRegionOldNew region)
+        private static void FillColor(Graphics graphics, int sourceWidth, int sourceHeight, Color color)
         {
-            graphics.DrawImage(image, new RectangleF()
+            var solidBrush = new SolidBrush(color);
+            graphics.FillRectangle(solidBrush, new Rectangle(0, 0, sourceWidth, sourceHeight));
+        }
+
+        private static void DrawImage(Graphics graphics, Bitmap image, int sourceWidth, int sourceHeight, bool crisp, WhRegionOldNew region = null)
+        {
+            if (crisp)
             {
-                X = sourceWidth * region.X,
-                Y = sourceHeight * region.Y,
-                Width = sourceWidth * region.W,
-                Height = sourceHeight * region.H
-            });
+                graphics.SmoothingMode = SmoothingMode.Default;
+                graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+                graphics.PixelOffsetMode = PixelOffsetMode.Half;
+
+                graphics.DrawImage(image, new Rectangle()
+                {
+                    X = (int)(sourceWidth * (region?.X ?? 0)),
+                    Y = (int)(sourceHeight * (region?.Y ?? 0)),
+                    Width = (int)(sourceWidth * (region?.W ?? 1)),
+                    Height = (int)(sourceHeight * (region?.H ?? 1))
+                });
+            }
+            else
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.PixelOffsetMode = PixelOffsetMode.Half;
+
+                graphics.DrawImage(image, new RectangleF()
+                {
+                    X = (int)(sourceWidth * (region?.X ?? 0)) - 0.5f,
+                    Y = (int)(sourceHeight * (region?.Y ?? 0)) - 0.5f,
+                    Width = (int)(sourceWidth * (region?.W ?? 1)) + 1f,
+                    Height = (int)(sourceHeight * (region?.H ?? 1) + 1f)
+                });
+            }
+        }
+
+        /// <summary>
+        /// Делает пиксели с небольшой прозрачностью полностью непрозрачными.
+        /// Почему то в некоторых текстурах по краям есть небольшая прозрачность (alpha = 240), хотя она там явно не нужна. Из-за этого при рендеринге этого всего в композитную текстуру видны артефакты
+        /// </summary>
+        private static void FixNearlyOpaquePixels(Bitmap image)
+        {
+            const int alphaThreshold = 240;
+
+            for (int x = 0; x < image.Width; x++)
+            {
+                for (int y = 0; y < image.Height; y++)
+                {
+                    var color = image.GetPixel(x, y);
+                    if (color.A >= alphaThreshold)
+                        image.SetPixel(x, y, Color.FromArgb(255, color));
+                }
+            }
         }
 
         public void LoadItems(WhViewerOptions.Item[] items)
