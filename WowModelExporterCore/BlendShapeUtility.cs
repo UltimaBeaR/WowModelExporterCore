@@ -77,7 +77,7 @@ namespace WowModelExporterCore
         /// скелета (список костей) к которому эти вершины привязаны а также набора трансформаций с этими костями.
         /// То есть по сути формирует состояние вершин модели при изменении костей (как при скелетной анимации)
         /// </summary>
-        public static Dictionary<int, Vertex> BakeBlendShape(WowVertex[] vertices, WowBone[] bones, WowVrcFileData.BlendshapeData.BoneData[] blendShapeBoneChanges)
+        public static Dictionary<int, Vertex> BakeBlendShape(WowVertex[] vertices, WowBone[] bones, WowVrcFileData.BlendshapeData.BoneData[] blendShapeBoneChanges, float scale)
         {
             // Создаем оригинальные/трансформированные кости и просчитываем локальные матрицы для них
 
@@ -93,7 +93,7 @@ namespace WowModelExporterCore
 
                 var blendshapeChange = blendShapeBoneChanges.FirstOrDefault(x => x.Name == bones[boneIdx].GetName());
                 if (blendshapeChange != null)
-                    blenshapeBones[boneIdx].SetLocalDataFromBlendshapeBone(bones[boneIdx], blendshapeChange);
+                    blenshapeBones[boneIdx].SetLocalDataFromBlendshapeBone(bones[boneIdx], blendshapeChange, scale);
                 else
                     blenshapeBones[boneIdx].SetLocalDataFromWowBone(bones[boneIdx]);
             }
@@ -216,14 +216,14 @@ namespace WowModelExporterCore
                 LocalMatrix = matrix;
             }
 
-            public void SetLocalDataFromBlendshapeBone(WowBone bone, WowVrcFileData.BlendshapeData.BoneData blendshapeBoneChange)
+            public void SetLocalDataFromBlendshapeBone(WowBone bone, WowVrcFileData.BlendshapeData.BoneData blendshapeBoneChange, float scale)
             {
                 var matrix = Mat4.Identity();
 
                 Vec3 localPosition = bone.LocalPosition;
-                localPosition.X += blendshapeBoneChange.LocalTransform.position.X;
-                localPosition.Y += blendshapeBoneChange.LocalTransform.position.Y;
-                localPosition.Z += blendshapeBoneChange.LocalTransform.position.Z;
+                localPosition.X += blendshapeBoneChange.LocalTransform.position.X * scale;
+                localPosition.Y += blendshapeBoneChange.LocalTransform.position.Y * scale;
+                localPosition.Z += blendshapeBoneChange.LocalTransform.position.Z * scale;
 
                 matrix = Mat4.Translate(matrix, localPosition);
 

@@ -37,7 +37,7 @@ namespace WowModelExporterTester
                     {
                         if (blendshape.Name == WowVrcFileData.BlendshapeData.basicBlendshapeName)
                         {
-                            var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones);
+                            var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones, scale);
 
                             foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
                             {
@@ -50,7 +50,7 @@ namespace WowModelExporterTester
                             bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape
                             {
                                 BlendshapeName = blendshape.Name,
-                                Changes = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones)
+                                Changes = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones, scale)
                             });
                         }
                     }
