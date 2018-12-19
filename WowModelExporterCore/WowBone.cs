@@ -287,6 +287,21 @@ namespace WowModelExporterCore
                 
             { 1639899198,   "attachment_weapon.R" },
 
+            { 490258427,    "face_tentacles_1.L" },
+            { 2217864769,   "face_tentacles_2.L" },
+            { 4080459479,   "face_tentacles_3.L" },
+            { 1834109812,   "face_tentacles_4.L" },
+
+            { 4161896729,   "face_tentacles_1.R" },
+            { 1629016227,   "face_tentacles_2.R" },
+            { 371187765,    "face_tentacles_3.R" },
+            { 2289792406,   "face_tentacles_4.R" },
+
+            { 2154402137,   "face_long_back_hair_1" },
+            { 425771235,    "face_long_back_hair_2" },
+            { 1852305525,   "face_long_back_hair_3" },
+            { 4026754518,   "face_long_back_hair_4" },
+
             #endregion
         };
     }
