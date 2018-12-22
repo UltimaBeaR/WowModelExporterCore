@@ -288,7 +288,8 @@ public class MainController : MonoBehaviour
             var basicVertexChanges = BlendShapeUtility.BakeBlendShape(
                 _character.WowObject.MainMesh.Vertices,
                 _character.WowObject.Bones,
-                ConvertBlendshapeBonesToFile(_blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName].Bones));
+                ConvertBlendshapeBonesToFile(_blendshapeData[WowVrcFileData.BlendshapeData.basicBlendshapeName].Bones),
+                1f);
 
             _defaultVertexPositions.CopyTo(_basicVertexPositions, 0);
             _defaultVertexNormals.CopyTo(_basicVertexNormals, 0);

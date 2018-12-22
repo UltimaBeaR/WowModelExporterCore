@@ -47,6 +47,31 @@ namespace WowModelExporterCore
         }
 
         /// <summary>
+        /// Возвратить все меши включая приатаченные меши в костях
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<WowMeshWithMaterials> GetAllMeshes()
+        {
+            foreach (var mesh in Meshes)
+                yield return mesh;
+
+            if (Bones != null)
+            {
+                foreach (var bone in Bones)
+                {
+                    if (bone == null)
+                        continue;
+
+                    foreach (var obj in bone.AttachedWowObjects)
+                    {
+                        foreach (var mesh in obj.GetAllMeshes())
+                            yield return mesh;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Добавляет кость-пустышку в конец массива с костями
         /// </summary>
         public void AddDummyBone(string boneName, WowBone parent, Vec3 localPosition)

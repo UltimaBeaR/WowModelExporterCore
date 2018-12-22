@@ -6,15 +6,12 @@ namespace WowModelExporterCore
 {
     // ToDo: потом наверно перенести в отдельную библиотеку с зависимостью на core
 
-    // ToDo: придумать что-то с плечами в врчате. можно сделать какие нибудь фейковые кости или еще что-то.
-    // еще переназначение костей с верхних рук на плечи (так сделано у моего роги)
-
     /// <summary>
     /// Подготавливает модель персонажа из wow для нормальной работы в vrchat (предполагается дальнейший экспорт в fbx)
     /// </summary>
     public static class PrepareForVRChatUtility
     {
-        public static string PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes)
+        public static string PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes, bool fixShoulders)
         {
             var warnings = "";
 
@@ -56,6 +53,46 @@ namespace WowModelExporterCore
             if (removeJaw)
                 wowObject.RemoveBonesByNames(new[] { "Jaw" });
 
+            if (fixShoulders)
+            {
+                // ToDo: нифига не получается, возможно просто делать поворот меша плеча на сколько-то?
+
+                //const float shoulderAttachmentWeight = 0.5f;
+                //const float upperArmWeight = 0.5f;
+
+                //var allMeshes = wowObject.GetAllMeshes();
+
+                //var leftShoulderAttachment = wowObject.FindBoneByName("attachment_shoulder.L");
+                //var leftShoulder = wowObject.FindBoneByName("LeftShoulder");
+                //var leftUpperArm = wowObject.FindBoneByName("LeftUpperArm");
+
+                //if (leftShoulderAttachment != null && leftShoulder != null && leftUpperArm != null)
+                //{
+                //    leftShoulderAttachment.ParentBone?.ChildBones.Remove(leftShoulderAttachment);
+                //    leftShoulderAttachment.SetParentAndKeepGlobalPosition(leftShoulder);
+                //    leftShoulder.ChildBones.Add(leftShoulderAttachment);
+
+                //    var leftShoulderAttachmentMeshes = GetMeshesSkinnedToBone(allMeshes, leftShoulderAttachment.Index);
+                //    SetBoneDataToAllVertices(leftShoulderAttachmentMeshes, leftShoulderAttachment.Index, shoulderAttachmentWeight, leftUpperArm.Index, upperArmWeight, 0, 0, 0, 0);
+                //}
+
+                //var rightShoulderAttachment = wowObject.FindBoneByName("attachment_shoulder.R");
+                //var rightShoulder = wowObject.FindBoneByName("RightShoulder");
+                //var rightUpperArm = wowObject.FindBoneByName("RightUpperArm");
+
+                //if (rightShoulderAttachment != null && rightShoulder != null && rightUpperArm != null)
+                //{
+                //    rightShoulderAttachment.ParentBone?.ChildBones.Remove(rightShoulderAttachment);
+                //    rightShoulderAttachment.SetParentAndKeepGlobalPosition(rightShoulder);
+                //    rightShoulder.ChildBones.Add(rightShoulderAttachment);
+
+                //    var rightShoulderAttachmentMeshes = GetMeshesSkinnedToBone(allMeshes, rightShoulderAttachment.Index);
+                //    SetBoneDataToAllVertices(rightShoulderAttachmentMeshes, rightShoulderAttachment.Index, shoulderAttachmentWeight, rightUpperArm.Index, upperArmWeight, 0, 0, 0, 0);
+                //}
+            }
+
+            wowObject.OptimizeBones();
+
             // Добавляем небольшое смещение к каждой из позиций вершин, чтобы избавиться от каких-то глюков (repair_shapekeys и repair_shapekeys_mouth функции в cats плагине)
             // как минимум - если пустой blendshape например на vrc.lowerlid_left ничем не отличается от базы - eye tracking работать не будет. При этом очень мелкое значение тоже не влияет, нужно именно определенное
             if (fixBlendshapes)
@@ -75,8 +112,6 @@ namespace WowModelExporterCore
                     }
                 }
             }
-
-            wowObject.OptimizeBones();
 
             // Сортируем блендшейпы так чтобы _firstBlendshapes (список имен блендшейпов) шел сначала а потом уже все остальные
             bakedBlendshapes.Sort((x, y) =>
@@ -100,6 +135,45 @@ namespace WowModelExporterCore
                 warnings = null;
 
             return warnings;
+        }
+
+        private static List<WowMeshWithMaterials> GetMeshesSkinnedToBone(IEnumerable<WowMeshWithMaterials> meshes, byte boneIndex)
+        {
+            return meshes.Where(mesh =>
+            {
+                return mesh.Vertices.Any(vertex =>
+                    vertex.BoneIndexes[0] == boneIndex ||
+                    vertex.BoneIndexes[1] == boneIndex ||
+                    vertex.BoneIndexes[2] == boneIndex ||
+                    vertex.BoneIndexes[3] == boneIndex);
+            }).ToList();
+        }
+
+        private static void SetBoneDataToAllVertices(IEnumerable<WowMeshWithMaterials> meshes, byte index0, float weight0, byte index1, float weight1, byte index2, float weight2, byte index3, float weight3)
+        {
+            foreach (var mesh in meshes)
+            {
+                foreach (var vertex in mesh.Vertices)
+                {
+                    var indexes = vertex.BoneIndexes;
+                    var weights = vertex.BoneWeights;
+
+                    indexes[0] = index0;
+                    weights[0] = weight0;
+
+                    indexes[1] = index1;
+                    weights[1] = weight1;
+
+                    indexes[2] = index2;
+                    weights[2] = weight2;
+
+                    indexes[3] = index3;
+                    weights[3] = weight3;
+
+                    vertex.BoneIndexes = indexes;
+                    vertex.BoneWeights = weights;
+                }
+            }
         }
 
         private static string CheckRequiredBonesExist(WowObject wowObject)

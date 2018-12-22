@@ -33,6 +33,8 @@
             this.webView = new EO.WebBrowser.WebView();
             this.tabs = new System.Windows.Forms.TabControl();
             this.mainTab = new System.Windows.Forms.TabPage();
+            this.scaleLabel = new System.Windows.Forms.Label();
+            this.scaleTextbox = new System.Windows.Forms.TextBox();
             this.prepareForVrchatCheckbox = new System.Windows.Forms.CheckBox();
             this.openGroupbox = new System.Windows.Forms.GroupBox();
             this.openExistingButton = new System.Windows.Forms.Button();
@@ -65,12 +67,12 @@
             this.openCacheDirectoryButton = new System.Windows.Forms.Button();
             this.browserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDevToolsTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.scaleTextbox = new System.Windows.Forms.TextBox();
-            this.scaleLabel = new System.Windows.Forms.Label();
+            this.mergeVisemesButton = new System.Windows.Forms.Button();
             this.tabs.SuspendLayout();
             this.mainTab.SuspendLayout();
             this.openGroupbox.SuspendLayout();
             this.createNewGroupbox.SuspendLayout();
+            this.mergeGroupBox.SuspendLayout();
             this.browserTab.SuspendLayout();
             this.browserContentPanel.SuspendLayout();
             this.addressPanel.SuspendLayout();
@@ -137,6 +139,23 @@
             this.mainTab.TabIndex = 1;
             this.mainTab.Text = "main";
             this.mainTab.UseVisualStyleBackColor = true;
+            // 
+            // scaleLabel
+            // 
+            this.scaleLabel.AutoSize = true;
+            this.scaleLabel.Location = new System.Drawing.Point(476, 298);
+            this.scaleLabel.Name = "scaleLabel";
+            this.scaleLabel.Size = new System.Drawing.Size(32, 13);
+            this.scaleLabel.TabIndex = 10;
+            this.scaleLabel.Text = "scale";
+            // 
+            // scaleTextbox
+            // 
+            this.scaleTextbox.Location = new System.Drawing.Point(514, 292);
+            this.scaleTextbox.Name = "scaleTextbox";
+            this.scaleTextbox.Size = new System.Drawing.Size(54, 20);
+            this.scaleTextbox.TabIndex = 9;
+            this.scaleTextbox.Text = "1.0";
             // 
             // prepareForVrchatCheckbox
             // 
@@ -245,12 +264,13 @@
             // 
             // mergeGroupBox
             // 
+            this.mergeGroupBox.Controls.Add(this.mergeVisemesButton);
             this.mergeGroupBox.Location = new System.Drawing.Point(20, 181);
             this.mergeGroupBox.Name = "mergeGroupBox";
             this.mergeGroupBox.Size = new System.Drawing.Size(548, 100);
             this.mergeGroupBox.TabIndex = 3;
             this.mergeGroupBox.TabStop = false;
-            this.mergeGroupBox.Text = "merge .wowvrc";
+            this.mergeGroupBox.Text = "merge to opened .wowvrc";
             // 
             // exportButton
             // 
@@ -460,22 +480,16 @@
             this.showDevToolsTabToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showDevToolsTabToolStripMenuItem.Text = "Show dev tools tab";
             // 
-            // scaleTextbox
+            // mergeVisemesButton
             // 
-            this.scaleTextbox.Location = new System.Drawing.Point(514, 292);
-            this.scaleTextbox.Name = "scaleTextbox";
-            this.scaleTextbox.Size = new System.Drawing.Size(54, 20);
-            this.scaleTextbox.TabIndex = 9;
-            this.scaleTextbox.Text = "1.0";
-            // 
-            // scaleLabel
-            // 
-            this.scaleLabel.AutoSize = true;
-            this.scaleLabel.Location = new System.Drawing.Point(476, 298);
-            this.scaleLabel.Name = "scaleLabel";
-            this.scaleLabel.Size = new System.Drawing.Size(32, 13);
-            this.scaleLabel.TabIndex = 10;
-            this.scaleLabel.Text = "scale";
+            this.mergeVisemesButton.Enabled = false;
+            this.mergeVisemesButton.Location = new System.Drawing.Point(16, 29);
+            this.mergeVisemesButton.Name = "mergeVisemesButton";
+            this.mergeVisemesButton.Size = new System.Drawing.Size(101, 23);
+            this.mergeVisemesButton.TabIndex = 0;
+            this.mergeVisemesButton.Text = "merge visemes";
+            this.mergeVisemesButton.UseVisualStyleBackColor = true;
+            this.mergeVisemesButton.Click += new System.EventHandler(this.mergeVisemesButton_Click);
             // 
             // Form1
             // 
@@ -491,6 +505,7 @@
             this.openGroupbox.ResumeLayout(false);
             this.createNewGroupbox.ResumeLayout(false);
             this.createNewGroupbox.PerformLayout();
+            this.mergeGroupBox.ResumeLayout(false);
             this.browserTab.ResumeLayout(false);
             this.browserContentPanel.ResumeLayout(false);
             this.addressPanel.ResumeLayout(false);
@@ -547,6 +562,7 @@
         private System.Windows.Forms.CheckBox prepareForVrchatCheckbox;
         private System.Windows.Forms.Label scaleLabel;
         private System.Windows.Forms.TextBox scaleTextbox;
+        private System.Windows.Forms.Button mergeVisemesButton;
     }
 }
 

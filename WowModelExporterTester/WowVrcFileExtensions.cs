@@ -58,7 +58,7 @@ namespace WowModelExporterTester
             }
 
             if (prepareForVRChat)
-                warnings = PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true);
+                warnings = PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true, true);
             else
                 warnings = null;
 

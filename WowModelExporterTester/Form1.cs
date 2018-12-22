@@ -34,6 +34,10 @@ namespace WowModelExporterTester
 
         private void InitBrowser()
         {
+            webView.CertificateError += (s, e) =>
+            {
+            };
+
             webView.UrlChanged += (s, e) =>
             {
                 if (OptsJsonForExport != null)
@@ -331,11 +335,30 @@ namespace WowModelExporterTester
             }
         }
 
+        private void mergeVisemesButton_Click(object sender, EventArgs e)
+        {
+            var dialog = new OpenFileDialog()
+            {
+                Filter = WowVrcFile.fileDialogFilter,
+                CheckFileExists = true
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                var fileWithVisemes = WowVrcFile.Open(dialog.FileName);
+
+                _file.Blendshapes = fileWithVisemes.Blendshapes;
+                _file.SaveTo(filenameTextbox.Text);
+            }
+        }
+
         private void SetOpenedFile(string fileName, WowVrcFile file)
         {
             filenameTextbox.Text = fileName;
             _file = file;
+
             exportButton.Enabled = true;
+            mergeVisemesButton.Enabled = true;
         }
 
         private string _optsJsonForExport;
