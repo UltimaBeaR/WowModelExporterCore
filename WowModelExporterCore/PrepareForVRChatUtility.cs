@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using WowheadModelLoader;
 
 namespace WowModelExporterCore
 {
@@ -11,7 +12,7 @@ namespace WowModelExporterCore
     /// </summary>
     public static class PrepareForVRChatUtility
     {
-        public static string PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes, bool fixShoulders)
+        public static string PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, float scale, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes, bool fixShoulders)
         {
             var warnings = "";
 
@@ -55,40 +56,9 @@ namespace WowModelExporterCore
 
             if (fixShoulders)
             {
-                // ToDo: нифига не получается, возможно просто делать поворот меша плеча на сколько-то?
-
-                //const float shoulderAttachmentWeight = 0.5f;
-                //const float upperArmWeight = 0.5f;
-
-                //var allMeshes = wowObject.GetAllMeshes();
-
-                //var leftShoulderAttachment = wowObject.FindBoneByName("attachment_shoulder.L");
-                //var leftShoulder = wowObject.FindBoneByName("LeftShoulder");
-                //var leftUpperArm = wowObject.FindBoneByName("LeftUpperArm");
-
-                //if (leftShoulderAttachment != null && leftShoulder != null && leftUpperArm != null)
-                //{
-                //    leftShoulderAttachment.ParentBone?.ChildBones.Remove(leftShoulderAttachment);
-                //    leftShoulderAttachment.SetParentAndKeepGlobalPosition(leftShoulder);
-                //    leftShoulder.ChildBones.Add(leftShoulderAttachment);
-
-                //    var leftShoulderAttachmentMeshes = GetMeshesSkinnedToBone(allMeshes, leftShoulderAttachment.Index);
-                //    SetBoneDataToAllVertices(leftShoulderAttachmentMeshes, leftShoulderAttachment.Index, shoulderAttachmentWeight, leftUpperArm.Index, upperArmWeight, 0, 0, 0, 0);
-                //}
-
-                //var rightShoulderAttachment = wowObject.FindBoneByName("attachment_shoulder.R");
-                //var rightShoulder = wowObject.FindBoneByName("RightShoulder");
-                //var rightUpperArm = wowObject.FindBoneByName("RightUpperArm");
-
-                //if (rightShoulderAttachment != null && rightShoulder != null && rightUpperArm != null)
-                //{
-                //    rightShoulderAttachment.ParentBone?.ChildBones.Remove(rightShoulderAttachment);
-                //    rightShoulderAttachment.SetParentAndKeepGlobalPosition(rightShoulder);
-                //    rightShoulder.ChildBones.Add(rightShoulderAttachment);
-
-                //    var rightShoulderAttachmentMeshes = GetMeshesSkinnedToBone(allMeshes, rightShoulderAttachment.Index);
-                //    SetBoneDataToAllVertices(rightShoulderAttachmentMeshes, rightShoulderAttachment.Index, shoulderAttachmentWeight, rightUpperArm.Index, upperArmWeight, 0, 0, 0, 0);
-                //}
+                const float shoulderRotationAngle = (float)(Math.PI / 4);
+                RotateShoulderAttachments(wowObject, "attachment_shoulder.L", "LeftUpperArm", -shoulderRotationAngle);
+                RotateShoulderAttachments(wowObject, "attachment_shoulder.R", "RightUpperArm", shoulderRotationAngle);
             }
 
             wowObject.OptimizeBones();
@@ -135,6 +105,40 @@ namespace WowModelExporterCore
                 warnings = null;
 
             return warnings;
+        }
+
+        private static void RotateShoulderAttachments(WowObject characterWowObject, string attachmentBoneName, string upperArmBoneName, float rotationAngle)
+        {
+            var shoulderAttachment = characterWowObject.FindBoneByName(attachmentBoneName);
+            var upperArm = characterWowObject.FindBoneByName(upperArmBoneName);
+
+            if (shoulderAttachment != null && upperArm != null)
+            {
+                var change = new WowVrcFileData.BlendshapeData.BoneData[] { new WowVrcFileData.BlendshapeData.BoneData()
+                    {
+                        LocalTransform = new WowTransform()
+                        {
+                            position = new Vec3(),
+                            rotation = Quat.RotateY(Quat.Create(), rotationAngle),
+                            scale = new Vec3(1f, 1f, 1f)
+                        },
+                        Name = upperArmBoneName
+                    }};
+
+                foreach (var obj in shoulderAttachment.AttachedWowObjects)
+                {
+                    foreach (var mesh in obj.Meshes)
+                    {
+                        var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(obj.GlobalPosition, mesh.Vertices, characterWowObject.Bones, change, 1f);
+
+                        foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
+                        {
+                            mesh.Vertices[basicBakedBlendshapeElement.Key].Position = new Vec3(basicBakedBlendshapeElement.Value.Position.X, basicBakedBlendshapeElement.Value.Position.Y, basicBakedBlendshapeElement.Value.Position.Z);
+                            mesh.Vertices[basicBakedBlendshapeElement.Key].Normal = new Vec3(basicBakedBlendshapeElement.Value.Normal.X, basicBakedBlendshapeElement.Value.Normal.Y, basicBakedBlendshapeElement.Value.Normal.Z);
+                        }
+                    }
+                }
+            }
         }
 
         private static List<WowMeshWithMaterials> GetMeshesSkinnedToBone(IEnumerable<WowMeshWithMaterials> meshes, byte boneIndex)

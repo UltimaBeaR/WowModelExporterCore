@@ -122,7 +122,64 @@ namespace WowheadModelLoader
             return res;
         }
 
+        public static Vec4 RotateX(Vec4 a, float rad)
+        {
+            rad *= 0.5f;
 
+            var ax = a[0];
+            var ay = a[1];
+            var az = a[2];
+            var aw = a[3];
+            var bx = (float)Math.Sin(rad);
+            var bw = (float)Math.Cos(rad);
+
+            var res = new Vec4();
+
+            res[0] = ax * bw + aw * bx;
+            res[1] = ay * bw + az * bx;
+            res[2] = az * bw - ay * bx;
+            res[3] = aw * bw - ax * bx;
+
+            return res;
+        }
+
+        public static Vec4 RotateY(Vec4 a, float rad)
+        {
+            rad *= 0.5f;
+            var ax = a[0];
+            var ay = a[1];
+            var az = a[2];
+            var aw = a[3];
+            var by = (float)Math.Sin(rad);
+            var bw = (float)Math.Cos(rad);
+
+            var res = new Vec4();
+
+            res[0] = ax * bw - az * by;
+            res[1] = ay * bw + aw * by;
+            res[2] = az * bw + ax * by;
+            res[3] = aw * bw - ay * by;
+            return res;
+        }
+
+        public static Vec4 RotateZ(Vec4 a, float rad)
+        {
+            rad *= 0.5f;
+            var ax = a[0];
+            var ay = a[1];
+            var az = a[2];
+            var aw = a[3];
+            var bz = (float)Math.Sin(rad);
+            var bw = (float)Math.Cos(rad);
+
+            var res = new Vec4();
+
+            res[0] = ax * bw + ay * bz;
+            res[1] = ay * bw - ax * bz;
+            res[2] = az * bw + aw * bz;
+            res[3] = aw * bw - az * bz;
+            return res;
+        }
 
         public static Vec4 QuaternionFromMatrix(Mat4 m)
         {

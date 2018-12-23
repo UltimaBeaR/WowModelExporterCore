@@ -77,8 +77,12 @@ namespace WowModelExporterCore
         /// скелета (список костей) к которому эти вершины привязаны а также набора трансформаций с этими костями.
         /// То есть по сути формирует состояние вершин модели при изменении костей (как при скелетной анимации)
         /// </summary>
-        public static Dictionary<int, Vertex> BakeBlendShape(WowVertex[] vertices, WowBone[] bones, WowVrcFileData.BlendshapeData.BoneData[] blendShapeBoneChanges, float scale)
+        public static Dictionary<int, Vertex> BakeBlendShape(Vec3 objectPosition, WowVertex[] vertices, WowBone[] bones, WowVrcFileData.BlendshapeData.BoneData[] blendShapeBoneChanges, float scale)
         {
+            var vertexPositions = vertices
+                .Select(x => new Vec3(x.Position.X + objectPosition.X, x.Position.Y + objectPosition.Y, x.Position.Z + objectPosition.Z))
+                .ToArray();
+
             // Создаем оригинальные/трансформированные кости и просчитываем локальные матрицы для них
 
             var originalBones = new BoneTransform[bones.Length];
@@ -86,6 +90,9 @@ namespace WowModelExporterCore
 
             for (int boneIdx = 0; boneIdx < bones.Length; boneIdx++)
             {
+                if (bones[boneIdx] == null)
+                    continue;
+
                 originalBones[boneIdx] = new BoneTransform();
                 blenshapeBones[boneIdx] = new BoneTransform();
 
@@ -102,6 +109,9 @@ namespace WowModelExporterCore
 
             for (int boneIdx = 0; boneIdx < bones.Length; boneIdx++)
             {
+                if (bones[boneIdx] == null)
+                    continue;
+
                 if (bones[boneIdx].ParentBone != null)
                 {
                     originalBones[boneIdx].Parent = originalBones[bones[boneIdx].ParentBone.Index];
@@ -115,7 +125,12 @@ namespace WowModelExporterCore
             var blendshapeDifferenceMatricesPerBone = new Mat4[bones.Length];
 
             for (int boneIdx = 0; boneIdx < bones.Length; boneIdx++)
+            {
+                if (originalBones[boneIdx] == null)
+                    continue;
+
                 blendshapeDifferenceMatricesPerBone[boneIdx] = Mat4.Multiply(blenshapeBones[boneIdx].GetGlobalMatrix(), Mat4.Invert(originalBones[boneIdx].GetGlobalMatrix()));
+            }
 
             // Меняем заданные вершины в соответствии с просчитанными матрицами изменений.
             // Если значение вершины изменилось в результате примененных трансформаций (то есть если на вершину влияла хотя бы одна кость, матрица изменений которой не identity)
@@ -126,6 +141,7 @@ namespace WowModelExporterCore
             for (int vertexIdx = 0; vertexIdx < vertices.Length; vertexIdx++)
             {
                 var vertex = vertices[vertexIdx];
+                var vertexPosition = vertexPositions[vertexIdx];
 
                 var changedVertexPos = new Vec3();
                 var changedVertexNormal = new Vec3();
@@ -133,12 +149,12 @@ namespace WowModelExporterCore
                 for (int boneInVertexIdx = 0; boneInVertexIdx < 4; boneInVertexIdx++)
                 {
                     var boneIdx = vertex.BoneIndexes[boneInVertexIdx];
-                    if (boneIdx < 0)
+                    if (boneIdx < 0 || bones[boneIdx] == null)
                         continue;
 
                     var boneWeight = vertex.BoneWeights[boneInVertexIdx];
 
-                    var positionFromBone = Vec3.TransformMat4(vertex.Position, blendshapeDifferenceMatricesPerBone[boneIdx]);
+                    var positionFromBone = Vec3.TransformMat4(vertexPosition, blendshapeDifferenceMatricesPerBone[boneIdx]);
                     changedVertexPos.X += positionFromBone.X * boneWeight;
                     changedVertexPos.Y += positionFromBone.Y * boneWeight;
                     changedVertexPos.Z += positionFromBone.Z * boneWeight;
@@ -152,8 +168,8 @@ namespace WowModelExporterCore
 
                 changedVertexNormal = Vec3.Normalize(changedVertexNormal);
 
-                if (!Vec3.AreNearlyEqual(changedVertexPos, vertex.Position))
-                    changedVertices.Add(vertexIdx, new Vertex() { Position = changedVertexPos, Normal = changedVertexNormal });
+                if (!Vec3.AreNearlyEqual(changedVertexPos, vertexPosition))
+                    changedVertices.Add(vertexIdx, new Vertex() { Position = new Vec3(changedVertexPos.X - objectPosition.X, changedVertexPos.Y - objectPosition.Y, changedVertexPos.Z - objectPosition.Z), Normal = changedVertexNormal });
             }
 
             return changedVertices;

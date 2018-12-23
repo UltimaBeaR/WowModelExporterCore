@@ -37,7 +37,7 @@ namespace WowModelExporterTester
                     {
                         if (blendshape.Name == WowVrcFileData.BlendshapeData.basicBlendshapeName)
                         {
-                            var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones, scale);
+                            var basicBakedBlendshape = BlendShapeUtility.BakeBlendShape(characterWowObject.GlobalPosition, characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones, scale);
 
                             foreach (var basicBakedBlendshapeElement in basicBakedBlendshape)
                             {
@@ -50,7 +50,7 @@ namespace WowModelExporterTester
                             bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape
                             {
                                 BlendshapeName = blendshape.Name,
-                                Changes = BlendShapeUtility.BakeBlendShape(characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones, scale)
+                                Changes = BlendShapeUtility.BakeBlendShape(characterWowObject.GlobalPosition, characterWowObject.MainMesh.Vertices, characterWowObject.Bones, blendshape.Bones, scale)
                             });
                         }
                     }
@@ -58,7 +58,7 @@ namespace WowModelExporterTester
             }
 
             if (prepareForVRChat)
-                warnings = PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, true, true, true, true, true);
+                warnings = PrepareForVRChatUtility.PrepareObject(characterWowObject, bakedBlendshapes, scale, true, true, true, true, true);
             else
                 warnings = null;
 
