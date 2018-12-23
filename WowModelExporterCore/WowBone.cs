@@ -303,6 +303,33 @@ namespace WowModelExporterCore
             { 4026754518,   "face_long_back_hair_4" },
 
             #endregion
+
+            #region tauren male
+             
+            { 3008775997,   "face_eye.L" },
+            { 1339468016,   "face_eye.R" },
+
+            { 616214639,    "face_lower_lid.L" },
+            { 2308168067,   "face_lower lid.R" },
+
+            { 2121990039,   "face_horn.L" },
+            { 390847630,    "face_horn.R" },
+
+            { 1033699804,   "face_upper_teeth.L" },
+            { 3239964177,   "face_upper_teeth.R" },
+
+            { 1394997981,   "face_nose_tauren" },
+
+            { 1935429588,   "face_cheek_tauren_lower.L" },
+            { 1245445775,   "face_cheek_tauren_lower.R" },
+
+            { 3931446894,   "face_cheek_tauren_upper.L" },
+            { 3543314229,   "face_cheek_tauren_upper.R" },
+
+            { 4272075280,   "face_tauren_1.L" },
+            { 35806685,     "face_tauren_1.R" },
+
+            #endregion
         };
     }
 }

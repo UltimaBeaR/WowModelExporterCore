@@ -12,7 +12,8 @@ namespace WowModelExporterCore
     /// </summary>
     public static class PrepareForVRChatUtility
     {
-        public static string PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, float scale, bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool fixBlendshapes, bool fixShoulders)
+        public static string PrepareObject(WowObject wowObject, List<BlendShapeUtility.BakedBlendshape> bakedBlendshapes, float scale,
+            bool removeToes, bool removeJaw, bool addDummyEyesAndEyelidVisemes, bool addDummyFingers, bool fixBlendshapes, bool fixShoulders)
         {
             var warnings = "";
 
@@ -23,10 +24,8 @@ namespace WowModelExporterCore
             {
                 // Если костей глаз не найдено - добавляем фейковые внутрь кости головы
 
-                if (wowObject.FindBoneByName("LeftEye") == null)
-                    wowObject.AddDummyBone("LeftEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3(-0.05f, 0.1f, 0.07f));
-                if (wowObject.FindBoneByName("RightEye") == null)
-                    wowObject.AddDummyBone("RightEye", wowObject.FindBoneByName("Head") ?? wowObject.FindBoneByName("Hips"), new WowheadModelLoader.Vec3(0.05f, 0.1f, 0.07f));
+                EnsureBoneExistsOrAddDummy(wowObject, "LeftEye", "Head", new Vec3(-0.05f * scale, 0.1f * scale, 0.07f * scale));
+                EnsureBoneExistsOrAddDummy(wowObject, "RightEye", "Head", new Vec3(0.05f * scale, 0.1f * scale, 0.07f * scale));
 
                 // добавляем в блендшейп одну вершину. Если в блендшейпе вообще не будет изменений - eye tracking все равно не будет работать, как будто блендшейпа не существует
                 var pos = wowObject.MainMesh.Vertices[0].Position;
@@ -40,6 +39,23 @@ namespace WowModelExporterCore
                     bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape { BlendshapeName = "vrc.lowerlid_left", Changes = new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } } });
                 if (bakedBlendshapes.FindIndex(x => x.BlendshapeName == "vrc.lowerlid_right") == -1)
                     bakedBlendshapes.Add(new BlendShapeUtility.BakedBlendshape { BlendshapeName = "vrc.lowerlid_right", Changes = new Dictionary<int, BlendShapeUtility.Vertex>() { { 0, new BlendShapeUtility.Vertex() { Position = pos, Normal = normal } } } });
+            }
+
+            if (addDummyFingers)
+            {
+                // ToDo: не уверен что это нужно, вроде и с 3мя пальцами работает
+
+                // Добавляем кости пальцев, чтобы юнити не ругалась (у тауренов например 3 пальца)
+
+                EnsureBoneExistsOrAddDummy(wowObject, "Left Ring Proximal", "LeftHand", wowObject.FindBoneByName("Left Index Proximal").LocalPosition);
+                EnsureBoneExistsOrAddDummy(wowObject, "Left Ring Intermediate", "Left Ring Proximal", wowObject.FindBoneByName("Left Index Intermediate").LocalPosition);
+                EnsureBoneExistsOrAddDummy(wowObject, "Left Little Proximal", "LeftHand", wowObject.FindBoneByName("Left Index Proximal").LocalPosition);
+                EnsureBoneExistsOrAddDummy(wowObject, "Left Little Intermediate", "Left Little Proximal", wowObject.FindBoneByName("Left Index Intermediate").LocalPosition);
+
+                EnsureBoneExistsOrAddDummy(wowObject, "Right Ring Proximal", "RightHand", wowObject.FindBoneByName("Right Index Proximal").LocalPosition);
+                EnsureBoneExistsOrAddDummy(wowObject, "Right Ring Intermediate", "Right Ring Proximal", wowObject.FindBoneByName("Right Index Intermediate").LocalPosition);
+                EnsureBoneExistsOrAddDummy(wowObject, "Right Little Proximal", "RightHand", wowObject.FindBoneByName("Right Index Proximal").LocalPosition);
+                EnsureBoneExistsOrAddDummy(wowObject, "Right Little Intermediate", "Right Little Proximal", wowObject.FindBoneByName("Right Index Intermediate").LocalPosition);
             }
 
             var noBonesWarnings = CheckRequiredBonesExist(wowObject);
@@ -77,7 +93,7 @@ namespace WowModelExporterCore
                         {
                             var tinyChange = 0.00007f * (rand.NextDouble() < 0.5 ? -1f : 1f);
 
-                            vertex.Value.Position = new WowheadModelLoader.Vec3(vertex.Value.Position.X + tinyChange, vertex.Value.Position.Y + tinyChange, vertex.Value.Position.Z + tinyChange);
+                            vertex.Value.Position = new Vec3(vertex.Value.Position.X + tinyChange, vertex.Value.Position.Y + tinyChange, vertex.Value.Position.Z + tinyChange);
                         }
                     }
                 }
@@ -105,6 +121,12 @@ namespace WowModelExporterCore
                 warnings = null;
 
             return warnings;
+        }
+
+        private static void EnsureBoneExistsOrAddDummy(WowObject wowObject, string boneName, string parentBoneName, Vec3 localPosition)
+        {
+            if (wowObject.FindBoneByName(boneName) == null)
+                wowObject.AddDummyBone(boneName, wowObject.FindBoneByName(parentBoneName) ?? wowObject.FindBoneByName("Hips"), localPosition);
         }
 
         private static void RotateShoulderAttachments(WowObject characterWowObject, string attachmentBoneName, string upperArmBoneName, float rotationAngle)
